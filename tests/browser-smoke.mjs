@@ -1,0 +1,98 @@
+import { chromium } from "playwright";
+
+const baseUrl = process.env.ABANDONWARE_BASE_URL || "http://127.0.0.1:8080";
+const browser = await chromium.launch({ headless: true });
+const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+
+const requests = [];
+const consoleErrors = [];
+const pageErrors = [];
+
+page.on("request", request => requests.push(request.url()));
+page.on("console", message => {
+  if (message.type() === "error") consoleErrors.push(message.text());
+});
+page.on("pageerror", error => pageErrors.push(error.message));
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+async function waitForRequestPart(part, timeout = 30000) {
+  const started = Date.now();
+  while (Date.now() - started < timeout) {
+    if (requests.some(url => url.includes(part))) return;
+    await page.waitForTimeout(100);
+  }
+  throw new Error(`Timed out waiting for request containing ${part}`);
+}
+
+async function stopRuntime() {
+  const stop = page.locator("#emulator-stop");
+  if (await stop.isVisible()) {
+    await stop.click();
+    await page.waitForTimeout(500);
+  }
+}
+
+try {
+  await page.goto(baseUrl, { waitUntil: "networkidle", timeout: 30000 });
+
+  const runtime = await page.evaluate(() => ({
+    hasDos: typeof window.Dos === "function",
+    jsdos: window.ABANDONWARE_JSDOS || null,
+    gameCount: Array.isArray(window.ABANDONWARE_GAMES) ? window.ABANDONWARE_GAMES.length : 0,
+    hostedCount: Array.isArray(window.ABANDONWARE_GAMES)
+      ? window.ABANDONWARE_GAMES.filter(game => game.hostable).length
+      : 0
+  }));
+
+  assert(runtime.hasDos, "Pinned js-dos global did not initialize");
+  assert(runtime.jsdos?.version === "8.4.1", `Unexpected js-dos version marker: ${runtime.jsdos?.version}`);
+  assert(runtime.jsdos?.pathPrefix === "runtime/jsdos/emulators/", "js-dos local emulator bridge is not active");
+  assert(runtime.gameCount >= 8, `Catalog unexpectedly small: ${runtime.gameCount}`);
+  assert(runtime.hostedCount >= 8, `Hosted catalog unexpectedly small: ${runtime.hostedCount}`);
+
+  // Launch a real hosted DOS title through the same UI path a user follows.
+  await page.locator('[data-game-id="xargon"]').click();
+  await page.locator("#details-play-hosted").click();
+  await waitForRequestPart("games/xargon.jsdos");
+  await waitForRequestPart("runtime/jsdos/emulators/");
+  await page.waitForTimeout(1500);
+
+  assert(
+    !requests.some(url => url.includes("v8.js-dos.com/latest")),
+    "DOS launch contacted the mutable js-dos /latest CDN"
+  );
+
+  await stopRuntime();
+
+  // Launch a ScummVM title and prove the generated WebAssembly runtime is requested.
+  await page.locator('[data-game-id="beneath-a-steel-sky"]').click();
+  await page.locator("#details-play-hosted").click();
+  await waitForRequestPart("runtime/scummvm/scummvm.wasm", 45000);
+  await page.waitForTimeout(1500);
+
+  const frame = page.locator("#dos-player iframe.scummvm-frame");
+  assert(await frame.count() === 1, "ScummVM player iframe was not created");
+  assert((await frame.getAttribute("src"))?.endsWith("#sky"), "ScummVM did not receive the direct #sky target");
+
+  // Filter known non-fatal browser capability messages before failing on console errors.
+  const fatalConsoleErrors = consoleErrors.filter(message =>
+    !message.includes("No MIDI support in your browser") &&
+    !message.includes("requestMIDIAccess")
+  );
+
+  assert(pageErrors.length === 0, `Page errors: ${pageErrors.join(" | ")}`);
+  assert(fatalConsoleErrors.length === 0, `Console errors: ${fatalConsoleErrors.join(" | ")}`);
+
+  console.log(JSON.stringify({
+    gameCount: runtime.gameCount,
+    hostedCount: runtime.hostedCount,
+    requestsObserved: requests.length,
+    jsdosLocalEmulatorRequests: requests.filter(url => url.includes("runtime/jsdos/emulators/")).length,
+    scummvmWasmRequests: requests.filter(url => url.includes("runtime/scummvm/scummvm.wasm")).length
+  }, null, 2));
+} finally {
+  await browser.close();
+}
