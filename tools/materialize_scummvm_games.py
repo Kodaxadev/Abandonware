@@ -41,9 +41,9 @@ def download(url: str, destination: Path) -> None:
 def safe_member_path(name: str) -> PurePosixPath:
     normalized = PurePosixPath(name.replace("\\", "/"))
     if normalized.is_absolute() or ".." in normalized.parts:
-        raise RuntimeError(f"Unsafe ZIP member path: {name!r}")
+        raise RuntimeError(f"Unsafe ZIP/member-relative path: {name!r}")
     if not normalized.parts:
-        raise RuntimeError(f"Empty ZIP member path: {name!r}")
+        raise RuntimeError(f"Empty ZIP/member-relative path: {name!r}")
     return normalized
 
 
@@ -110,8 +110,48 @@ def validate_rights_policy(game: dict, notices: list[str]) -> str:
 def game_target_path(data_root: Path, game: dict) -> Path:
     outer = data_root / game["data_directory"]
     relative = game.get("relative_game_path", ".")
-    target = outer if relative in ("", ".") else outer.joinpath(*PurePosixPath(relative).parts)
-    return target
+    if relative in ("", "."):
+        return outer
+    normalized = safe_member_path(relative)
+    return outer.joinpath(*normalized.parts)
+
+
+def validate_game_target(data_root: Path, game: dict) -> tuple[Path, list[str]]:
+    """Validate the exact directory ScummVM will receive, not merely its descendants."""
+    target_path = game_target_path(data_root, game)
+    if not target_path.is_dir():
+        raise RuntimeError(
+            f"Configured game path does not exist for {game['id']}: {target_path}"
+        )
+
+    # A mistaken parent directory containing only one nested game folder used to pass
+    # because rglob() found payload files below it. Require real files at the exact
+    # configured directory so that ScummVM is not pointed one level too high.
+    direct_files = sorted(
+        path.name
+        for path in target_path.iterdir()
+        if path.is_file() and path.name != "index.json"
+    )
+    if not direct_files:
+        raise RuntimeError(
+            f"Configured game path has no direct payload files for {game['id']}: "
+            f"{target_path}. Check relative_game_path for an extra archive directory."
+        )
+
+    required_files = game.get("required_files", [])
+    if not isinstance(required_files, list):
+        raise RuntimeError(f"required_files must be a list for {game['id']}")
+
+    for required in required_files:
+        normalized = safe_member_path(str(required))
+        required_path = target_path.joinpath(*normalized.parts)
+        if not required_path.is_file():
+            raise RuntimeError(
+                f"Required ScummVM detection file is missing for {game['id']}: "
+                f"{required} (target {target_path})"
+            )
+
+    return target_path, direct_files
 
 
 def write_scummvm_ini(runtime_root: Path, games: list[dict], version: str) -> None:
@@ -129,7 +169,7 @@ def write_scummvm_ini(runtime_root: Path, games: list[dict], version: str) -> No
         relative = game.get("relative_game_path", ".")
         path = f"/data/games/{data_directory}"
         if relative not in ("", "."):
-            path += "/" + PurePosixPath(relative).as_posix()
+            path += "/" + safe_member_path(relative).as_posix()
 
         lines.extend([
             f"[{target}]",
@@ -181,14 +221,7 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
 
             notices = find_notices(destination)
             notice_policy = validate_rights_policy(game, notices)
-
-            target_path = game_target_path(data_root, game)
-            if not target_path.is_dir():
-                raise RuntimeError(
-                    f"Configured game path does not exist for {game['id']}: {target_path}"
-                )
-            if not any(path.is_file() for path in target_path.rglob("*")):
-                raise RuntimeError(f"Configured game path is empty for {game['id']}: {target_path}")
+            target_path, direct_files = validate_game_target(data_root, game)
 
             provenance_games.append({
                 "id": game["id"],
@@ -200,6 +233,8 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
                 "sha256": actual_sha256,
                 "data_directory": game["data_directory"],
                 "relative_game_path": game.get("relative_game_path", "."),
+                "required_files": game.get("required_files", []),
+                "target_direct_files": direct_files,
                 "rights_record": game["rights_record"],
                 "rights_basis": game.get("rights_basis", "freeware_redistribution"),
                 "notice_policy": notice_policy,
@@ -208,6 +243,7 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
             print(
                 f"Verified {game['id']} ({archive_path.stat().st_size} bytes, "
                 f"rights={game.get('rights_basis', 'freeware_redistribution')}, "
+                f"target={target_path}, {len(direct_files)} direct payload file(s), "
                 f"{len(notices)} notice file(s))"
             )
 
