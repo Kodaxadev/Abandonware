@@ -14,6 +14,8 @@ Enabled game engines:
 - `queen`
 - `lure`
 - `adl`
+- `drascula`
+- `dreamweb`
 
 Audited freeware data packages:
 
@@ -21,9 +23,11 @@ Audited freeware data packages:
 - Flight of the Amazon Queen — target `queen` — rights: `docs/rights/flight-of-the-amazon-queen.md`
 - Lure of the Temptress — target `lure` — rights: `docs/rights/lure-of-the-temptress.md`
 - Hi-Res Adventure #1: Mystery House — target `hires1-apple2` — rights: `docs/rights/mystery-house.md`
+- Drascula: The Vampire Strikes Back — target `drascula` — rights: `docs/rights/drascula.md`
+- DreamWeb — target `dreamweb` — rights: `docs/rights/dreamweb.md`
 
 Build method:
 
-`./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl`
+`./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl --enable-engine=drascula --enable-engine=dreamweb`
 
 Every game package is downloaded from its manifest URL and SHA-256 verified before extraction. Game-data licenses are separate from ScummVM GPL licensing.

@@ -68,6 +68,40 @@
       "source_url": "https://downloads.scummvm.org/frs/extras/Mystery%20House/MYSTHOUS.zip",
       "target": "hires1-apple2",
       "title": "Hi-Res Adventure #1: Mystery House"
+    },
+    {
+      "data_directory": "drascula-1.0",
+      "edition": "Freeware Version (English)",
+      "id": "drascula",
+      "notice_policy": "package_notice_required",
+      "preserved_notices": [
+        "readme.txt"
+      ],
+      "relative_game_path": ".",
+      "rights_basis": "freeware_redistribution",
+      "rights_record": "docs/rights/drascula.md",
+      "sha256": "b731f6cb5a22ba8b4c3b3362f570b9a10a67b6cb0b395394b19a94b36e4e42de",
+      "source_page": "https://www.scummvm.org/games/",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Drascula_%20The%20Vampire%20Strikes%20Back/drascula-1.0.zip",
+      "target": "drascula",
+      "title": "Drascula: The Vampire Strikes Back"
+    },
+    {
+      "data_directory": "dreamweb-uk-1.1",
+      "edition": "Freeware Floppy DOS Version (English UK)",
+      "id": "dreamweb",
+      "notice_policy": "package_notice_required",
+      "preserved_notices": [
+        "license.txt"
+      ],
+      "relative_game_path": ".",
+      "rights_basis": "freeware_redistribution",
+      "rights_record": "docs/rights/dreamweb.md",
+      "sha256": "0f98e5fbeedfff5f5b904220d3bd3288da5a272f9192da03f2160c5edb8cdfb3",
+      "source_page": "https://www.scummvm.org/games/",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Dreamweb/dreamweb-uk-1.1.zip",
+      "target": "dreamweb",
+      "title": "DreamWeb"
     }
   ],
   "runtime": {
@@ -77,7 +111,9 @@
       "sky",
       "queen",
       "lure",
-      "adl"
+      "adl",
+      "drascula",
+      "dreamweb"
     ],
     "name": "ScummVM Web",
     "repository": "scummvm/scummvm",
