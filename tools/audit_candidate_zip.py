@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
+import re
 import tempfile
 import urllib.request
 import zipfile
@@ -20,6 +21,21 @@ import zipfile
 NOTICE_TOKENS = ("license", "licence", "readme", "copying", "copyright", "legal")
 MAX_NOTICE_BYTES = 256 * 1024
 MAX_ARCHIVE_BYTES = 2 * 1024 * 1024 * 1024
+
+# These are discovery markers, not an automatic legal classifier. A hit means the
+# surrounding text deserves review; absence of a hit does not prove that no rights exist.
+EVIDENCE_PATTERNS = {
+    "redistribute": re.compile(r"\bredistribut(?:e|ed|es|ing|ion|able)\b", re.I),
+    "distribute": re.compile(r"\bdistribut(?:e|ed|es|ing|ion|able)\b", re.I),
+    "mirror": re.compile(r"\bmirror(?:ed|ing|s)?\b", re.I),
+    "copy_permission": re.compile(r"\b(?:copy|copies|copying)\b", re.I),
+    "freeware": re.compile(r"\bfreeware\b", re.I),
+    "public_domain": re.compile(r"\bpublic\s+domain\b", re.I),
+    "license": re.compile(r"\blicen[cs](?:e|ed|es|ing)\b", re.I),
+    "modify": re.compile(r"\bmodif(?:y|ied|ies|ication|ications)\b", re.I),
+    "commercial_restriction": re.compile(r"\b(?:non[- ]?commercial|commercial\s+use|not\s+for\s+sale|may\s+not\s+be\s+sold)\b", re.I),
+    "all_rights_reserved": re.compile(r"\ball\s+rights\s+reserved\b", re.I),
+}
 
 
 def sha256(path: Path) -> str:
@@ -68,13 +84,41 @@ def decode_notice(data: bytes) -> str:
     return data.decode("utf-8", errors="replace")
 
 
+def evidence_context(text: str, match: re.Match[str], radius: int = 140) -> str:
+    start = max(0, match.start() - radius)
+    end = min(len(text), match.end() + radius)
+    snippet = " ".join(text[start:end].split())
+    if start > 0:
+        snippet = "…" + snippet
+    if end < len(text):
+        snippet += "…"
+    return snippet
+
+
+def scan_evidence(text: str) -> dict[str, list[str]]:
+    evidence: dict[str, list[str]] = {}
+    for label, pattern in EVIDENCE_PATTERNS.items():
+        snippets: list[str] = []
+        seen: set[str] = set()
+        for match in pattern.finditer(text):
+            snippet = evidence_context(text, match)
+            if snippet not in seen:
+                snippets.append(snippet)
+                seen.add(snippet)
+            if len(snippets) >= 5:
+                break
+        if snippets:
+            evidence[label] = snippets
+    return evidence
+
+
 def audit(manifest_path: Path, output_path: Path | None) -> dict:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     candidate_id = manifest["id"]
     source = manifest["source"]
     expected_sha = source["sha256"].casefold()
 
-    if len(expected_sha) != 64:
+    if len(expected_sha) != 64 or any(ch not in "0123456789abcdef" for ch in expected_sha):
         raise RuntimeError("Candidate SHA-256 must contain exactly 64 hexadecimal characters")
     if not source["url"].startswith("https://"):
         raise RuntimeError("Candidate source URL must use HTTPS")
@@ -94,6 +138,7 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
         notices: list[dict] = []
         direct_root_files: list[str] = []
         top_level_names: set[str] = set()
+        aggregate_evidence: dict[str, list[dict]] = {}
 
         with zipfile.ZipFile(archive_path, "r") as archive:
             for info in archive.infolist():
@@ -115,14 +160,23 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
                 lower_name = path.name.casefold()
                 if any(token in lower_name for token in NOTICE_TOKENS):
                     raw = archive.read(info)
-                    notices.append({
+                    text = decode_notice(raw)
+                    evidence = scan_evidence(text)
+                    notice_record = {
                         "path": path.as_posix(),
                         "size": info.file_size,
-                        "text": decode_notice(raw),
-                    })
+                        "text": text,
+                        "evidence_markers": evidence,
+                    }
+                    notices.append(notice_record)
+                    for label, snippets in evidence.items():
+                        aggregate_evidence.setdefault(label, []).append({
+                            "path": path.as_posix(),
+                            "snippets": snippets,
+                        })
 
         audit_record = {
-            "schema": 1,
+            "schema": 2,
             "candidate_id": candidate_id,
             "title": manifest.get("title"),
             "source_url": source["url"],
@@ -133,9 +187,14 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
             "top_level_names": sorted(top_level_names),
             "direct_root_files": sorted(direct_root_files),
             "notices": notices,
+            "evidence_markers": aggregate_evidence,
             "members": members,
             "decision": "REQUIRES_HUMAN_RIGHTS_REVIEW",
-            "warning": "A successful package audit is provenance evidence only; it does not authorize hosting.",
+            "warning": (
+                "Evidence markers are search aids only. A successful package audit or keyword hit "
+                "does not authorize hosting; a human must evaluate who granted which rights and "
+                "whether the grant covers redistribution of this exact game data."
+            ),
         }
 
     if output_path:
@@ -150,12 +209,19 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
         "top_level_names": audit_record["top_level_names"],
         "direct_root_files": audit_record["direct_root_files"],
         "notice_paths": [notice["path"] for notice in notices],
+        "evidence_marker_names": sorted(aggregate_evidence),
         "decision": audit_record["decision"],
     }, indent=2))
 
     for notice in notices:
         print(f"\n===== NOTICE: {notice['path']} ({notice['size']} bytes) =====")
         print(notice["text"][:MAX_NOTICE_BYTES])
+        if notice["evidence_markers"]:
+            print("\n----- EVIDENCE MARKERS (review aids, not approval) -----")
+            for label, snippets in notice["evidence_markers"].items():
+                print(f"[{label}]")
+                for snippet in snippets:
+                    print(f"  {snippet}")
         print(f"===== END NOTICE: {notice['path']} =====")
 
     if not notices:
