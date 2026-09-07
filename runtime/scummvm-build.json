@@ -10,7 +10,9 @@
       "sky",
       "queen",
       "lure",
-      "adl"
+      "adl",
+      "drascula",
+      "dreamweb"
     ]
   },
   "games": [
@@ -99,6 +101,50 @@
         "language": "en",
         "description": "Hi-Res Adventure #1: Mystery House (Public Domain/Apple II)",
         "extra": "Public Domain"
+      }
+    },
+    {
+      "id": "drascula",
+      "target": "drascula",
+      "engine": "drascula",
+      "title": "Drascula: The Vampire Strikes Back",
+      "edition": "Freeware Version (English)",
+      "rights_basis": "freeware_redistribution",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Drascula_%20The%20Vampire%20Strikes%20Back/drascula-1.0.zip",
+      "source_page": "https://www.scummvm.org/games/",
+      "sha256": "b731f6cb5a22ba8b4c3b3362f570b9a10a67b6cb0b395394b19a94b36e4e42de",
+      "data_directory": "drascula-1.0",
+      "relative_game_path": ".",
+      "rights_record": "docs/rights/drascula.md",
+      "config": {
+        "gameid": "drascula",
+        "engineid": "drascula",
+        "platform": "pc",
+        "language": "en",
+        "description": "Drascula: The Vampire Strikes Back (DOS/English)",
+        "extra": "Freeware"
+      }
+    },
+    {
+      "id": "dreamweb",
+      "target": "dreamweb",
+      "engine": "dreamweb",
+      "title": "DreamWeb",
+      "edition": "Freeware Floppy DOS Version (English UK)",
+      "rights_basis": "freeware_redistribution",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Dreamweb/dreamweb-uk-1.1.zip",
+      "source_page": "https://www.scummvm.org/games/",
+      "sha256": "0f98e5fbeedfff5f5b904220d3bd3288da5a272f9192da03f2160c5edb8cdfb3",
+      "data_directory": "dreamweb-uk-1.1",
+      "relative_game_path": ".",
+      "rights_record": "docs/rights/dreamweb.md",
+      "config": {
+        "gameid": "dreamweb",
+        "engineid": "dreamweb",
+        "platform": "pc",
+        "language": "en-gb",
+        "description": "DreamWeb (Floppy/DOS/English UK)",
+        "extra": "Floppy"
       }
     }
   ],
