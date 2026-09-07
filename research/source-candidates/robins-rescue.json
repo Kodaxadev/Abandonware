@@ -3,12 +3,13 @@
   "id": "robins-rescue",
   "title": "Robin's Rescue",
   "status": "SOURCE_REVIEW_ONLY",
-  "repository_url": "https://gitlab.com/Cheeseness/robins-rescue.git",
-  "source_page": "https://gitlab.com/Cheeseness/robins-rescue",
-  "allowed_host": "gitlab.com",
+  "repository_url": "https://codeberg.org/Cheeseness/robins-rescue.git",
+  "source_page": "https://codeberg.org/Cheeseness/robins-rescue",
+  "allowed_host": "codeberg.org",
+  "legacy_source_page": "https://gitlab.com/Cheeseness/robins-rescue",
   "license_expectations": [
     "LGPL-3.0 game/source",
     "CC-BY-3.0 assets"
   ],
-  "reason": "The authors publicly identify Robin's Rescue as LGPL 3.0 with CC-BY 3.0 assets. This lane resolves and inventories the exact Git source without executing repository code so Abandonware can pin corresponding source before hosting the compiled SLG."
+  "reason": "The authors publicly identify Robin's Rescue as LGPL 3.0 with CC-BY 3.0 assets. The old GitLab source now requires authentication; Josh Bush stated in July 2026 that most of his repositories had migrated to Codeberg and specifically named Robin's Rescue among project URLs still needing updates. This lane tests the corresponding Codeberg path and inventories the exact Git source without executing repository code."
 }
