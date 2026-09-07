@@ -35,13 +35,16 @@ EVIDENCE_PATTERNS = {
     "modify": re.compile(r"\bmodif(?:y|ied|ies|ication|ications)\b", re.I),
     "commercial_restriction": re.compile(r"\b(?:non[- ]?commercial|commercial\s+use|not\s+for\s+sale|may\s+not\s+be\s+sold)\b", re.I),
     "all_rights_reserved": re.compile(r"\ball\s+rights\s+reserved\b", re.I),
+    # License prose is commonly hard-wrapped. DOTALL is deliberate, but the bounded
+    # gap prevents a "may not" in one paragraph from being paired with an unrelated
+    # distribution word much later in the document.
     "redistribution_prohibited": re.compile(
-        r"\b(?:may|shall|must)\s+not\b[^.\n]{0,120}\b(?:redistribut(?:e|ed|es|ing|ion|able)|distribut(?:e|ed|es|ing|ion|able)|mirror(?:ed|ing|s)?|copy(?:ing|ies|ied)?)\b",
-        re.I,
+        r"\b(?:may|shall|must)\s+not\b.{0,180}\b(?:redistribut(?:e|ed|es|ing|ion|able)|distribut(?:e|ed|es|ing|ion|able)|mirror(?:ed|ing|s)?|copy(?:ing|ies|ied)?)\b",
+        re.I | re.S,
     ),
     "copying_prohibited": re.compile(
-        r"\bcopying\b[^.\n]{0,120}\b(?:forbidden|prohibited|not\s+permitted)\b",
-        re.I,
+        r"\bcopying\b.{0,180}\b(?:strictly\s+)?(?:forbidden|prohibited|not\s+permitted)\b",
+        re.I | re.S,
     ),
     "backup_only": re.compile(r"\b(?:solely|only)\s+for\s+(?:backup|archiv(?:e|al))\b", re.I),
 }
