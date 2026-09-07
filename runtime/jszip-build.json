@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "runtime": {
+    "name": "JSZip",
+    "version": "3.10.1",
+    "repository": "Stuk/jszip",
+    "commit": "0f2f1e4d0509514417db83fe5b86bde90e0ffe8d",
+    "source_file": "dist/jszip.min.js",
+    "license_file": "LICENSE.markdown"
+  },
+  "output": "runtime/jszip"
+}
