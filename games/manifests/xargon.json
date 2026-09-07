@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "xargon",
+  "title": "Xargon",
+  "version": "3.0",
+  "rights_record": "docs/rights/xargon.md",
+  "source": {
+    "url": "https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.1/games/xargon.zip",
+    "page": "https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.1/html/en/games/xargon/20150826.2/index.html",
+    "size": 1763626,
+    "sha1": "9539c4c370be772ac92b83b092e90410da90f8b2",
+    "copying_policy": "Kiloblaster and Xargon Freeware License"
+  },
+  "launch": {
+    "basename": "XARGON.BAT",
+    "machine": "svga_s3",
+    "memory_mb": 16,
+    "cycles": "auto"
+  },
+  "output": "games/xargon.jsdos"
+}
