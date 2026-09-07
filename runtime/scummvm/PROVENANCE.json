@@ -1,25 +1,65 @@
 {
-  "build_command": "./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky",
+  "build_manifest": "runtime/scummvm-build.json",
   "corresponding_source": "https://github.com/scummvm/scummvm/tree/fed42f2068dcafc6aafa1c28c77e4c88def74b66",
-  "game": {
-    "data_directory": "sky-BASS-Floppy-1.3",
-    "edition": "Freeware Floppy Version 1.3",
-    "id": "beneath-a-steel-sky",
-    "rights_record": "docs/rights/beneath-a-steel-sky.md",
-    "sha256": "d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818",
-    "source_page": "https://www.scummvm.org/games/",
-    "source_url": "https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip",
-    "target": "sky",
-    "title": "Beneath a Steel Sky"
-  },
-  "notes": "ScummVM runtime is unmodified upstream source compiled to WebAssembly. Game data is the hash-verified freeware floppy package from ScummVM.",
+  "games": [
+    {
+      "data_directory": "sky-BASS-Floppy-1.3",
+      "edition": "Freeware Floppy Version 1.3",
+      "id": "beneath-a-steel-sky",
+      "preserved_notices": [
+        "readme.txt"
+      ],
+      "relative_game_path": ".",
+      "rights_record": "docs/rights/beneath-a-steel-sky.md",
+      "sha256": "d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818",
+      "source_page": "https://www.scummvm.org/games/",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip",
+      "target": "sky",
+      "title": "Beneath a Steel Sky"
+    },
+    {
+      "data_directory": "queen-FOTAQ_Floppy",
+      "edition": "Freeware Floppy Version",
+      "id": "flight-of-the-amazon-queen",
+      "preserved_notices": [
+        "FOTAQ_Floppy/readme.txt"
+      ],
+      "relative_game_path": "FOTAQ_Floppy",
+      "rights_record": "docs/rights/flight-of-the-amazon-queen.md",
+      "sha256": "2e59de85f708cdb32bf85c85b394ac091c05f7647e856b71f5b3ae73fde761e0",
+      "source_page": "https://www.scummvm.org/games/",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Flight%20of%20the%20Amazon%20Queen/FOTAQ_Floppy.zip",
+      "target": "queen",
+      "title": "Flight of the Amazon Queen"
+    },
+    {
+      "data_directory": "lure-1.1",
+      "edition": "Freeware Version 1.1 (English)",
+      "id": "lure-of-the-temptress",
+      "preserved_notices": [
+        "lure/LICENSE.txt",
+        "lure/README"
+      ],
+      "relative_game_path": "lure",
+      "rights_record": "docs/rights/lure-of-the-temptress.md",
+      "sha256": "f3178245a1483da1168c3a11e70b65d33c389f1f5df63d4f3a356886c1890108",
+      "source_page": "https://www.scummvm.org/games/",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Lure%20of%20the%20Temptress/lure-1.1.zip",
+      "target": "lure",
+      "title": "Lure of the Temptress"
+    }
+  ],
   "runtime": {
     "commit": "fed42f2068dcafc6aafa1c28c77e4c88def74b66",
     "emsdk": "4.0.10",
-    "engine": "sky",
+    "engines": [
+      "sky",
+      "queen",
+      "lure"
+    ],
     "name": "ScummVM Web",
     "repository": "scummvm/scummvm",
     "version": "2026.3.0"
   },
-  "schema": 1
+  "schema": 2
 }
