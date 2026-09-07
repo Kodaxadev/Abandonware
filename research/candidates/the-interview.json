@@ -2,8 +2,9 @@
   "schema": 1,
   "id": "the-interview",
   "title": "The Interview",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "ScummVM distributes a compact SLUDGE package and supports the game directly, but Abandonware requires package-level redistribution evidence before hosting any community-engine title.",
+  "status": "HOLD",
+  "decision": "research/decisions/the-interview.md",
+  "reason": "The exact package is verified and contains a readme, but no copy/share/redistribution grant was found.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "interview"
