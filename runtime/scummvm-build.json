@@ -12,7 +12,9 @@
       "lure",
       "adl",
       "drascula",
-      "dreamweb"
+      "dreamweb",
+      "cge2",
+      "cge"
     ]
   },
   "games": [
@@ -145,6 +147,50 @@
         "language": "en-gb",
         "description": "DreamWeb (Floppy/DOS/English UK)",
         "extra": "Floppy"
+      }
+    },
+    {
+      "id": "sfinx",
+      "target": "sfinx",
+      "engine": "cge2",
+      "title": "Sfinx",
+      "edition": "Freeware English Version 1.1",
+      "rights_basis": "freeware_redistribution",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Sfinx/sfinx-en-v1.1.zip",
+      "source_page": "https://www.scummvm.org/games/",
+      "sha256": "f516b30a046526f78cbc923d8f907d267ab964ccd9b770afc72350e8d467ec4d",
+      "data_directory": "sfinx-en-v1.1",
+      "relative_game_path": ".",
+      "rights_record": "docs/rights/sfinx.md",
+      "config": {
+        "gameid": "sfinx",
+        "engineid": "cge2",
+        "platform": "pc",
+        "language": "en",
+        "description": "Sfinx (Freeware v1.1/DOS/English)",
+        "extra": "Freeware v1.1"
+      }
+    },
+    {
+      "id": "soltys",
+      "target": "soltys",
+      "engine": "cge",
+      "title": "Sołtys",
+      "edition": "Freeware English Version 1.0",
+      "rights_basis": "freeware_redistribution",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip",
+      "source_page": "https://www.scummvm.org/games/",
+      "sha256": "87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6",
+      "data_directory": "soltys-en-v1.0",
+      "relative_game_path": ".",
+      "rights_record": "docs/rights/soltys.md",
+      "config": {
+        "gameid": "soltys",
+        "engineid": "cge",
+        "platform": "pc",
+        "language": "en",
+        "description": "Sołtys (Freeware v1.0/DOS/English)",
+        "extra": "Freeware v1.0"
       }
     }
   ],
