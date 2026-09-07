@@ -1,0 +1,115 @@
+name: Validate archive
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "app.js"
+      - "styles.css"
+      - "restoration.css"
+      - "data/**"
+      - "games/**"
+      - "runtime/**"
+      - "docs/rights/**"
+      - ".github/workflows/validate-site.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-archive-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check app.js
+          node --check data/games.js
+
+      - name: Validate catalog-to-artifact links
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          global.window = {};
+          require('./data/games.js');
+          const games = window.ABANDONWARE_GAMES;
+
+          if (!Array.isArray(games) || games.length === 0) {
+            throw new Error('Catalog did not initialize');
+          }
+
+          const ids = new Set();
+          for (const game of games) {
+            if (!game.id || ids.has(game.id)) throw new Error(`Duplicate or missing game id: ${game.id}`);
+            ids.add(game.id);
+
+            if (!game.title || !game.status || !game.runtime) {
+              throw new Error(`Incomplete catalog record: ${game.id}`);
+            }
+
+            if (game.hostable) {
+              if (game.status !== 'BROWSER READY') {
+                throw new Error(`${game.id} is hostable but is not marked BROWSER READY`);
+              }
+              if (!game.hostedUrl || !fs.existsSync(game.hostedUrl)) {
+                throw new Error(`${game.id} points at missing hosted artifact ${game.hostedUrl}`);
+              }
+              if (!game.rightsRecord || !fs.existsSync(game.rightsRecord)) {
+                throw new Error(`${game.id} has no accessible rights record`);
+              }
+              if (!game.sourcePage) {
+                throw new Error(`${game.id} has no source/provenance page`);
+              }
+            }
+          }
+
+          const hosted = games.filter(game => game.hostable);
+          const engines = new Set(hosted.map(game => game.runtimeType || 'jsdos'));
+          console.log(`Validated ${games.length} records, ${hosted.length} hosted titles, ${engines.size} runtime types.`);
+          NODE
+
+      - name: Verify all audited DOS bundles
+        run: |
+          set -euo pipefail
+          for manifest in games/manifests/*.json; do
+            python3 tools/verify_audited_bundle.py "$manifest"
+          done
+
+      - name: Verify ScummVM preservation record
+        run: |
+          set -euo pipefail
+          test -s runtime/scummvm/index.html
+          test -s runtime/scummvm/scummvm.js
+          test -s runtime/scummvm/scummvm.wasm
+          test -s runtime/scummvm/scummvm.ini
+          test -s runtime/scummvm/PROVENANCE.json
+          test -s runtime/scummvm/SOURCE.md
+          test -s runtime/scummvm/legal/SCUMMVM-COPYING
+          test -s docs/rights/beneath-a-steel-sky.md
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          build = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
+          provenance = json.loads(Path('runtime/scummvm/PROVENANCE.json').read_text(encoding='utf-8'))
+
+          assert provenance['runtime']['commit'] == build['runtime']['commit']
+          assert provenance['runtime']['version'] == build['runtime']['version']
+          assert provenance['game']['sha256'] == build['game']['sha256']
+          assert provenance['game']['id'] == build['game']['id']
+          assert provenance['game']['rights_record'] == build['game']['rights_record']
+          print('ScummVM runtime provenance matches pinned build manifest.')
+          PY
