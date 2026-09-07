@@ -79,6 +79,61 @@
   clip-path: polygon(0 100%, 10% 42%, 22% 65%, 34% 14%, 50% 55%, 63% 28%, 78% 63%, 90% 20%, 100% 100%);
 }
 
+.cover-amazon-queen {
+  background:
+    radial-gradient(circle at 74% 23%, rgba(255, 212, 98, .23), transparent 15%),
+    linear-gradient(152deg, #31583b 0 24%, #172f24 24% 57%, #0b1410 57%);
+}
+.cover-amazon-queen::before {
+  width: 64%;
+  height: 88%;
+  right: -9%;
+  top: 5%;
+  border-left: 1px solid rgba(255, 212, 98, .36);
+  transform: rotate(16deg);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 28px, rgba(119, 214, 139, .08) 29px 30px);
+  clip-path: polygon(34% 0, 100% 0, 78% 100%, 0 100%);
+}
+.cover-amazon-queen::after {
+  width: 84%;
+  height: 1px;
+  left: 8%;
+  top: 45%;
+  background: rgba(130, 227, 234, .35);
+  transform: rotate(-7deg);
+  box-shadow:
+    0 15px 0 rgba(130, 227, 234, .13),
+    0 30px 0 rgba(130, 227, 234, .06),
+    0 -31px 0 rgba(255, 212, 98, .09);
+}
+
+.cover-lure {
+  background:
+    radial-gradient(circle at 30% 33%, rgba(178, 116, 69, .20), transparent 17%),
+    linear-gradient(140deg, #3d332e 0 31%, #1e1b1a 31% 63%, #0e0f0f 63%);
+}
+.cover-lure::before {
+  width: 54%;
+  height: 76%;
+  left: 12%;
+  bottom: -5%;
+  border: 1px solid rgba(192, 159, 105, .30);
+  border-bottom: 0;
+  clip-path: polygon(18% 100%, 18% 34%, 35% 34%, 35% 10%, 63% 10%, 63% 34%, 82% 34%, 82% 100%);
+  background:
+    repeating-linear-gradient(0deg, rgba(192, 159, 105, .045) 0 1px, transparent 1px 14px);
+}
+.cover-lure::after {
+  width: 135px;
+  height: 135px;
+  right: -26px;
+  top: -30px;
+  border: 1px solid rgba(151, 118, 189, .31);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 20px rgba(151, 118, 189, .018);
+}
+
 .cover-live {
   position: absolute;
   left: 14px;
