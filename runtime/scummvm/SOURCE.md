@@ -16,6 +16,8 @@ Enabled game engines:
 - `adl`
 - `drascula`
 - `dreamweb`
+- `cge2`
+- `cge`
 
 Audited freeware data packages:
 
@@ -25,9 +27,11 @@ Audited freeware data packages:
 - Hi-Res Adventure #1: Mystery House — target `hires1-apple2` — rights: `docs/rights/mystery-house.md`
 - Drascula: The Vampire Strikes Back — target `drascula` — rights: `docs/rights/drascula.md`
 - DreamWeb — target `dreamweb` — rights: `docs/rights/dreamweb.md`
+- Sfinx — target `sfinx` — rights: `docs/rights/sfinx.md`
+- Sołtys — target `soltys` — rights: `docs/rights/soltys.md`
 
 Build method:
 
-`./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl --enable-engine=drascula --enable-engine=dreamweb`
+`./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl --enable-engine=drascula --enable-engine=dreamweb --enable-engine=cge2 --enable-engine=cge`
 
 Every game package is downloaded from its manifest URL and SHA-256 verified before extraction. Game-data licenses are separate from ScummVM GPL licensing.

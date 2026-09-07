@@ -102,6 +102,40 @@
       "source_url": "https://downloads.scummvm.org/frs/extras/Dreamweb/dreamweb-uk-1.1.zip",
       "target": "dreamweb",
       "title": "DreamWeb"
+    },
+    {
+      "data_directory": "sfinx-en-v1.1",
+      "edition": "Freeware English Version 1.1",
+      "id": "sfinx",
+      "notice_policy": "package_notice_required",
+      "preserved_notices": [
+        "sfinx-en-v1.1/license.txt"
+      ],
+      "relative_game_path": ".",
+      "rights_basis": "freeware_redistribution",
+      "rights_record": "docs/rights/sfinx.md",
+      "sha256": "f516b30a046526f78cbc923d8f907d267ab964ccd9b770afc72350e8d467ec4d",
+      "source_page": "https://www.scummvm.org/games/",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Sfinx/sfinx-en-v1.1.zip",
+      "target": "sfinx",
+      "title": "Sfinx"
+    },
+    {
+      "data_directory": "soltys-en-v1.0",
+      "edition": "Freeware English Version 1.0",
+      "id": "soltys",
+      "notice_policy": "package_notice_required",
+      "preserved_notices": [
+        "license.txt"
+      ],
+      "relative_game_path": ".",
+      "rights_basis": "freeware_redistribution",
+      "rights_record": "docs/rights/soltys.md",
+      "sha256": "87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6",
+      "source_page": "https://www.scummvm.org/games/",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip",
+      "target": "soltys",
+      "title": "So\u0142tys"
     }
   ],
   "runtime": {
@@ -113,7 +147,9 @@
       "lure",
       "adl",
       "drascula",
-      "dreamweb"
+      "dreamweb",
+      "cge2",
+      "cge"
     ],
     "name": "ScummVM Web",
     "repository": "scummvm/scummvm",
