@@ -1,0 +1,25 @@
+{
+  "build_command": "./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky",
+  "corresponding_source": "https://github.com/scummvm/scummvm/tree/fed42f2068dcafc6aafa1c28c77e4c88def74b66",
+  "game": {
+    "data_directory": "sky-BASS-Floppy-1.3",
+    "edition": "Freeware Floppy Version 1.3",
+    "id": "beneath-a-steel-sky",
+    "rights_record": "docs/rights/beneath-a-steel-sky.md",
+    "sha256": "d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818",
+    "source_page": "https://www.scummvm.org/games/",
+    "source_url": "https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip",
+    "target": "sky",
+    "title": "Beneath a Steel Sky"
+  },
+  "notes": "ScummVM runtime is unmodified upstream source compiled to WebAssembly. Game data is the hash-verified freeware floppy package from ScummVM.",
+  "runtime": {
+    "commit": "fed42f2068dcafc6aafa1c28c77e4c88def74b66",
+    "emsdk": "4.0.10",
+    "engine": "sky",
+    "name": "ScummVM Web",
+    "repository": "scummvm/scummvm",
+    "version": "2026.3.0"
+  },
+  "schema": 1
+}
