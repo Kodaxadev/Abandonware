@@ -2,8 +2,9 @@
   "schema": 1,
   "id": "god-of-thunder",
   "title": "God of Thunder",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "Adept Software's current site labels the game freeware and ScummVM distributes a current hash-pinned package, but Abandonware still requires explicit evidence that third-party redistribution/rehosting of the exact game data is permitted.",
+  "status": "HOLD",
+  "decision": "research/decisions/god-of-thunder.md",
+  "reason": "The exact package is verified, but its shipped Impulse Games license expressly prohibits distribution/copying beyond a backup copy.",
   "runtime_candidate": {
     "engine": "got",
     "target": "got"
