@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "out-of-order",
+  "title": "Out Of Order",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "ScummVM distributes a compact SLUDGE package and supports the game directly, but Abandonware requires package-level evidence that the game data may be redistributed by third parties before hosting.",
+  "runtime_candidate": {
+    "engine": "sludge",
+    "target": "outoforder"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/ooo.zip",
+    "page": "https://www.scummvm.org/games/",
+    "sha256": "b787789bbf31a9786f99a2e5fe67a1d4c63706925246b94679e8fc1b9791abb1"
+  }
+}
