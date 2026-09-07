@@ -20,6 +20,26 @@ window.ABANDONWARE_GAMES = [
     hostable: true
   },
   {
+    id: "kiloblaster",
+    title: "Kiloblaster",
+    year: "1992",
+    studio: "Epic MegaGames",
+    platform: "DOS",
+    filter: "dos",
+    runtime: "DOSBox",
+    status: "BROWSER READY",
+    statusClass: "ready",
+    cover: "cover-kiloblaster",
+    summary: "Allen W. Pilgrim's fast DOS space shooter, covered by the same 2008 freeware grant as Xargon. The browser artifact is produced only from the hash-pinned FreeDOS 2.0a package.",
+    rights: "Freeware grant / 2008",
+    compatibility: "Audited package; deterministic js-dos bundle; KILO.BAT boot target",
+    hostedUrl: "games/kiloblaster.jsdos",
+    rightsRecord: "docs/rights/kiloblaster.md",
+    sourceLabel: "FreeDOS 1.4 archived package",
+    sourcePage: "https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/html/en/games/kiloblas/20250410.0/index.html",
+    hostable: true
+  },
+  {
     id: "doom",
     title: "DOOM",
     year: "1993",
