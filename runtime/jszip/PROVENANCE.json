@@ -1,0 +1,15 @@
+{
+  "license": "runtime/jszip/legal/LICENSE.markdown",
+  "materialized_file": "runtime/jszip/jszip.min.js",
+  "runtime": {
+    "commit": "0f2f1e4d0509514417db83fe5b86bde90e0ffe8d",
+    "license_file": "LICENSE.markdown",
+    "name": "JSZip",
+    "repository": "Stuk/jszip",
+    "source_file": "dist/jszip.min.js",
+    "version": "3.10.1"
+  },
+  "schema": 1,
+  "sha256": "acc7e41455a80765b5fd9c7ee1b8078a6d160bbbca455aeae854de65c947d59e",
+  "source_record": "runtime/jszip/SOURCE.md"
+}
