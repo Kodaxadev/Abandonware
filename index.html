@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b0d0c" />
+  <meta name="description" content="Abandonware is a preservation-first browser arcade for keeping classic PC games playable without pretending old means copyright-free." />
+  <title>ABANDONWARE // Keep old games alive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="assets/abandonware-mark.svg" type="image/svg+xml" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="site-header" id="top">
+    <a class="brand" href="#top" aria-label="Abandonware home">
+      <img src="assets/abandonware-mark.svg" alt="" width="30" height="30" />
+      <span>ABANDONWARE</span>
+      <small>// PRESERVATION TERMINAL</small>
+    </a>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="#archive">Archive</a>
+      <a href="#workbench">Workbench</a>
+      <a href="#principles">Policy</a>
+      <a href="https://github.com/Kodaxadev/Abandonware" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+    <button class="launch-small" data-open-launcher>OPEN GAME</button>
+  </header>
+
+  <main>
+    <section class="hero shell-grid">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="pulse-dot"></span> ARCHIVE NODE 01 / ONLINE</div>
+        <h1>Old games<br /><em>should still run.</em></h1>
+        <p class="hero-lede">A browser-native preservation arcade for classic PC software. No installers. No virtual-machine ritual. No pretending that “abandoned” means “free to redistribute.”</p>
+        <div class="hero-actions">
+          <button class="button button-primary" data-open-launcher>RUN YOUR COPY <span>↗</span></button>
+          <a class="button button-quiet" href="#archive">BROWSE THE QUEUE</a>
+        </div>
+        <div class="hero-notes" aria-label="Platform principles">
+          <span>LOCAL FILES STAY LOCAL</span>
+          <span>RIGHTS STATUS VISIBLE</span>
+          <span>WEBASSEMBLY RUNTIME</span>
+        </div>
+      </div>
+
+      <div class="hero-terminal" aria-label="Preservation terminal status">
+        <div class="terminal-bar">
+          <span>ABW_OS :: RESTORATION CONSOLE</span>
+          <span>80×25</span>
+        </div>
+        <div class="terminal-screen">
+          <div class="scanline"></div>
+          <div class="terminal-copy" id="terminal-copy">
+            <p><span class="muted">[BOOT]</span> preservation runtime initialized</p>
+            <p><span class="muted">[CORE]</span> js-dos / wasm execution layer</p>
+            <p><span class="muted">[FS]</span> local bundle bridge ready</p>
+            <p><span class="muted">[LAW]</span> redistribution gate enabled</p>
+            <p><span class="ok">[PASS]</span> no game binaries hosted</p>
+            <p class="prompt">C:\ARCHIVE&gt;<span class="cursor">_</span></p>
+          </div>
+          <div class="terminal-art" aria-hidden="true">
+            <div class="block block-a"></div><div class="block block-b"></div><div class="block block-c"></div>
+            <div class="wire wire-a"></div><div class="wire wire-b"></div>
+          </div>
+        </div>
+        <div class="terminal-footer">
+          <span>CPU <b>READY</b></span>
+          <span>MEM <b>LOCAL</b></span>
+          <span>NET <b>OFF</b></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="status-strip" aria-label="Archive status">
+      <div><strong id="status-catalog-count">06</strong><span>RESTORATION TARGETS</span></div>
+      <div><strong>01</strong><span>EXECUTION ENGINE</span></div>
+      <div><strong>00</strong><span>HOSTED GAME BINARIES</span></div>
+      <div><strong>∞</strong><span>LOCAL DOS BUNDLES</span></div>
+    </section>
+
+    <section class="section archive-section" id="archive">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">RESTORATION QUEUE</div>
+          <h2>The lost shelf.</h2>
+        </div>
+        <p>Games are listed as preservation targets, not implied downloads. Every entry carries an execution path and a rights-state badge.</p>
+      </div>
+
+      <div class="archive-toolbar">
+        <div class="filter-group" role="group" aria-label="Filter archive">
+          <button class="filter active" data-filter="all">ALL</button>
+          <button class="filter" data-filter="dos">DOS</button>
+          <button class="filter" data-filter="scummvm">SCUMMVM</button>
+          <button class="filter" data-filter="win9x">WIN9X</button>
+        </div>
+        <label class="search-box">
+          <span>SEARCH</span>
+          <input id="archive-search" type="search" placeholder="title / year / studio" autocomplete="off" />
+        </label>
+      </div>
+
+      <div class="game-grid" id="game-grid" aria-live="polite"></div>
+      <div class="empty-state" id="empty-state" hidden>No restoration targets match that filter.</div>
+    </section>
+
+    <section class="section workbench-section" id="workbench">
+      <div class="workbench-card">
+        <div class="workbench-copy">
+          <div class="eyebrow">LOCAL RESTORATION WORKBENCH</div>
+          <h2>Bring the files.<br />We’ll bring the machine.</h2>
+          <p>Drop a prepared <code>.jsdos</code> bundle or a normal ZIP containing a DOS game. For ordinary ZIPs, the workbench scans for launchable files and writes the DOSBox startup configuration in your browser.</p>
+          <div class="flow">
+            <div><span>01</span><b>SELECT</b><small>your legally obtained local files</small></div>
+            <div><span>02</span><b>DETECT</b><small>EXE / COM / BAT launch targets</small></div>
+            <div><span>03</span><b>EMULATE</b><small>DOSBox running through WebAssembly</small></div>
+          </div>
+          <button class="button button-primary" data-open-launcher>OPEN WORKBENCH <span>↗</span></button>
+        </div>
+        <div class="workbench-visual" aria-hidden="true">
+          <div class="diskette">
+            <span class="disk-notch"></span>
+            <span class="disk-label"><b>LOCAL</b><i>GAME DATA</i></span>
+            <span class="disk-window"></span>
+          </div>
+          <div class="workbench-stamp">NOT UPLOADED</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section principles-section" id="principles">
+      <div class="section-head compact">
+        <div>
+          <div class="eyebrow">PRESERVATION WITHOUT FICTION</div>
+          <h2>The rules are part of the product.</h2>
+        </div>
+      </div>
+      <div class="principles-grid">
+        <article>
+          <span>01 / RIGHTS LEDGER</span>
+          <h3>Old ≠ public domain.</h3>
+          <p>A game only becomes hostable here when there is a defensible redistribution basis: public domain, freeware grant, open license, publisher permission, or another documented authorization.</p>
+        </article>
+        <article>
+          <span>02 / LOCAL MODE</span>
+          <h3>Your copy, your browser.</h3>
+          <p>Commercial and uncertain titles can still receive compatibility profiles without us distributing their data. You provide the copy; the runtime stays client-side.</p>
+        </article>
+        <article>
+          <span>03 / PRESERVATION LOG</span>
+          <h3>Every game gets a record.</h3>
+          <p>Engine, required files, known-good configuration, controls, save behavior, source trail, rights notes, and testing status belong beside the Play button.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand"><img src="assets/abandonware-mark.svg" alt="" /><span>ABANDONWARE</span></div>
+    <p>Classic software preservation project by Kodaxa. No affiliation with publishers or rights holders unless explicitly stated on a game record.</p>
+    <a href="#top">TOP ↑</a>
+  </footer>
+
+  <dialog class="modal launcher-modal" id="launcher-modal">
+    <div class="modal-frame">
+      <header class="modal-header">
+        <div>
+          <span class="modal-kicker">LOCAL EXECUTION NODE</span>
+          <h2>Restoration Workbench</h2>
+        </div>
+        <button class="icon-button" data-close-launcher aria-label="Close launcher">×</button>
+      </header>
+
+      <div class="launcher-body">
+        <aside class="launcher-sidebar">
+          <div class="step active" data-step-marker="1"><span>01</span><div><b>GAME FILE</b><small>.jsdos or .zip</small></div></div>
+          <div class="step" data-step-marker="2"><span>02</span><div><b>BOOT TARGET</b><small>choose executable</small></div></div>
+          <div class="step" data-step-marker="3"><span>03</span><div><b>PLAY</b><small>local emulator</small></div></div>
+          <div class="privacy-note"><b>LOCAL MODE</b><p>Your selected game file is processed in this browser. Abandonware does not upload it to a Kodaxa server.</p></div>
+        </aside>
+
+        <section class="launcher-main">
+          <div class="launcher-step" id="launcher-step-1">
+            <label class="drop-zone" id="drop-zone" for="game-file">
+              <span class="drop-icon">↓</span>
+              <strong>DROP A DOS GAME HERE</strong>
+              <small>or click to choose a <b>.jsdos</b> bundle / <b>.zip</b> archive</small>
+              <input id="game-file" type="file" accept=".jsdos,.zip,application/zip" />
+            </label>
+            <div class="format-notes">
+              <div><b>.JSDOS</b><span>Launches using the configuration already inside the bundle.</span></div>
+              <div><b>.ZIP</b><span>We detect DOS executables and create a temporary local bundle.</span></div>
+            </div>
+          </div>
+
+          <div class="launcher-step" id="launcher-step-2" hidden>
+            <div class="selected-file">
+              <div><span>SELECTED ARCHIVE</span><strong id="selected-file-name">—</strong></div>
+              <button class="text-button" id="choose-another">CHANGE</button>
+            </div>
+            <div id="target-picker-wrap">
+              <label class="field-label" for="boot-target">BOOT TARGET</label>
+              <select id="boot-target"></select>
+              <p class="field-help">Pick the program the original DOS machine would have run. Setup/uninstall utilities are pushed lower in the list when possible.</p>
+            </div>
+            <label class="rights-check">
+              <input id="rights-confirm" type="checkbox" />
+              <span>I have the right to use this copy. I understand this project does not grant rights to game data.</span>
+            </label>
+            <button class="button button-primary button-wide" id="start-emulation" disabled>START EMULATION <span>↗</span></button>
+            <p class="launcher-error" id="launcher-error" role="alert" hidden></p>
+          </div>
+
+          <div class="launcher-step emulator-step" id="launcher-step-3" hidden>
+            <div class="emulator-toolbar">
+              <div><span class="pulse-dot"></span><b id="emulator-status">INITIALIZING</b></div>
+              <div class="emulator-actions">
+                <button class="text-button" id="emulator-fullscreen">FULLSCREEN</button>
+                <button class="text-button danger" id="emulator-stop">STOP</button>
+              </div>
+            </div>
+            <div id="dos-player" class="dos-player"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="modal details-modal" id="details-modal">
+    <div class="details-frame">
+      <button class="icon-button details-close" data-close-details aria-label="Close game details">×</button>
+      <div id="details-content"></div>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
