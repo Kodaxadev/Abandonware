@@ -210,6 +210,27 @@ window.ABANDONWARE_GAMES = [
     hostable: true
   },
   {
+    id: "nippon-safes",
+    title: "Nippon Safes, Inc.",
+    year: "1992",
+    studio: "Dynabyte / EUCLIDEA",
+    platform: "DOS / SCUMMVM",
+    filter: "scummvm",
+    runtime: "ScummVM Web 2026.3",
+    runtimeType: "scummvm",
+    status: "BROWSER READY",
+    statusClass: "ready",
+    cover: "cover-nippon",
+    summary: "The multilingual DOS release authorized as freeware by the original creators for ScummVM preservation, including explicit permission to modify the files. The exact package, notices, four game disks, and language payloads are audited before materialization.",
+    rights: "Original-author freeware + modification permission",
+    compatibility: "ScummVM 2026.3.0; parallaction engine; audited DISK1-DISK4 + EN/FR/GE/IT payload; direct #nippon launch",
+    hostedUrl: "runtime/scummvm/index.html#nippon",
+    rightsRecord: "docs/rights/nippon-safes.md",
+    sourceLabel: "Official ScummVM preservation package",
+    sourcePage: "https://www.scummvm.org/news/20210317/",
+    hostable: true
+  },
+  {
     id: "doom",
     title: "DOOM",
     year: "1993",
