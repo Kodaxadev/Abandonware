@@ -2,8 +2,9 @@
   "schema": 1,
   "id": "griffon-legend",
   "title": "The Griffon Legend",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "ScummVM and the original Syn9 site describe the game as freeware, but Abandonware requires package-level redistribution evidence before hosting.",
+  "status": "HOLD",
+  "decision": "research/decisions/griffon-legend.md",
+  "reason": "The exact package is verified and contains a readme, but no explicit third-party redistribution or mirroring grant was found.",
   "runtime_candidate": {
     "engine": "griffon",
     "target": "griffon"
