@@ -41,9 +41,16 @@ function renderGames() {
 
   emptyState.hidden = visible.length !== 0;
   document.getElementById("status-catalog-count").textContent = String(restorationTargets.length).padStart(2, "0");
-  const hostedCount = restorationTargets.filter((game) => game.hostedUrl && game.hostable).length;
+
+  const hosted = restorationTargets.filter((game) => game.hostedUrl && game.hostable);
   const hostedCounter = document.getElementById("status-hosted-count") || document.querySelector(".status-strip div:nth-child(3) strong");
-  if (hostedCounter) hostedCounter.textContent = String(hostedCount).padStart(2, "0");
+  if (hostedCounter) hostedCounter.textContent = String(hosted.length).padStart(2, "0");
+
+  const engineCounter = document.getElementById("status-engine-count");
+  if (engineCounter) {
+    const engines = new Set(hosted.map((game) => game.runtimeType || "jsdos"));
+    engineCounter.textContent = String(engines.size).padStart(2, "0");
+  }
 }
 
 function openDetails(gameId) {
@@ -143,6 +150,7 @@ const launcherState = {
   targets: [],
   objectUrl: null,
   dos: null,
+  frame: null,
   mode: "local",
   hostedGame: null
 };
@@ -175,11 +183,20 @@ async function disposeEmulator() {
     }
     launcherState.dos = null;
   }
+
+  if (launcherState.frame) {
+    launcherState.frame.src = "about:blank";
+    launcherState.frame.remove();
+    launcherState.frame = null;
+  }
+
   if (launcherState.objectUrl) {
     URL.revokeObjectURL(launcherState.objectUrl);
     launcherState.objectUrl = null;
   }
+
   dosPlayer.innerHTML = "";
+  dosPlayer.classList.remove("scummvm-player");
 }
 
 async function closeLauncher() {
@@ -339,6 +356,7 @@ async function makePlayableUrl() {
 }
 
 function launchDosUrl(url) {
+  dosPlayer.classList.remove("scummvm-player");
   launcherState.dos = Dos(dosPlayer, {
     url,
     theme: "dark",
@@ -355,10 +373,43 @@ function launchDosUrl(url) {
     onEvent: (event) => {
       if (event === "emu-ready") emulatorStatus.textContent = "RUNTIME READY";
       if (event === "bnd-play") emulatorStatus.textContent = "STARTING";
-      if (event === "ci-ready") emulatorStatus.textContent = "RUNNING";
+      if (event === "ci-ready") emulatorStatus.textContent = "RUNNING / DOSBOX";
     }
   });
   launcherState.dos.setNoCloud(true);
+}
+
+function launchScummVmUrl(url, game) {
+  dosPlayer.classList.add("scummvm-player");
+  const frame = document.createElement("iframe");
+  frame.className = "scummvm-frame";
+  frame.title = `${game.title} — ScummVM browser runtime`;
+  frame.src = url;
+  frame.loading = "eager";
+  frame.allow = "autoplay; fullscreen";
+  frame.setAttribute("allowfullscreen", "");
+  frame.addEventListener("load", () => {
+    emulatorStatus.textContent = "RUNNING / SCUMMVM";
+    frame.focus();
+  }, { once: true });
+  launcherState.frame = frame;
+  dosPlayer.replaceChildren(frame);
+}
+
+async function verifyHostedArtifact(url) {
+  const head = await fetch(url, { method: "HEAD", cache: "no-store" });
+  if (head.ok) return;
+
+  if (head.status === 405 || head.status === 501) {
+    const probe = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+      headers: { Range: "bytes=0-0" }
+    });
+    if (probe.ok || probe.status === 206) return;
+  }
+
+  throw new Error(`The audited browser artifact is unavailable on this deployment (${head.status}).`);
 }
 
 async function startHostedGame(game) {
@@ -371,20 +422,23 @@ async function startHostedGame(game) {
   emulatorStatus.textContent = `VERIFYING ${game.title.toUpperCase()}`;
 
   try {
-    const response = await fetch(game.hostedUrl, { method: "HEAD", cache: "no-store" });
-    if (!response.ok) {
-      throw new Error("The audited browser bundle has not been materialized on this deployment yet.");
+    await verifyHostedArtifact(game.hostedUrl);
+
+    if (game.runtimeType === "scummvm") {
+      emulatorStatus.textContent = "LOADING SCUMMVM WEB";
+      launchScummVmUrl(game.hostedUrl, game);
+    } else {
+      emulatorStatus.textContent = "LOADING AUDITED JSDOS BUNDLE";
+      launchDosUrl(game.hostedUrl);
     }
-    emulatorStatus.textContent = "LOADING AUDITED BUNDLE";
-    launchDosUrl(game.hostedUrl);
   } catch (error) {
     console.error(error);
-    emulatorStatus.textContent = "BUNDLE UNAVAILABLE";
+    emulatorStatus.textContent = "ARTIFACT UNAVAILABLE";
     dosPlayer.innerHTML = `
       <div class="runtime-error">
         <b>RESTORATION ARTIFACT UNAVAILABLE</b>
-        <p>${escapeHtml(error?.message || "The browser bundle could not be loaded.")}</p>
-        <small>The source manifest remains pinned; the automated materialization job must succeed before this title can run here.</small>
+        <p>${escapeHtml(error?.message || "The browser runtime could not be loaded.")}</p>
+        <small>The rights/source record remains pinned; the automated materialization gate must succeed before this title can run here.</small>
       </div>
     `;
   }
@@ -411,8 +465,17 @@ startButton.addEventListener("click", async () => {
   }
 });
 
-document.getElementById("emulator-fullscreen").addEventListener("click", () => {
-  launcherState.dos?.setFullScreen(true);
+document.getElementById("emulator-fullscreen").addEventListener("click", async () => {
+  if (launcherState.dos) {
+    launcherState.dos.setFullScreen(true);
+    return;
+  }
+
+  try {
+    await dosPlayer.requestFullscreen?.();
+  } catch (error) {
+    console.warn("Fullscreen request failed", error);
+  }
 });
 
 document.getElementById("emulator-stop").addEventListener("click", async () => {
