@@ -14,7 +14,8 @@
       "drascula",
       "dreamweb",
       "cge2",
-      "cge"
+      "cge",
+      "parallaction"
     ]
   },
   "games": [
@@ -194,6 +195,27 @@
         "language": "en",
         "description": "Sołtys (Freeware v1.0/DOS/English)",
         "extra": "Freeware v1.0"
+      }
+    },
+    {
+      "id": "nippon-safes",
+      "target": "nippon",
+      "engine": "parallaction",
+      "title": "Nippon Safes, Inc.",
+      "edition": "Freeware DOS Version (English/French/German/Italian)",
+      "rights_basis": "freeware_redistribution",
+      "source_url": "https://downloads.scummvm.org/frs/extras/Nippon%20Safes/nippon-1.0.zip",
+      "source_page": "https://www.scummvm.org/news/20210317/",
+      "sha256": "53e7e2c60065e4aed193169bbcdcfd1113fa68d3efe1c8240ba073c0e20d613f",
+      "data_directory": "nippon-1.0",
+      "relative_game_path": ".",
+      "rights_record": "docs/rights/nippon-safes.md",
+      "config": {
+        "gameid": "nippon",
+        "engineid": "parallaction",
+        "platform": "pc",
+        "description": "Nippon Safes, Inc. (Freeware/DOS/Multilingual)",
+        "extra": "Freeware"
       }
     }
   ],
