@@ -35,6 +35,23 @@ EVIDENCE_PATTERNS = {
     "modify": re.compile(r"\bmodif(?:y|ied|ies|ication|ications)\b", re.I),
     "commercial_restriction": re.compile(r"\b(?:non[- ]?commercial|commercial\s+use|not\s+for\s+sale|may\s+not\s+be\s+sold)\b", re.I),
     "all_rights_reserved": re.compile(r"\ball\s+rights\s+reserved\b", re.I),
+    "redistribution_prohibited": re.compile(
+        r"\b(?:may|shall|must)\s+not\b[^.\n]{0,120}\b(?:redistribut(?:e|ed|es|ing|ion|able)|distribut(?:e|ed|es|ing|ion|able)|mirror(?:ed|ing|s)?|copy(?:ing|ies|ied)?)\b",
+        re.I,
+    ),
+    "copying_prohibited": re.compile(
+        r"\bcopying\b[^.\n]{0,120}\b(?:forbidden|prohibited|not\s+permitted)\b",
+        re.I,
+    ),
+    "backup_only": re.compile(r"\b(?:solely|only)\s+for\s+(?:backup|archiv(?:e|al))\b", re.I),
+}
+
+RESTRICTION_MARKERS = {
+    "redistribution_prohibited",
+    "copying_prohibited",
+    "backup_only",
+    "commercial_restriction",
+    "all_rights_reserved",
 }
 
 
@@ -175,8 +192,14 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
                             "snippets": snippets,
                         })
 
+        restriction_evidence = {
+            label: aggregate_evidence[label]
+            for label in sorted(RESTRICTION_MARKERS)
+            if label in aggregate_evidence
+        }
+
         audit_record = {
-            "schema": 2,
+            "schema": 3,
             "candidate_id": candidate_id,
             "title": manifest.get("title"),
             "source_url": source["url"],
@@ -188,12 +211,14 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
             "direct_root_files": sorted(direct_root_files),
             "notices": notices,
             "evidence_markers": aggregate_evidence,
+            "restriction_markers": restriction_evidence,
             "members": members,
             "decision": "REQUIRES_HUMAN_RIGHTS_REVIEW",
             "warning": (
                 "Evidence markers are search aids only. A successful package audit or keyword hit "
                 "does not authorize hosting; a human must evaluate who granted which rights and "
-                "whether the grant covers redistribution of this exact game data."
+                "whether the grant covers redistribution of this exact game data. Restriction "
+                "markers are especially important conflicts but are not themselves a legal opinion."
             ),
         }
 
@@ -210,6 +235,7 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
         "direct_root_files": audit_record["direct_root_files"],
         "notice_paths": [notice["path"] for notice in notices],
         "evidence_marker_names": sorted(aggregate_evidence),
+        "restriction_marker_names": sorted(restriction_evidence),
         "decision": audit_record["decision"],
     }, indent=2))
 
@@ -223,6 +249,9 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
                 for snippet in snippets:
                     print(f"  {snippet}")
         print(f"===== END NOTICE: {notice['path']} =====")
+
+    if restriction_evidence:
+        print("\nWARNING: explicit restriction-style language was detected; review before any hosting decision.")
 
     if not notices:
         print("\nWARNING: no readme/license/copyright-style notice files were found in the package.")
