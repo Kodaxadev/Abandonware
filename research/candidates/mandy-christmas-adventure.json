@@ -2,8 +2,9 @@
   "schema": 1,
   "id": "mandy-christmas-adventure",
   "title": "Mandy Christmas Adventure",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "ScummVM distributes the SLUDGE game, but Abandonware requires an explicit package-level redistribution basis before production hosting.",
+  "status": "CONDITIONAL_PASS",
+  "decision": "research/decisions/mandy-christmas-adventure.md",
+  "reason": "The shipped license explicitly allows free copying/sharing and website publication, but requires non-profit distribution and reporting download counts to the authors. That reporting condition is not yet operationally satisfied.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "mandy"
