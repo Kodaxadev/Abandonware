@@ -1,0 +1,23 @@
+{
+  "emulators": {
+    "commit": "0d840292a74dad4574d5068d8cf934a4e580ea11",
+    "repository": "caiiiycuk/emulators",
+    "version": "8.4.1"
+  },
+  "license_declaration": "runtime/jsdos/legal/JSDOS-PACKAGE.json",
+  "license_text": "runtime/jsdos/legal/GPL-2.0-TEXT",
+  "materialized_files": {
+    "js-dos.css": "3c3e0512901781f3076deb31027e2f4528662617527ccb72da661a7cdda98fbf",
+    "js-dos.js": "9e083d840e4de87d9089463faff596b41beb56d5181ff3bd5b7c12b4c07b7982"
+  },
+  "runtime": {
+    "commit": "be548f4fb3616c956bfcd35d7c36f6db91d6a8b8",
+    "name": "js-dos",
+    "release_sha256": "26118692bbb180aec78ec1697eb1ea6b28ff410101870cfa3e68309914c7eaa6",
+    "release_url": "https://github.com/caiiiycuk/js-dos/releases/download/v8.4.1/release.zip",
+    "repository": "caiiiycuk/js-dos",
+    "version": "8.4.1"
+  },
+  "schema": 1,
+  "source_record": "runtime/jsdos/SOURCE.md"
+}
