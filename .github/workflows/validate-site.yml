@@ -9,6 +9,7 @@ on:
       - "app.js"
       - "styles.css"
       - "restoration.css"
+      - "covers-extra.css"
       - "data/**"
       - "games/**"
       - "runtime/**"
@@ -34,6 +35,7 @@ jobs:
           set -euo pipefail
           node --check app.js
           node --check data/games.js
+          node --check runtime/jsdos/bridge.js
 
       - name: Validate catalog-to-artifact links
         run: |
@@ -44,6 +46,8 @@ jobs:
           global.window = {};
           require('./data/games.js');
           const games = window.ABANDONWARE_GAMES;
+          const scummvmProvenance = JSON.parse(fs.readFileSync('runtime/scummvm/PROVENANCE.json', 'utf8'));
+          const scummvmTargets = new Set((scummvmProvenance.games || []).map(game => game.target));
 
           if (!Array.isArray(games) || games.length === 0) {
             throw new Error('Catalog did not initialize');
@@ -73,6 +77,14 @@ jobs:
               if (!game.sourcePage) {
                 throw new Error(`${game.id} has no source/provenance page`);
               }
+
+              if (game.runtimeType === 'scummvm') {
+                const hashIndex = String(game.hostedUrl).indexOf('#');
+                const target = hashIndex >= 0 ? String(game.hostedUrl).slice(hashIndex + 1) : '';
+                if (!target || !scummvmTargets.has(target)) {
+                  throw new Error(`${game.id} points at unaudited ScummVM target ${target || '(missing)'}`);
+                }
+              }
             }
           }
 
@@ -87,6 +99,48 @@ jobs:
           for manifest in games/manifests/*.json; do
             python3 tools/verify_audited_bundle.py "$manifest"
           done
+
+      - name: Verify pinned js-dos preservation record
+        run: |
+          set -euo pipefail
+          test -s runtime/jsdos/js-dos.js
+          test -s runtime/jsdos/js-dos.css
+          test -s runtime/jsdos/bridge.js
+          test -s runtime/jsdos/PROVENANCE.json
+          test -s runtime/jsdos/SOURCE.md
+          test -s runtime/jsdos/legal/JSDOS-PACKAGE.json
+          test -s runtime/jsdos/legal/GPL-2.0-TEXT
+          find runtime/jsdos/emulators -type f -print -quit | grep -q .
+
+          grep -q 'runtime/jsdos/js-dos.css' index.html
+          grep -q 'runtime/jsdos/js-dos.js' index.html
+          grep -q 'runtime/jsdos/bridge.js' index.html
+          grep -q 'runtime/jsdos/emulators/' runtime/jsdos/bridge.js
+
+          if grep -q 'v8\.js-dos\.com/latest' index.html; then
+            echo 'Mutable js-dos /latest CDN dependency reintroduced into index.html' >&2
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          build = json.loads(Path('runtime/jsdos-build.json').read_text(encoding='utf-8'))
+          provenance = json.loads(Path('runtime/jsdos/PROVENANCE.json').read_text(encoding='utf-8'))
+
+          assert provenance['runtime']['version'] == build['runtime']['version'] == '8.4.1'
+          assert provenance['runtime']['commit'] == build['runtime']['commit']
+          assert provenance['runtime']['release_sha256'] == build['runtime']['release_sha256']
+          assert provenance['emulators']['commit'] == build['emulators']['commit']
+
+          for name in ('js-dos.js', 'js-dos.css'):
+              actual = hashlib.sha256((Path('runtime/jsdos') / name).read_bytes()).hexdigest()
+              assert actual == provenance['materialized_files'][name], f'{name} no longer matches provenance'
+
+          print('Pinned js-dos 8.4.1 runtime and local emulator bridge verified.')
+          PY
 
       - name: Verify ScummVM preservation record
         run: |
@@ -119,6 +173,7 @@ jobs:
               recorded = indexed_provenance[game_id]
               assert recorded['sha256'] == game['sha256']
               assert recorded['rights_record'] == game['rights_record']
+              assert recorded['target'] == game['target']
               rights_path = Path(game['rights_record'])
               assert rights_path.is_file(), f'Missing rights record for {game_id}: {rights_path}'
 
