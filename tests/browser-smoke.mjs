@@ -70,12 +70,45 @@ try {
   await waitForRequestPart("games/xargon.jsdos");
   await waitForRequestPart("runtime/jsdos/emulators/emulators.js");
   await waitForRequestPart("runtime/jsdos/emulators/wdosbox.wasm");
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1200);
 
   assert(
     !requests.some(url => url.includes("v8.js-dos.com/latest")),
     "DOS launch contacted the mutable js-dos /latest CDN"
   );
+
+  await stopAndCloseRuntime();
+
+  // Build a tiny DOS ZIP with the exact vendored JSZip running in the page, then put it
+  // through the local-file workbench. No binary fixture or server upload is involved.
+  const localZipBase64 = await page.evaluate(async () => {
+    const zip = new window.JSZip();
+    zip.file("GAME.BAT", "@echo off\r\necho ABANDONWARE_LOCAL_IMPORT_OK\r\npause\r\n");
+    return zip.generateAsync({ type: "base64", compression: "DEFLATE" });
+  });
+
+  await page.locator("[data-open-launcher]").first().click();
+  await page.locator("#game-file").setInputFiles({
+    name: "local-workbench-test.zip",
+    mimeType: "application/zip",
+    buffer: Buffer.from(localZipBase64, "base64")
+  });
+  await page.waitForFunction(() => !document.getElementById("launcher-step-2")?.hidden);
+
+  const selectedArchive = await page.locator("#selected-file-name").textContent();
+  assert(selectedArchive?.includes("local-workbench-test.zip"), "Local ZIP was not accepted by the workbench");
+
+  const bootOptions = await page.locator("#boot-target option").allTextContents();
+  assert(bootOptions.some(value => value.includes("GAME.BAT")), `GAME.BAT was not detected: ${bootOptions.join(", ")}`);
+
+  await page.locator("#rights-confirm").check();
+  assert(!(await page.locator("#start-emulation").isDisabled()), "Rights confirmation did not unlock local emulation");
+  await page.locator("#start-emulation").click();
+  await page.waitForFunction(() => !document.getElementById("launcher-step-3")?.hidden);
+  await page.waitForTimeout(1200);
+
+  assert(await page.locator("#dos-player").count() === 1, "Local ZIP did not reach the js-dos player");
+  assert(await page.locator("#launcher-error").isHidden(), "Local ZIP workbench reported a launcher error");
 
   await stopAndCloseRuntime();
 
@@ -142,7 +175,8 @@ try {
     scummvmWasmRequests: requests.filter(url => url.includes("runtime/scummvm/scummvm.wasm")).length,
     scummvmRelativeDataRequests: requests.filter(url => url.includes("runtime/scummvm/data/")).length,
     steelSkyPayloadRequests: requests.filter(url => url.includes("sky-BASS-Floppy-1.3/sky.dsk")).length,
-    sfinxPayloadRequests: requests.filter(url => url.includes("sfinx-en-v1.1/sfinx-en-v1.1/vol.dat")).length
+    sfinxPayloadRequests: requests.filter(url => url.includes("sfinx-en-v1.1/sfinx-en-v1.1/vol.dat")).length,
+    localWorkbenchZipDetected: true
   }, null, 2));
 } finally {
   await browser.close();
