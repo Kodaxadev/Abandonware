@@ -10,10 +10,17 @@ const detailsModal = document.getElementById("details-modal");
 const detailsContent = document.getElementById("details-content");
 let activeFilter = "all";
 
+function matchesActiveFilter(game) {
+  if (activeFilter === "all") return true;
+  if (activeFilter === "playable") return Boolean(game.hostable && game.hostedUrl);
+  if (activeFilter === "local-dos") return !game.hostable && game.filter === "dos";
+  return game.filter === activeFilter;
+}
+
 function renderGames() {
   const query = searchInput.value.trim().toLowerCase();
   const visible = restorationTargets.filter((game) => {
-    const inFilter = activeFilter === "all" || game.filter === activeFilter;
+    const inFilter = matchesActiveFilter(game);
     const haystack = `${game.title} ${game.year} ${game.studio} ${game.platform}`.toLowerCase();
     return inFilter && (!query || haystack.includes(query));
   });
