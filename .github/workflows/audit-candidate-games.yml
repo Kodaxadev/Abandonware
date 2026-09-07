@@ -1,0 +1,50 @@
+name: Audit candidate game packages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "research/candidates/**"
+      - "tools/audit_candidate_zip.py"
+      - ".github/workflows/audit-candidate-games.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-candidate-games-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Audit exact candidate packages
+        run: |
+          set -euo pipefail
+          mkdir -p candidate-audits
+          shopt -s nullglob
+          candidates=(research/candidates/*.json)
+          if [ ${#candidates[@]} -eq 0 ]; then
+            echo "No candidate manifests found."
+            exit 0
+          fi
+          for manifest in "${candidates[@]}"; do
+            id=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["id"])' "$manifest")
+            echo "::group::Candidate audit: $id"
+            python3 tools/audit_candidate_zip.py "$manifest" --output "candidate-audits/$id.json"
+            echo "::endgroup::"
+          done
+
+      - name: Upload non-publishing audit records
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-package-audits
+          path: candidate-audits/*.json
+          if-no-files-found: error
+          retention-days: 7
