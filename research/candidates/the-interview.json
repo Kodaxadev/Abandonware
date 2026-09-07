@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "the-interview",
+  "title": "The Interview",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "ScummVM distributes a compact SLUDGE package and supports the game directly, but Abandonware requires package-level redistribution evidence before hosting any community-engine title.",
+  "runtime_candidate": {
+    "engine": "sludge",
+    "target": "interview"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/interview.zip",
+    "page": "https://www.scummvm.org/games/",
+    "sha256": "576c20c971e04bd29de42400750015a55fcd5975dbd1d4f47843bd749d42c79b"
+  }
+}
