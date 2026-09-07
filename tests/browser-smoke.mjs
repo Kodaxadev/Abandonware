@@ -77,12 +77,13 @@ try {
 
   await stopAndCloseRuntime();
 
-  // Launch a ScummVM title and prove both WASM and relocatable HTTP-FS paths work.
+  // Launch a ScummVM title and prove WASM, relocatable HTTP-FS, and actual game data load.
   await page.locator('[data-game-id="beneath-a-steel-sky"]').click();
   await page.locator("#details-play-hosted").click();
   await waitForRequestPart("runtime/scummvm/scummvm.wasm", 45000);
   await waitForRequestPart("runtime/scummvm/data/index.json", 45000);
-  await waitForRequestPart("runtime/scummvm/data/games/", 45000);
+  await waitForRequestPart("runtime/scummvm/data/games/sky-BASS-Floppy-1.3/index.json", 45000);
+  await waitForRequestPart("runtime/scummvm/data/games/sky-BASS-Floppy-1.3/sky.dsk", 45000);
   await page.waitForTimeout(1500);
 
   const frame = page.locator("#dos-player iframe.scummvm-frame");
@@ -101,9 +102,11 @@ try {
     `ScummVM escaped its relocatable runtime and requested origin-root /data/index.json: ${originRootDataRequests.join(", ")}`
   );
 
-  // Keep runtime errors strict; optional MIDI rejection is handled inside our patched ScummVM shell.
+  // Keep runtime errors strict. Headless Chromium has no speech-synthesis voices;
+  // ScummVM reports that optional accessibility limitation through stderr/console.error.
   const fatalConsoleErrors = consoleErrors.filter(message =>
-    !message.includes("No MIDI support in your browser")
+    !message.includes("No MIDI support in your browser") &&
+    !message.includes("WARNING: No voice is available for language:")
   );
 
   assert(pageErrors.length === 0, `Page errors: ${pageErrors.join(" | ")}`);
@@ -115,7 +118,8 @@ try {
     requestsObserved: requests.length,
     jsdosLocalEmulatorRequests: requests.filter(url => url.includes("runtime/jsdos/emulators/")).length,
     scummvmWasmRequests: requests.filter(url => url.includes("runtime/scummvm/scummvm.wasm")).length,
-    scummvmRelativeDataRequests: requests.filter(url => url.includes("runtime/scummvm/data/")).length
+    scummvmRelativeDataRequests: requests.filter(url => url.includes("runtime/scummvm/data/")).length,
+    steelSkyPayloadRequests: requests.filter(url => url.includes("sky-BASS-Floppy-1.3/sky.dsk")).length
   }, null, 2));
 } finally {
   await browser.close();
