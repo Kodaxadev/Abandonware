@@ -1,0 +1,50 @@
+{
+  "archive_file": "robins-rescue-8f0b7d96f6feafb109926769a8c5ee0ef80076be.tar.gz",
+  "archive_sha256": "9f69bc58b0f21a25b50d3e35d084b2690ab1806933e1d809b4008d8219cbad32",
+  "authors": [
+    "Josh \"Cheeseness\" Bush",
+    "Miriam \"Mimness\" Roser"
+  ],
+  "branch_at_audit": "master",
+  "build_manifest": "runtime/sources/robins-rescue-build.json",
+  "commit": "8f0b7d96f6feafb109926769a8c5ee0ef80076be",
+  "file_count": 147,
+  "id": "robins-rescue",
+  "license_summary": {
+    "first_party_images_audio": "CC-BY-3.0",
+    "font": "SIL-OFL-1.1",
+    "source_code": "LGPL-3.0",
+    "third_party_attribution_record": "README.md"
+  },
+  "preserved_notices": [
+    {
+      "materialized_path": "legal/COPYING",
+      "sha256": "fa03f8787b8378792f72eeef73bde31292ebee81b8eba94ad11bea4daa190843",
+      "size": 8203,
+      "source_path": "COPYING"
+    },
+    {
+      "materialized_path": "legal/README.md",
+      "sha256": "35c65f8cad4d05530e6ab0c943a50abf98c39304cb89c3d0c41f5a6f58f08cfb",
+      "size": 7789,
+      "source_path": "README.md"
+    },
+    {
+      "materialized_path": "legal/sludge__doc__README",
+      "sha256": "6599c384426f84a08ad49e4fe30c05b830450cc61b7cf3f676b275a8ff245fe1",
+      "size": 337,
+      "source_path": "sludge/doc/README"
+    },
+    {
+      "materialized_path": "legal/sprite_sources__medieval_sharp__SIL - Open Font License.txt",
+      "sha256": "fa26a7fd5835104b63341603a579860513e0ed8899d8abc22a3796c78d048411",
+      "size": 4376,
+      "source_path": "sprite_sources/medieval_sharp/SIL - Open Font License.txt"
+    }
+  ],
+  "repository_url": "https://codeberg.org/Cheeseness/robins-rescue.git",
+  "schema": 1,
+  "source_page": "https://codeberg.org/Cheeseness/robins-rescue",
+  "title": "Robin's Rescue",
+  "tree": "c8c4fcd0fda0cbe78fd09b6d592d21804653dcd1"
+}
