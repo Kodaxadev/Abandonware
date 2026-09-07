@@ -1,4 +1,4 @@
-name: Build ScummVM Steel Sky
+name: Build ScummVM Freeware Archive
 
 on:
   workflow_dispatch:
@@ -6,24 +6,24 @@ on:
     branches: [main]
     paths:
       - "runtime/scummvm-build.json"
+      - "tools/materialize_scummvm_games.py"
       - ".github/workflows/build-scummvm-sky.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: build-scummvm-sky
+  group: build-scummvm-freeware
   cancel-in-progress: true
 
 jobs:
-  build-scummvm-sky:
+  build-scummvm-freeware:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
       SCUMMVM_COMMIT: fed42f2068dcafc6aafa1c28c77e4c88def74b66
-      GAME_SHA256: d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818
-      GAME_URL: https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip
-      GAME_DIR: sky-BASS-Floppy-1.3
+      SCUMMVM_VERSION: 2026.3.0
+      EMSDK_VERSION: 4.0.10
 
     steps:
       - name: Check out Abandonware
@@ -45,14 +45,27 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          m = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
-          assert m['runtime']['commit'] == 'fed42f2068dcafc6aafa1c28c77e4c88def74b66'
-          assert m['runtime']['version'] == '2026.3.0'
-          assert m['runtime']['emsdk'] == '4.0.10'
-          assert m['runtime']['engine'] == 'sky'
-          assert m['game']['sha256'] == 'd0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818'
-          assert m['game']['target'] == 'sky'
-          print('Pinned ScummVM/game manifest validated')
+
+          manifest = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
+          runtime = manifest['runtime']
+          games = manifest.get('games') or [manifest['game']]
+          engines = runtime.get('engines') or [runtime['engine']]
+
+          assert runtime['commit'] == 'fed42f2068dcafc6aafa1c28c77e4c88def74b66'
+          assert runtime['version'] == '2026.3.0'
+          assert runtime['emsdk'] == '4.0.10'
+          assert games
+          assert engines
+          assert len({game['id'] for game in games}) == len(games)
+          assert len({game['target'] for game in games}) == len(games)
+          assert set(game.get('engine', game['target']) for game in games).issubset(set(engines))
+
+          for game in games:
+              assert len(game['sha256']) == 64
+              assert game['source_url'].startswith('https://')
+              assert Path(game['rights_record']).is_file(), game['rights_record']
+
+          print(f"Pinned manifest validated: {len(engines)} engine(s), {len(games)} game(s)")
           PY
           test "$(git -C scummvm-src rev-parse HEAD)" = "$SCUMMVM_COMMIT"
 
@@ -62,103 +75,98 @@ jobs:
           path: scummvm-src/dists/emscripten/emsdk-4.0.10
           key: scummvm-emsdk-4.0.10
 
-      - name: Build ScummVM Web with only the sky engine
+      - name: Build pinned ScummVM Web engines
         run: |
           set -euo pipefail
+          mapfile -t engines < <(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
+          runtime = manifest['runtime']
+          for engine in runtime.get('engines') or [runtime['engine']]:
+              print(engine)
+          PY
+          )
+
+          args=(build --enable-release --disable-all-engines)
+          for engine in "${engines[@]}"; do
+            args+=("--enable-engine=$engine")
+          done
+
+          printf 'ScummVM build args:'
+          printf ' %q' "${args[@]}"
+          printf '\n'
+
           cd scummvm-src
-          ./dists/emscripten/build.sh build \
-            --enable-release \
-            --disable-all-engines \
-            --enable-engine=sky
+          ./dists/emscripten/build.sh "${args[@]}"
 
-      - name: Add and verify Beneath a Steel Sky freeware data
+      - name: Verify and materialize audited freeware data
         run: |
           set -euo pipefail
-          curl --fail --location --retry 3 --retry-delay 2 \
-            "$GAME_URL" -o /tmp/BASS-Floppy-1.3.zip
-          echo "$GAME_SHA256  /tmp/BASS-Floppy-1.3.zip" | sha256sum --check --strict
-
-          mkdir -p "scummvm-src/build-emscripten/data/games/$GAME_DIR"
-          unzip -q /tmp/BASS-Floppy-1.3.zip \
-            -d "scummvm-src/build-emscripten/data/games/$GAME_DIR"
-
-          if ! find "scummvm-src/build-emscripten/data/games/$GAME_DIR" \
-            -maxdepth 2 -type f \( -iname 'readme*' -o -iname '*license*' \) \
-            -print -quit | grep -q .; then
-            echo "The audited game package did not preserve its readme/license notice." >&2
-            exit 1
-          fi
+          python3 tools/materialize_scummvm_games.py \
+            runtime/scummvm-build.json \
+            scummvm-src/build-emscripten
 
           python3 scummvm-src/dists/emscripten/build-make_http_index.py \
             scummvm-src/build-emscripten/data
 
-      - name: Configure the browser launcher
-        run: |
-          set -euo pipefail
-          cat > scummvm-src/build-emscripten/scummvm.ini <<'INI'
-          [scummvm]
-          versioninfo=2026.3.0
-          always_run_fallback_detection_extern=false
-
-          [sky]
-          platform=pc
-          gameid=sky
-          description=Beneath a Steel Sky (v0.0348 Floppy/DOS)
-          extra=v0.0348 Floppy
-          path=/data/games/sky-BASS-Floppy-1.3
-          engineid=sky
-          guioptions=sndNoSpeech lang_English (GB) lang_German lang_French lang_English (US) lang_Swedish lang_Italian lang_Portuguese (Brazil) lang_Spanish
-          INI
-
           cp scummvm-src/build-emscripten/scummvm.html \
             scummvm-src/build-emscripten/index.html
 
-      - name: Preserve runtime licensing and provenance
+      - name: Preserve runtime licensing and corresponding source record
         run: |
           set -euo pipefail
-          mkdir -p scummvm-src/build-emscripten/legal
-          cp scummvm-src/COPYING scummvm-src/build-emscripten/legal/SCUMMVM-COPYING
-          cp scummvm-src/COPYRIGHT scummvm-src/build-emscripten/legal/SCUMMVM-COPYRIGHT
+          root=scummvm-src/build-emscripten
+          mkdir -p "$root/legal"
+          cp scummvm-src/COPYING "$root/legal/SCUMMVM-COPYING"
+          cp scummvm-src/COPYRIGHT "$root/legal/SCUMMVM-COPYRIGHT"
           if [ -d scummvm-src/LICENSES ]; then
-            cp -a scummvm-src/LICENSES scummvm-src/build-emscripten/legal/LICENSES
+            cp -a scummvm-src/LICENSES "$root/legal/LICENSES"
           fi
 
           python3 - <<'PY'
           import json
           from pathlib import Path
+
           manifest = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
-          provenance = {
-              'schema': 1,
-              'runtime': manifest['runtime'],
-              'game': manifest['game'],
-              'build_command': './dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky',
-              'corresponding_source': 'https://github.com/scummvm/scummvm/tree/fed42f2068dcafc6aafa1c28c77e4c88def74b66',
-              'notes': 'ScummVM runtime is unmodified upstream source compiled to WebAssembly. Game data is the hash-verified freeware floppy package from ScummVM.'
-          }
-          Path('scummvm-src/build-emscripten/PROVENANCE.json').write_text(
-              json.dumps(provenance, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          runtime = manifest['runtime']
+          games = manifest.get('games') or [manifest['game']]
+          engines = runtime.get('engines') or [runtime['engine']]
+
+          lines = [
+              '# Corresponding source and build record',
+              '',
+              f"This browser runtime is an unmodified build of ScummVM {runtime['version']} at commit:",
+              '',
+              f"`{runtime['commit']}`",
+              '',
+              'Corresponding source:',
+              '',
+              f"https://github.com/{runtime['repository']}/tree/{runtime['commit']}",
+              '',
+              'Enabled game engines:',
+              '',
+          ]
+          lines.extend(f'- `{engine}`' for engine in engines)
+          lines.extend(['', 'Audited freeware data packages:', ''])
+          lines.extend(
+              f"- {game['title']} — target `{game['target']}` — rights: `{game['rights_record']}`"
+              for game in games
+          )
+          lines.extend([
+              '',
+              'Build method:',
+              '',
+              '`./dists/emscripten/build.sh build --enable-release --disable-all-engines ' +
+              ' '.join(f'--enable-engine={engine}' for engine in engines) + '`',
+              '',
+              'Every game package is downloaded from its manifest URL and SHA-256 verified before extraction. Game-data licenses are separate from ScummVM GPL licensing.',
+              '',
+          ])
+          Path('scummvm-src/build-emscripten/SOURCE.md').write_text(
+              '\n'.join(lines), encoding='utf-8'
           )
           PY
-
-          cat > scummvm-src/build-emscripten/SOURCE.md <<'EOF'
-          # Corresponding source and build record
-
-          This browser runtime is an unmodified build of ScummVM 2026.3.0 at commit:
-
-          `fed42f2068dcafc6aafa1c28c77e4c88def74b66`
-
-          Corresponding source:
-
-          https://github.com/scummvm/scummvm/tree/fed42f2068dcafc6aafa1c28c77e4c88def74b66
-
-          Build command:
-
-          `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky`
-
-          The `sky` game engine is the only ScummVM game engine enabled in this build.
-
-          Beneath a Steel Sky game data is separately licensed freeware. Its exact source, hash, and rights record are documented in `runtime/scummvm-build.json` and `docs/rights/beneath-a-steel-sky.md` in the Abandonware repository.
-          EOF
 
       - name: Validate static runtime package
         run: |
@@ -170,7 +178,23 @@ jobs:
           test -s "$root/scummvm.ini"
           test -s "$root/data/index.json"
           test -s "$root/PROVENANCE.json"
+          test -s "$root/SOURCE.md"
           test -s "$root/legal/SCUMMVM-COPYING"
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
+          provenance = json.loads(Path('scummvm-src/build-emscripten/PROVENANCE.json').read_text(encoding='utf-8'))
+          games = manifest.get('games') or [manifest['game']]
+          recorded = {game['id']: game for game in provenance.get('games', [])}
+          assert len(recorded) == len(games)
+          for game in games:
+              assert recorded[game['id']]['sha256'] == game['sha256']
+              assert recorded[game['id']]['target'] == game['target']
+          print(f"Validated runtime provenance for {len(games)} game(s)")
+          PY
 
           if find "$root" -type f -size +95M -print -quit | grep -q .; then
             echo "A generated ScummVM file exceeds the 95 MB repository safety threshold:" >&2
@@ -195,9 +219,9 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add runtime/scummvm
           if git diff --cached --quiet; then
-            echo "ScummVM runtime already matches its pinned build."
+            echo "ScummVM runtime already matches its pinned manifest."
             exit 0
           fi
-          git commit -m "build: materialize ScummVM Steel Sky runtime"
+          git commit -m "build: materialize audited ScummVM freeware runtime"
           git pull --rebase origin main
           git push origin HEAD:main
