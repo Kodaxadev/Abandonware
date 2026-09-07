@@ -1,0 +1,60 @@
+name: Browser runtime smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "app.js"
+      - "styles.css"
+      - "restoration.css"
+      - "covers-extra.css"
+      - "data/**"
+      - "games/**"
+      - "runtime/**"
+      - "tests/browser-smoke.mjs"
+      - ".github/workflows/browser-smoke.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Playwright Chromium
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static archive server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/abandonware-http.log 2>&1 &
+          echo $! > /tmp/abandonware-http.pid
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8080/index.html >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/abandonware-http.log >&2
+          exit 1
+
+      - name: Launch one js-dos and one ScummVM game
+        run: node tests/browser-smoke.mjs
+        env:
+          ABANDONWARE_BASE_URL: http://127.0.0.1:8080
+
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/abandonware-http.log || true
