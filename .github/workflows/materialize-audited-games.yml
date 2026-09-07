@@ -1,0 +1,44 @@
+name: Materialize audited games
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "games/manifests/**"
+      - "tools/build_audited_game.py"
+      - ".github/workflows/materialize-audited-games.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-audited-games:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build hash-pinned browser bundles
+        run: |
+          set -euo pipefail
+          for manifest in games/manifests/*.json; do
+            echo "Building $manifest"
+            python3 tools/build_audited_game.py "$manifest"
+          done
+
+      - name: Commit generated artifacts when changed
+        run: |
+          set -euo pipefail
+          git config user.name "abandonware-preservation-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add games/*.jsdos
+          if git diff --cached --quiet; then
+            echo "Audited bundles already match their manifests."
+            exit 0
+          fi
+          git commit -m "build: materialize audited browser bundles"
+          git pull --rebase origin main
+          git push origin HEAD:main
