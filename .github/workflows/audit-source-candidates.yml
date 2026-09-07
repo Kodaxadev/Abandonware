@@ -1,0 +1,54 @@
+name: Audit candidate source repositories
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "research/source-candidates/**"
+      - "tools/audit_source_repo.py"
+      - ".github/workflows/audit-source-candidates.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-source-candidates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GIT_TERMINAL_PROMPT: "0"
+      GIT_CONFIG_NOSYSTEM: "1"
+    steps:
+      - name: Check out Abandonware
+        uses: actions/checkout@v4
+
+      - name: Audit source identity without executing repository code
+        run: |
+          set -euo pipefail
+          mkdir -p source-audits
+          shopt -s nullglob
+          candidates=(research/source-candidates/*.json)
+          if [ ${#candidates[@]} -eq 0 ]; then
+            echo "No source candidates found."
+            exit 0
+          fi
+
+          for manifest in "${candidates[@]}"; do
+            id=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["id"])' "$manifest")
+            echo "::group::Source audit: $id"
+            python3 tools/audit_source_repo.py "$manifest" --output-dir source-audits
+            echo "::endgroup::"
+          done
+
+      - name: Upload source audit and immutable archive snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-source-audits
+          path: source-audits/*
+          if-no-files-found: error
+          retention-days: 30
