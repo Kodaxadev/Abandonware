@@ -54,6 +54,9 @@ try {
     gameCount: Array.isArray(window.ABANDONWARE_GAMES) ? window.ABANDONWARE_GAMES.length : 0,
     hostedCount: Array.isArray(window.ABANDONWARE_GAMES)
       ? window.ABANDONWARE_GAMES.filter(game => game.hostable).length
+      : 0,
+    localDosCount: Array.isArray(window.ABANDONWARE_GAMES)
+      ? window.ABANDONWARE_GAMES.filter(game => !game.hostable && game.filter === "dos").length
       : 0
   }));
 
@@ -63,6 +66,38 @@ try {
   assert(runtime.jsdos?.pathPrefix === "runtime/jsdos/emulators/", "js-dos local emulator bridge is not active");
   assert(runtime.gameCount >= 11, `Catalog unexpectedly small: ${runtime.gameCount}`);
   assert(runtime.hostedCount >= 11, `Hosted catalog unexpectedly small: ${runtime.hostedCount}`);
+  assert(runtime.localDosCount >= 1, "No local DOS restoration targets were found");
+
+  // Capability-aware filtering must reflect the same catalog truth used by the launch actions.
+  await page.locator('[data-filter="playable"]').click();
+  await page.waitForFunction(
+    expected => document.querySelectorAll('#game-grid [data-game-id]').length === expected,
+    runtime.hostedCount
+  );
+  let filteredIds = await page.locator("#game-grid [data-game-id]").evaluateAll(nodes => nodes.map(node => node.dataset.gameId));
+  let filterTruth = await page.evaluate(ids => {
+    const byId = new Map(window.ABANDONWARE_GAMES.map(game => [game.id, game]));
+    return ids.every(id => byId.get(id)?.hostable && byId.get(id)?.hostedUrl);
+  }, filteredIds);
+  assert(filterTruth, "PLAYABLE filter exposed a non-hosted game");
+
+  await page.locator('[data-filter="local-dos"]').click();
+  await page.waitForFunction(
+    expected => document.querySelectorAll('#game-grid [data-game-id]').length === expected,
+    runtime.localDosCount
+  );
+  filteredIds = await page.locator("#game-grid [data-game-id]").evaluateAll(nodes => nodes.map(node => node.dataset.gameId));
+  filterTruth = await page.evaluate(ids => {
+    const byId = new Map(window.ABANDONWARE_GAMES.map(game => [game.id, game]));
+    return ids.every(id => !byId.get(id)?.hostable && byId.get(id)?.filter === "dos");
+  }, filteredIds);
+  assert(filterTruth, "LOCAL DOS filter exposed an unsupported or hosted record");
+
+  await page.locator('[data-filter="all"]').click();
+  await page.waitForFunction(
+    expected => document.querySelectorAll('#game-grid [data-game-id]').length === expected,
+    runtime.gameCount
+  );
 
   // Launch a real hosted DOS title through the same UI path a user follows.
   await page.locator('[data-game-id="xargon"]').click();
@@ -184,6 +219,7 @@ try {
   console.log(JSON.stringify({
     gameCount: runtime.gameCount,
     hostedCount: runtime.hostedCount,
+    localDosCount: runtime.localDosCount,
     requestsObserved: requests.length,
     jsdosLocalEmulatorRequests: requests.filter(url => url.includes("runtime/jsdos/emulators/")).length,
     scummvmWasmRequests: requests.filter(url => url.includes("runtime/scummvm/scummvm.wasm")).length,
