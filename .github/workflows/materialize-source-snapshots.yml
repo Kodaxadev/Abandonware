@@ -1,0 +1,80 @@
+name: Materialize corresponding source snapshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "runtime/sources/robins-rescue-build.json"
+      - "tools/materialize_source_snapshot.py"
+      - ".github/workflows/materialize-source-snapshots.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-source-snapshots
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GIT_TERMINAL_PROMPT: "0"
+      GIT_CONFIG_NOSYSTEM: "1"
+    steps:
+      - name: Check out Abandonware
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Materialize pinned Robin's Rescue source
+        run: |
+          set -euo pipefail
+          python3 tools/materialize_source_snapshot.py runtime/sources/robins-rescue-build.json
+
+      - name: Validate source preservation package
+        run: |
+          set -euo pipefail
+          root=runtime/sources/robins-rescue
+          test -s "$root/PROVENANCE.json"
+          test -s "$root/SOURCE.md"
+          test -s "$root/legal/COPYING"
+          test -s "$root/legal/README.md"
+          test -s "$root/legal/sprite_sources__medieval_sharp__SIL - Open Font License.txt"
+          find "$root" -maxdepth 1 -name 'robins-rescue-*.tar.gz' -type f -size +1M -print -quit | grep -q .
+
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+
+          manifest = json.loads(Path('runtime/sources/robins-rescue-build.json').read_text(encoding='utf-8'))
+          provenance = json.loads(Path('runtime/sources/robins-rescue/PROVENANCE.json').read_text(encoding='utf-8'))
+          assert provenance['commit'] == manifest['commit']
+          assert provenance['tree'] == manifest['tree']
+          assert provenance['file_count'] == manifest['file_count']
+          archive = Path('runtime/sources/robins-rescue') / provenance['archive_file']
+          actual = hashlib.sha256(archive.read_bytes()).hexdigest()
+          assert actual == manifest['archive_sha256'] == provenance['archive_sha256']
+          print(f"Verified corresponding source {provenance['commit']} ({archive.stat().st_size} bytes)")
+          PY
+
+          if find "$root" -type f -size +95M -print -quit | grep -q .; then
+            echo "A source preservation file exceeds the 95 MB repository safety threshold" >&2
+            exit 1
+          fi
+
+      - name: Commit corresponding source snapshot
+        run: |
+          set -euo pipefail
+          git config user.name "abandonware-preservation-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add runtime/sources/robins-rescue
+          if git diff --cached --quiet; then
+            echo "Corresponding source already matches the pinned manifest."
+            exit 0
+          fi
+          git commit -m "build: preserve Robin's Rescue corresponding source"
+          git pull --rebase origin main
+          git push origin HEAD:main
