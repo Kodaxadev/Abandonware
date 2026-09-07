@@ -3,8 +3,9 @@
 
 This lane is for corresponding-source and license evidence only. It clones a bare
 repository, records the exact commit/tree, inventories files and gitlinks, preserves
-human-readable license/readme notices, and creates a deterministic git-archive tarball.
-It never checks out or runs files from the audited repository.
+human-readable license/readme notices, records remote release tags, and creates a
+deterministic git-archive tarball. It never checks out or runs files from the audited
+repository.
 """
 
 from __future__ import annotations
@@ -58,6 +59,37 @@ def clone_bare(url: str, destination: Path) -> None:
     )
 
 
+def remote_tags(url: str) -> list[dict]:
+    """Read remote tag refs without checking out or executing remote content."""
+    result = subprocess.run(
+        ["git", "-c", "protocol.file.allow=never", "ls-remote", "--tags", url],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    indexed: dict[str, dict] = {}
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        object_sha, ref = line.split("\t", 1)
+        prefix = "refs/tags/"
+        if not ref.startswith(prefix):
+            continue
+        name = ref[len(prefix):]
+        peeled = name.endswith("^{}")
+        if peeled:
+            name = name[:-3]
+        record = indexed.setdefault(name, {"name": name})
+        record["peeled_commit" if peeled else "object"] = object_sha
+    records = []
+    for name in sorted(indexed):
+        record = indexed[name]
+        record["resolved_commit"] = record.get("peeled_commit", record.get("object"))
+        records.append(record)
+    return records
+
+
 def notice_name(path: str) -> bool:
     name = path.rsplit("/", 1)[-1].casefold()
     return any(token in name for token in NOTICE_TOKENS)
@@ -93,12 +125,14 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
 
     with tempfile.TemporaryDirectory(prefix="abandonware-source-audit-") as temp_dir:
         git_dir = Path(temp_dir) / "source.git"
+        tags = remote_tags(repository_url)
         clone_bare(repository_url, git_dir)
 
         commit = str(run_git(git_dir, "rev-parse", "HEAD")).strip()
         tree = str(run_git(git_dir, "rev-parse", "HEAD^{tree}")).strip()
         branch = str(run_git(git_dir, "symbolic-ref", "--short", "HEAD")).strip()
         commit_time = str(run_git(git_dir, "show", "-s", "--format=%cI", "HEAD")).strip()
+        head_tags = [tag["name"] for tag in tags if tag.get("resolved_commit") == commit]
 
         raw_tree = str(run_git(git_dir, "ls-tree", "-r", "HEAD"))
         files: list[dict] = []
@@ -146,7 +180,7 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
         )
 
         record = {
-            "schema": 1,
+            "schema": 2,
             "candidate_id": candidate_id,
             "title": manifest.get("title"),
             "repository_url": repository_url,
@@ -155,6 +189,8 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
             "resolved_commit": commit,
             "resolved_tree": tree,
             "commit_time": commit_time,
+            "remote_tags": tags,
+            "tags_pointing_at_head": head_tags,
             "file_count": len(files),
             "gitlinks": gitlinks,
             "files": files,
@@ -164,9 +200,10 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
             "archive_sha256": sha256(archive_path),
             "decision": "REQUIRES_HUMAN_SOURCE_REVIEW",
             "warning": (
-                "This audit records source identity and notice files only. It does not execute "
-                "the repository and does not itself establish that every compiled game asset is "
-                "covered by the expected licenses."
+                "This audit records source identity, remote tag refs, and notice files only. "
+                "It does not execute the repository and does not itself establish that every "
+                "compiled game asset is covered by the expected licenses or that HEAD is the "
+                "exact source corresponding to a separately distributed binary."
             ),
         }
 
@@ -177,7 +214,10 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
         "candidate_id": candidate_id,
         "branch": record["resolved_branch"],
         "commit": record["resolved_commit"],
+        "commit_time": record["commit_time"],
         "tree": record["resolved_tree"],
+        "remote_tags": record["remote_tags"],
+        "tags_pointing_at_head": record["tags_pointing_at_head"],
         "file_count": record["file_count"],
         "gitlinks": record["gitlinks"],
         "notice_paths": [notice["path"] for notice in notice_records],
@@ -198,6 +238,8 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
         print("\nWARNING: no license/readme/copyright-style source notice files were found.")
     if gitlinks:
         print("\nWARNING: source repository contains gitlinks/submodules not included in git archive.")
+    if not head_tags:
+        print("\nNOTE: no remote tag points directly at the audited branch HEAD.")
 
     return record
 
