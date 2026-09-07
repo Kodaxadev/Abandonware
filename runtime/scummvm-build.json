@@ -95,6 +95,7 @@
       "sha256": "ada412228a149394489b28c6c7f9ebab0722b52e04732fd0aa22949673cfa3a0",
       "data_directory": "mystery-house",
       "relative_game_path": ".",
+      "required_files": ["MYSTHOUS.DSK"],
       "rights_record": "docs/rights/mystery-house.md",
       "config": {
         "gameid": "hires1",
@@ -160,7 +161,8 @@
       "source_page": "https://www.scummvm.org/games/",
       "sha256": "f516b30a046526f78cbc923d8f907d267ab964ccd9b770afc72350e8d467ec4d",
       "data_directory": "sfinx-en-v1.1",
-      "relative_game_path": ".",
+      "relative_game_path": "sfinx-en-v1.1",
+      "required_files": ["vol.cat", "vol.dat"],
       "rights_record": "docs/rights/sfinx.md",
       "config": {
         "gameid": "sfinx",
@@ -183,6 +185,7 @@
       "sha256": "87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6",
       "data_directory": "soltys-en-v1.0",
       "relative_game_path": ".",
+      "required_files": ["vol.cat", "vol.dat"],
       "rights_record": "docs/rights/soltys.md",
       "config": {
         "gameid": "soltys",
