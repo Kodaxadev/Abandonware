@@ -1,0 +1,185 @@
+name: Materialize js-dos Runtime
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "runtime/jsdos-build.json"
+      - ".github/workflows/materialize-jsdos.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-jsdos-runtime
+  cancel-in-progress: true
+
+jobs:
+  materialize-jsdos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out Abandonware
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check out pinned js-dos source
+        uses: actions/checkout@v4
+        with:
+          repository: caiiiycuk/js-dos
+          ref: be548f4fb3616c956bfcd35d7c36f6db91d6a8b8
+          path: jsdos-source
+          fetch-depth: 1
+
+      - name: Check out pinned emulator source
+        uses: actions/checkout@v4
+        with:
+          repository: caiiiycuk/emulators
+          ref: 0d840292a74dad4574d5068d8cf934a4e580ea11
+          path: emulators-source
+          fetch-depth: 1
+
+      - name: Validate manifest pins
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          m = json.loads(Path('runtime/jsdos-build.json').read_text(encoding='utf-8'))
+          assert m['runtime']['version'] == '8.4.1'
+          assert m['runtime']['commit'] == 'be548f4fb3616c956bfcd35d7c36f6db91d6a8b8'
+          assert m['runtime']['release_sha256'] == '26118692bbb180aec78ec1697eb1ea6b28ff410101870cfa3e68309914c7eaa6'
+          assert m['emulators']['version'] == '8.4.1'
+          assert m['emulators']['commit'] == '0d840292a74dad4574d5068d8cf934a4e580ea11'
+          print('Pinned js-dos runtime manifest validated')
+          PY
+          test "$(git -C jsdos-source rev-parse HEAD)" = "be548f4fb3616c956bfcd35d7c36f6db91d6a8b8"
+          test "$(git -C emulators-source rev-parse HEAD)" = "0d840292a74dad4574d5068d8cf934a4e580ea11"
+
+      - name: Download and verify official release artifact
+        run: |
+          set -euo pipefail
+          url=$(python3 -c 'import json; print(json.load(open("runtime/jsdos-build.json"))["runtime"]["release_url"])')
+          sha=$(python3 -c 'import json; print(json.load(open("runtime/jsdos-build.json"))["runtime"]["release_sha256"])')
+          curl --fail --location --retry 3 --retry-delay 2 "$url" -o /tmp/jsdos-release.zip
+          echo "$sha  /tmp/jsdos-release.zip" | sha256sum --check --strict
+          unzip -q /tmp/jsdos-release.zip -d /tmp/jsdos-release
+
+      - name: Validate release layout and materialize runtime
+        run: |
+          set -euo pipefail
+          mapfile -t jsfiles < <(find /tmp/jsdos-release -type f -name 'js-dos.js' -print)
+          if [ "${#jsfiles[@]}" -ne 1 ]; then
+            printf 'Expected exactly one js-dos.js, found %s\n' "${#jsfiles[@]}" >&2
+            find /tmp/jsdos-release -maxdepth 3 -type f -printf '%p\n' | sort >&2
+            exit 1
+          fi
+
+          root=$(dirname "${jsfiles[0]}")
+          test -s "$root/js-dos.js"
+          test -s "$root/js-dos.css"
+          test -d "$root/emulators"
+          find "$root/emulators" -type f -print -quit | grep -q .
+
+          rm -rf runtime/jsdos
+          mkdir -p runtime/jsdos
+          cp -a "$root"/. runtime/jsdos/
+
+      - name: Preserve GPL source and provenance record
+        run: |
+          set -euo pipefail
+          mkdir -p runtime/jsdos/legal
+
+          jsdos_license=$(find jsdos-source -maxdepth 2 -type f \( -iname 'license*' -o -iname 'copying*' \) -print -quit)
+          emulator_license=$(find emulators-source -maxdepth 2 -type f \( -iname 'license*' -o -iname 'copying*' \) -print -quit)
+          test -n "$jsdos_license"
+          test -n "$emulator_license"
+          cp "$jsdos_license" runtime/jsdos/legal/JSDOS-LICENSE
+          cp "$emulator_license" runtime/jsdos/legal/EMULATORS-LICENSE
+
+          cat > runtime/jsdos/SOURCE.md <<'EOF'
+          # js-dos browser runtime source record
+
+          This directory is materialized from the official js-dos 8.4.1 release artifact.
+
+          js-dos source commit:
+
+          `be548f4fb3616c956bfcd35d7c36f6db91d6a8b8`
+
+          https://github.com/caiiiycuk/js-dos/tree/be548f4fb3616c956bfcd35d7c36f6db91d6a8b8
+
+          Matching emulator source commit:
+
+          `0d840292a74dad4574d5068d8cf934a4e580ea11`
+
+          https://github.com/caiiiycuk/emulators/tree/0d840292a74dad4574d5068d8cf934a4e580ea11
+
+          Official release artifact:
+
+          https://github.com/caiiiycuk/js-dos/releases/download/v8.4.1/release.zip
+
+          Expected release SHA-256:
+
+          `26118692bbb180aec78ec1697eb1ea6b28ff410101870cfa3e68309914c7eaa6`
+
+          js-dos and its emulator components are distributed under their upstream GPL terms. Abandonware's MIT license applies only to original Kodaxa project code and does not relicense these runtime files.
+          EOF
+
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          build = json.loads(Path('runtime/jsdos-build.json').read_text(encoding='utf-8'))
+          provenance = {
+              'schema': 1,
+              'runtime': build['runtime'],
+              'emulators': build['emulators'],
+              'materialized_files': {
+                  'js-dos.js': hashlib.sha256(Path('runtime/jsdos/js-dos.js').read_bytes()).hexdigest(),
+                  'js-dos.css': hashlib.sha256(Path('runtime/jsdos/js-dos.css').read_bytes()).hexdigest(),
+              },
+              'source_record': 'runtime/jsdos/SOURCE.md',
+          }
+          Path('runtime/jsdos/PROVENANCE.json').write_text(
+              json.dumps(provenance, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+          PY
+
+      - name: Validate repository-safe artifact
+        run: |
+          set -euo pipefail
+          test -s runtime/jsdos/js-dos.js
+          test -s runtime/jsdos/js-dos.css
+          test -s runtime/jsdos/PROVENANCE.json
+          test -s runtime/jsdos/SOURCE.md
+          test -s runtime/jsdos/legal/JSDOS-LICENSE
+          test -s runtime/jsdos/legal/EMULATORS-LICENSE
+          find runtime/jsdos/emulators -type f -print -quit | grep -q .
+
+          if find runtime/jsdos -type f -size +95M -print -quit | grep -q .; then
+            echo "A js-dos runtime file exceeds the 95 MB repository safety threshold:" >&2
+            find runtime/jsdos -type f -size +95M -print >&2
+            exit 1
+          fi
+
+          echo "Materialized js-dos runtime: $(du -sh runtime/jsdos | cut -f1)"
+          find runtime/jsdos -maxdepth 2 -type f -printf '%s %p\n' | sort -nr | head -30
+
+      - name: Commit generated runtime
+        run: |
+          set -euo pipefail
+          git config user.name "abandonware-preservation-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add runtime/jsdos
+          if git diff --cached --quiet; then
+            echo "Pinned js-dos runtime already matches its manifest."
+            exit 0
+          fi
+          git commit -m "build: materialize pinned js-dos 8.4.1 runtime"
+          git pull --rebase origin main
+          git push origin HEAD:main
