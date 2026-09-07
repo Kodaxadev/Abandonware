@@ -1,0 +1,73 @@
+.cover-mystery-house {
+  background:
+    radial-gradient(circle at 73% 22%, rgba(255, 210, 118, .16), transparent 12%),
+    linear-gradient(145deg, #1a211d 0 27%, #101512 27% 62%, #080a09 62%);
+}
+.cover-mystery-house::before {
+  width: 57%;
+  height: 78%;
+  left: 18%;
+  bottom: -8%;
+  border: 1px solid rgba(210, 221, 181, .28);
+  border-bottom: 0;
+  clip-path: polygon(0 100%, 0 35%, 20% 35%, 20% 20%, 43% 20%, 50% 0, 57% 20%, 80% 20%, 80% 35%, 100% 35%, 100% 100%);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 19px, rgba(210, 221, 181, .035) 20px 21px);
+}
+.cover-mystery-house::after {
+  width: 76%;
+  height: 1px;
+  left: 12%;
+  top: 49%;
+  background: rgba(129, 214, 151, .30);
+  box-shadow: 0 17px 0 rgba(129, 214, 151, .08), 0 -17px 0 rgba(129, 214, 151, .05);
+}
+
+.cover-drascula {
+  background:
+    radial-gradient(circle at 72% 27%, rgba(234, 58, 79, .18), transparent 14%),
+    linear-gradient(150deg, #3b1520 0 28%, #1d1014 28% 63%, #0b0a0b 63%);
+}
+.cover-drascula::before {
+  width: 150px;
+  height: 150px;
+  right: -25px;
+  top: -22px;
+  border: 1px solid rgba(234, 58, 79, .35);
+  transform: rotate(45deg);
+  box-shadow: inset 0 0 0 22px rgba(234, 58, 79, .02);
+}
+.cover-drascula::after {
+  width: 65%;
+  height: 65%;
+  left: 8%;
+  bottom: -5%;
+  border-left: 1px solid rgba(239, 203, 147, .20);
+  background: repeating-linear-gradient(0deg, transparent 0 16px, rgba(239, 203, 147, .045) 17px 18px);
+  transform: skewX(-12deg);
+}
+
+.cover-dreamweb {
+  background:
+    radial-gradient(circle at 50% 16%, rgba(85, 191, 217, .14), transparent 18%),
+    linear-gradient(155deg, #192b35 0 30%, #11191f 30% 59%, #080b0e 59%);
+}
+.cover-dreamweb::before {
+  width: 88%;
+  height: 72%;
+  left: 6%;
+  bottom: -13%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 23px, rgba(96, 205, 230, .08) 24px 25px),
+    repeating-linear-gradient(0deg, transparent 0 20px, rgba(176, 91, 184, .06) 21px 22px);
+  transform: perspective(180px) rotateX(58deg);
+  transform-origin: bottom;
+}
+.cover-dreamweb::after {
+  width: 1px;
+  height: 76%;
+  left: 50%;
+  top: 12%;
+  background: rgba(226, 99, 188, .25);
+  box-shadow: -55px 0 0 rgba(96, 205, 230, .10), 55px 0 0 rgba(96, 205, 230, .10);
+}
