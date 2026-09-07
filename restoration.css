@@ -51,6 +51,34 @@
   transform: rotate(-8deg);
 }
 
+.cover-steel-sky {
+  background:
+    linear-gradient(180deg, rgba(239, 122, 45, .16), transparent 38%),
+    linear-gradient(145deg, #384851 0 27%, #171d20 27% 56%, #090d0f 56%);
+}
+.cover-steel-sky::before {
+  width: 62%;
+  height: 70%;
+  right: -8%;
+  bottom: -8%;
+  border-left: 1px solid rgba(125, 217, 235, .45);
+  border-top: 1px solid rgba(125, 217, 235, .22);
+  transform: skewX(-18deg);
+  box-shadow:
+    -28px -18px 0 rgba(239, 122, 45, .035),
+    -56px -36px 0 rgba(125, 217, 235, .025);
+}
+.cover-steel-sky::after {
+  width: 80%;
+  height: 45%;
+  left: 8%;
+  top: 14%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 17px, rgba(125, 217, 235, .13) 18px 19px),
+    repeating-linear-gradient(0deg, transparent 0 15px, rgba(239, 122, 45, .10) 16px 17px);
+  clip-path: polygon(0 100%, 10% 42%, 22% 65%, 34% 14%, 50% 55%, 63% 28%, 78% 63%, 90% 20%, 100% 100%);
+}
+
 .cover-live {
   position: absolute;
   left: 14px;
@@ -88,6 +116,20 @@
 }
 .record-links a:hover { text-decoration: underline; }
 
+.dos-player.scummvm-player {
+  overflow: hidden;
+  background: #000;
+}
+
+.scummvm-frame {
+  display: block;
+  width: 100%;
+  height: min(70vh, 760px);
+  min-height: 500px;
+  border: 0;
+  background: #000;
+}
+
 .runtime-error {
   min-height: 470px;
   padding: 48px;
@@ -116,4 +158,11 @@
   color: var(--dim);
   font-size: 10px;
   line-height: 1.55;
+}
+
+@media (max-width: 720px) {
+  .scummvm-frame {
+    min-height: 420px;
+    height: 65vh;
+  }
 }
