@@ -1,0 +1,121 @@
+name: Materialize JSZip Runtime
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "runtime/jszip-build.json"
+      - ".github/workflows/materialize-jszip.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-jszip-runtime
+  cancel-in-progress: true
+
+jobs:
+  materialize-jszip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out Abandonware
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check out pinned JSZip source
+        uses: actions/checkout@v4
+        with:
+          repository: Stuk/jszip
+          ref: 0f2f1e4d0509514417db83fe5b86bde90e0ffe8d
+          path: jszip-source
+          fetch-depth: 1
+
+      - name: Validate source pin and release identity
+        run: |
+          set -euo pipefail
+          test "$(git -C jszip-source rev-parse HEAD)" = "0f2f1e4d0509514417db83fe5b86bde90e0ffe8d"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path('runtime/jszip-build.json').read_text(encoding='utf-8'))
+          runtime = manifest['runtime']
+          package = json.loads(Path('jszip-source/package.json').read_text(encoding='utf-8'))
+          assert runtime['version'] == package['version'] == '3.10.1'
+          assert runtime['commit'] == '0f2f1e4d0509514417db83fe5b86bde90e0ffe8d'
+          assert package['license'] in ('MIT or GPL-3.0-or-later', '(MIT OR GPL-3.0-or-later)', 'MIT') or 'GPL' in package['license']
+          print(f"Pinned JSZip {package['version']} source validated ({package['license']}).")
+          PY
+          grep -Fq 'JSZip v3.10.1' jszip-source/dist/jszip.min.js
+          test -s jszip-source/LICENSE.markdown
+
+      - name: Materialize browser dependency
+        run: |
+          set -euo pipefail
+          rm -rf runtime/jszip
+          mkdir -p runtime/jszip/legal
+          cp jszip-source/dist/jszip.min.js runtime/jszip/jszip.min.js
+          cp jszip-source/LICENSE.markdown runtime/jszip/legal/LICENSE.markdown
+
+          cat > runtime/jszip/SOURCE.md <<'EOF'
+          # JSZip browser dependency source record
+
+          The local ZIP-import workbench uses the browser distribution of JSZip 3.10.1 from pinned upstream commit:
+
+          `0f2f1e4d0509514417db83fe5b86bde90e0ffe8d`
+
+          Corresponding source:
+
+          https://github.com/Stuk/jszip/tree/0f2f1e4d0509514417db83fe5b86bde90e0ffe8d
+
+          Materialized source file: `dist/jszip.min.js`.
+
+          The upstream license is preserved at `runtime/jszip/legal/LICENSE.markdown`.
+          EOF
+
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path('runtime/jszip-build.json').read_text(encoding='utf-8'))
+          artifact = Path('runtime/jszip/jszip.min.js')
+          provenance = {
+              'schema': 1,
+              'runtime': manifest['runtime'],
+              'materialized_file': 'runtime/jszip/jszip.min.js',
+              'sha256': hashlib.sha256(artifact.read_bytes()).hexdigest(),
+              'source_record': 'runtime/jszip/SOURCE.md',
+              'license': 'runtime/jszip/legal/LICENSE.markdown',
+          }
+          Path('runtime/jszip/PROVENANCE.json').write_text(
+              json.dumps(provenance, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+          PY
+
+      - name: Validate vendored dependency
+        run: |
+          set -euo pipefail
+          test -s runtime/jszip/jszip.min.js
+          test -s runtime/jszip/PROVENANCE.json
+          test -s runtime/jszip/SOURCE.md
+          test -s runtime/jszip/legal/LICENSE.markdown
+          grep -Fq 'JSZip v3.10.1' runtime/jszip/jszip.min.js
+
+      - name: Commit materialized dependency
+        run: |
+          set -euo pipefail
+          git config user.name "abandonware-preservation-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add runtime/jszip
+          if git diff --cached --quiet; then
+            echo "Pinned JSZip runtime already matches its manifest."
+            exit 0
+          fi
+          git commit -m "build: materialize pinned JSZip 3.10.1"
+          git pull --rebase origin main
+          git push origin HEAD:main
