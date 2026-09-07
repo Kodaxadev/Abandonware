@@ -49,6 +49,7 @@ try {
 
   const runtime = await page.evaluate(() => ({
     hasDos: typeof window.Dos === "function",
+    hasZip: typeof window.JSZip === "function",
     jsdos: window.ABANDONWARE_JSDOS || null,
     gameCount: Array.isArray(window.ABANDONWARE_GAMES) ? window.ABANDONWARE_GAMES.length : 0,
     hostedCount: Array.isArray(window.ABANDONWARE_GAMES)
@@ -57,10 +58,11 @@ try {
   }));
 
   assert(runtime.hasDos, "Pinned js-dos global did not initialize");
+  assert(runtime.hasZip, "Pinned local JSZip global did not initialize");
   assert(runtime.jsdos?.version === "8.4.1", `Unexpected js-dos version marker: ${runtime.jsdos?.version}`);
   assert(runtime.jsdos?.pathPrefix === "runtime/jsdos/emulators/", "js-dos local emulator bridge is not active");
-  assert(runtime.gameCount >= 8, `Catalog unexpectedly small: ${runtime.gameCount}`);
-  assert(runtime.hostedCount >= 8, `Hosted catalog unexpectedly small: ${runtime.hostedCount}`);
+  assert(runtime.gameCount >= 10, `Catalog unexpectedly small: ${runtime.gameCount}`);
+  assert(runtime.hostedCount >= 10, `Hosted catalog unexpectedly small: ${runtime.hostedCount}`);
 
   // Launch a real hosted DOS title through the same UI path a user follows.
   await page.locator('[data-game-id="xargon"]').click();
@@ -77,18 +79,32 @@ try {
 
   await stopAndCloseRuntime();
 
-  // Launch a ScummVM title and prove WASM, relocatable HTTP-FS, and actual game data load.
+  // Launch Steel Sky and prove WASM, relocatable HTTP-FS, and actual game data load.
   await page.locator('[data-game-id="beneath-a-steel-sky"]').click();
   await page.locator("#details-play-hosted").click();
   await waitForRequestPart("runtime/scummvm/scummvm.wasm", 45000);
   await waitForRequestPart("runtime/scummvm/data/index.json", 45000);
   await waitForRequestPart("runtime/scummvm/data/games/sky-BASS-Floppy-1.3/index.json", 45000);
   await waitForRequestPart("runtime/scummvm/data/games/sky-BASS-Floppy-1.3/sky.dsk", 45000);
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1000);
 
-  const frame = page.locator("#dos-player iframe.scummvm-frame");
+  let frame = page.locator("#dos-player iframe.scummvm-frame");
   assert(await frame.count() === 1, "ScummVM player iframe was not created");
   assert((await frame.getAttribute("src"))?.endsWith("#sky"), "ScummVM did not receive the direct #sky target");
+
+  await stopAndCloseRuntime();
+
+  // Exercise the exact nested payload path that previously caught a false-positive intake configuration.
+  await page.locator('[data-game-id="sfinx"]').click();
+  await page.locator("#details-play-hosted").click();
+  await waitForRequestPart("runtime/scummvm/data/games/sfinx-en-v1.1/sfinx-en-v1.1/index.json", 45000);
+  await waitForRequestPart("runtime/scummvm/data/games/sfinx-en-v1.1/sfinx-en-v1.1/vol.cat", 45000);
+  await waitForRequestPart("runtime/scummvm/data/games/sfinx-en-v1.1/sfinx-en-v1.1/vol.dat", 45000);
+  await page.waitForTimeout(1000);
+
+  frame = page.locator("#dos-player iframe.scummvm-frame");
+  assert(await frame.count() === 1, "Sfinx ScummVM player iframe was not created");
+  assert((await frame.getAttribute("src"))?.endsWith("#sfinx"), "ScummVM did not receive the direct #sfinx target");
 
   const originRootDataRequests = requests.filter(url => {
     try {
@@ -102,8 +118,14 @@ try {
     `ScummVM escaped its relocatable runtime and requested origin-root /data/index.json: ${originRootDataRequests.join(", ")}`
   );
 
-  // Keep runtime errors strict. Headless Chromium has no speech-synthesis voices;
-  // ScummVM reports that optional accessibility limitation through stderr/console.error.
+  const functionalCdns = requests.filter(url =>
+    url.includes("v8.js-dos.com/latest") ||
+    url.includes("cdn.jsdelivr.net/npm/jszip")
+  );
+  assert(functionalCdns.length === 0, `Functional runtime CDN request detected: ${functionalCdns.join(", ")}`);
+
+  // Headless Chromium has no speech-synthesis voices; ScummVM reports that optional
+  // accessibility limitation through stderr/console.error. Keep every other error strict.
   const fatalConsoleErrors = consoleErrors.filter(message =>
     !message.includes("No MIDI support in your browser") &&
     !message.includes("WARNING: No voice is available for language:")
@@ -119,7 +141,8 @@ try {
     jsdosLocalEmulatorRequests: requests.filter(url => url.includes("runtime/jsdos/emulators/")).length,
     scummvmWasmRequests: requests.filter(url => url.includes("runtime/scummvm/scummvm.wasm")).length,
     scummvmRelativeDataRequests: requests.filter(url => url.includes("runtime/scummvm/data/")).length,
-    steelSkyPayloadRequests: requests.filter(url => url.includes("sky-BASS-Floppy-1.3/sky.dsk")).length
+    steelSkyPayloadRequests: requests.filter(url => url.includes("sky-BASS-Floppy-1.3/sky.dsk")).length,
+    sfinxPayloadRequests: requests.filter(url => url.includes("sfinx-en-v1.1/sfinx-en-v1.1/vol.dat")).length
   }, null, 2));
 } finally {
   await browser.close();
