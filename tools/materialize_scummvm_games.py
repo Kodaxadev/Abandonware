@@ -18,7 +18,7 @@ import urllib.request
 import zipfile
 
 NOTICE_NAMES = ("readme", "license", "licence", "copying", "copyright")
-ALLOWED_RIGHTS_BASES = {"freeware_redistribution", "public_domain"}
+ALLOWED_RIGHTS_BASES = {"freeware_redistribution", "public_domain", "open_license"}
 
 
 def digest(path: Path, algorithm: str) -> str:
@@ -47,17 +47,12 @@ def safe_member_path(name: str) -> PurePosixPath:
     return normalized
 
 
-def safe_extract(archive: zipfile.ZipFile, destination: Path) -> None:
-    destination.mkdir(parents=True, exist_ok=True)
-    for item in archive.infolist():
-        member = safe_member_path(item.filename)
-        target = destination.joinpath(*member.parts)
-        if item.is_dir():
-            target.mkdir(parents=True, exist_ok=True)
-            continue
-        target.parent.mkdir(parents=True, exist_ok=True)
-        with archive.open(item, "r") as source, target.open("wb") as output:
-            shutil.copyfileobj(source, output)
+def repository_file(value: str, label: str) -> Path:
+    normalized = safe_member_path(str(value))
+    path = Path(*normalized.parts)
+    if not path.is_file():
+        raise RuntimeError(f"{label} is missing: {path}")
+    return path
 
 
 def find_notices(root: Path) -> list[str]:
@@ -80,18 +75,122 @@ def normalize_games(manifest: dict) -> list[dict]:
     return games
 
 
-def validate_rights_policy(game: dict, notices: list[str]) -> str:
+def validate_open_license_evidence(game: dict) -> dict:
+    identifiers = game.get("license_identifiers")
+    if not isinstance(identifiers, list) or not identifiers or not all(
+        isinstance(item, str) and item.strip() for item in identifiers
+    ):
+        raise RuntimeError(
+            f"Open-license game {game['id']} must declare non-empty license_identifiers"
+        )
+
+    source_record_value = game.get("corresponding_source_record")
+    if not source_record_value:
+        raise RuntimeError(
+            f"Open-license game {game['id']} has no corresponding_source_record"
+        )
+    source_record = repository_file(
+        source_record_value,
+        f"Corresponding-source record for {game['id']}",
+    )
+
+    try:
+        source = json.loads(source_record.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as error:
+        raise RuntimeError(
+            f"Corresponding-source record is invalid JSON for {game['id']}: {source_record}"
+        ) from error
+
+    if source.get("id") != game["id"]:
+        raise RuntimeError(
+            f"Corresponding-source id mismatch for {game['id']}: {source.get('id')!r}"
+        )
+    if not source.get("commit") or not source.get("tree"):
+        raise RuntimeError(
+            f"Corresponding-source record lacks commit/tree identity for {game['id']}"
+        )
+
+    archive_name = source.get("archive_file")
+    expected_archive_sha = str(source.get("archive_sha256", "")).casefold()
+    if not archive_name or len(expected_archive_sha) != 64:
+        raise RuntimeError(
+            f"Corresponding-source archive identity is incomplete for {game['id']}"
+        )
+    archive_rel = safe_member_path(str(archive_name))
+    archive_path = source_record.parent.joinpath(*archive_rel.parts)
+    if not archive_path.is_file():
+        raise RuntimeError(
+            f"Corresponding-source archive is missing for {game['id']}: {archive_path}"
+        )
+    actual_archive_sha = digest(archive_path, "sha256")
+    if actual_archive_sha.casefold() != expected_archive_sha:
+        raise RuntimeError(
+            f"Corresponding-source archive hash mismatch for {game['id']}: "
+            f"expected {expected_archive_sha}, got {actual_archive_sha}"
+        )
+
+    preserved_records = source.get("preserved_notices")
+    if not isinstance(preserved_records, list) or not preserved_records:
+        raise RuntimeError(
+            f"Corresponding-source record has no preserved notices for {game['id']}"
+        )
+
+    preserved_paths: set[Path] = set()
+    for record in preserved_records:
+        materialized = record.get("materialized_path") if isinstance(record, dict) else None
+        if not materialized:
+            raise RuntimeError(
+                f"Corresponding-source notice record is incomplete for {game['id']}"
+            )
+        notice_rel = safe_member_path(str(materialized))
+        notice_path = source_record.parent.joinpath(*notice_rel.parts)
+        if not notice_path.is_file():
+            raise RuntimeError(
+                f"Preserved source notice is missing for {game['id']}: {notice_path}"
+            )
+        expected = str(record.get("sha256", "")).casefold()
+        if len(expected) != 64 or digest(notice_path, "sha256").casefold() != expected:
+            raise RuntimeError(
+                f"Preserved source notice hash mismatch for {game['id']}: {notice_path}"
+            )
+        preserved_paths.add(notice_path.resolve())
+
+    evidence_values = game.get("external_license_files")
+    if not isinstance(evidence_values, list) or not evidence_values:
+        raise RuntimeError(
+            f"Open-license game {game['id']} must declare external_license_files"
+        )
+
+    for value in evidence_values:
+        evidence_path = repository_file(
+            str(value),
+            f"External license/attribution evidence for {game['id']}",
+        )
+        if evidence_path.resolve() not in preserved_paths:
+            raise RuntimeError(
+                f"External license evidence for {game['id']} is not a preserved "
+                f"corresponding-source notice: {evidence_path}"
+            )
+
+    return {
+        "source_record": source_record.as_posix(),
+        "source_commit": source["commit"],
+        "source_tree": source["tree"],
+        "source_archive": archive_path.as_posix(),
+        "source_archive_sha256": actual_archive_sha,
+        "license_identifiers": identifiers,
+        "external_license_files": [str(value) for value in evidence_values],
+    }
+
+
+def validate_rights_policy(game: dict, notices: list[str]) -> tuple[str, dict | None]:
     rights_basis = game.get("rights_basis", "freeware_redistribution")
     if rights_basis not in ALLOWED_RIGHTS_BASES:
         raise RuntimeError(
             f"Unsupported rights_basis for {game['id']}: {rights_basis!r}"
         )
 
-    rights_record = Path(game["rights_record"])
-    if not rights_record.is_file():
-        raise RuntimeError(
-            f"Audited rights record is missing for {game['id']}: {rights_record}"
-        )
+    repository_file(game["rights_record"], f"Audited rights record for {game['id']}")
 
     if rights_basis == "freeware_redistribution":
         if not notices:
@@ -99,12 +198,16 @@ def validate_rights_policy(game: dict, notices: list[str]) -> str:
                 f"Freeware package {game['id']} contains no preserved "
                 "readme/license/copyright notice"
             )
-        return "package_notice_required"
+        return "package_notice_required", None
+
+    if rights_basis == "open_license":
+        evidence = validate_open_license_evidence(game)
+        return "external_open_license_record", evidence
 
     # Public-domain artifacts do not necessarily carry a license file in the original
     # disk image. In that case the checked-in rights record must document the external
     # public-domain declaration and exact source artifact.
-    return "external_public_domain_record"
+    return "external_public_domain_record", None
 
 
 def game_target_path(data_root: Path, game: dict) -> Path:
@@ -220,10 +323,10 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
                 safe_extract(archive, destination)
 
             notices = find_notices(destination)
-            notice_policy = validate_rights_policy(game, notices)
+            notice_policy, external_evidence = validate_rights_policy(game, notices)
             target_path, direct_files = validate_game_target(data_root, game)
 
-            provenance_games.append({
+            provenance_game = {
                 "id": game["id"],
                 "target": game["target"],
                 "title": game["title"],
@@ -239,12 +342,15 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
                 "rights_basis": game.get("rights_basis", "freeware_redistribution"),
                 "notice_policy": notice_policy,
                 "preserved_notices": notices,
-            })
+            }
+            if external_evidence is not None:
+                provenance_game["external_rights_evidence"] = external_evidence
+            provenance_games.append(provenance_game)
             print(
                 f"Verified {game['id']} ({archive_path.stat().st_size} bytes, "
                 f"rights={game.get('rights_basis', 'freeware_redistribution')}, "
                 f"target={target_path}, {len(direct_files)} direct payload file(s), "
-                f"{len(notices)} notice file(s))"
+                f"{len(notices)} package notice file(s), policy={notice_policy})"
             )
 
     write_scummvm_ini(runtime_root, games, runtime["version"])
@@ -255,7 +361,7 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
         engines = [engine] if engine else []
 
     provenance = {
-        "schema": 3,
+        "schema": 4,
         "runtime": {
             **runtime,
             "engines": engines,
@@ -270,6 +376,19 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
         json.dumps(provenance, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+
+
+def safe_extract(archive: zipfile.ZipFile, destination: Path) -> None:
+    destination.mkdir(parents=True, exist_ok=True)
+    for item in archive.infolist():
+        member = safe_member_path(item.filename)
+        target = destination.joinpath(*member.parts)
+        if item.is_dir():
+            target.mkdir(parents=True, exist_ok=True)
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with archive.open(item, "r") as source, target.open("wb") as output:
+            shutil.copyfileobj(source, output)
 
 
 def main() -> None:
