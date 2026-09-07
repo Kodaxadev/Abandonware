@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "kiloblaster",
+  "title": "Kiloblaster",
+  "version": "2.0a",
+  "rights_record": "docs/rights/kiloblaster.md",
+  "source": {
+    "url": "https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/games/kiloblas.zip",
+    "page": "https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/html/en/games/kiloblas/20250410.0/index.html",
+    "size": 1586517,
+    "sha1": "260a79198aaa221a9742d91af1a639b249c93d51",
+    "copying_policy": "Kiloblaster and Xargon Freeware License"
+  },
+  "launch": {
+    "basename": "KILO.BAT",
+    "machine": "svga_s3",
+    "memory_mb": 16,
+    "cycles": "auto"
+  },
+  "output": "games/kiloblaster.jsdos"
+}
