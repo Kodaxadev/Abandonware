@@ -88,17 +88,25 @@ jobs:
           mkdir -p runtime/jsdos
           cp -a "$root"/. runtime/jsdos/
 
-      - name: Preserve GPL source and provenance record
+      - name: Preserve GPL declaration, license text, and provenance
         run: |
           set -euo pipefail
           mkdir -p runtime/jsdos/legal
 
-          jsdos_license=$(find jsdos-source -maxdepth 2 -type f \( -iname 'license*' -o -iname 'copying*' \) -print -quit)
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          package = json.loads(Path('jsdos-source/package.json').read_text(encoding='utf-8'))
+          assert package.get('license') == 'GPL-2.0', package.get('license')
+          print('Exact js-dos source declares GPL-2.0 in package.json')
+          PY
+
           emulator_license=$(find emulators-source -maxdepth 2 -type f \( -iname 'license*' -o -iname 'copying*' \) -print -quit)
-          test -n "$jsdos_license"
           test -n "$emulator_license"
-          cp "$jsdos_license" runtime/jsdos/legal/JSDOS-LICENSE
-          cp "$emulator_license" runtime/jsdos/legal/EMULATORS-LICENSE
+          cp jsdos-source/package.json runtime/jsdos/legal/JSDOS-PACKAGE.json
+          cp "$emulator_license" runtime/jsdos/legal/GPL-2.0-TEXT
+          cp emulators-source/package.json runtime/jsdos/legal/EMULATORS-PACKAGE.json
 
           cat > runtime/jsdos/SOURCE.md <<'EOF'
           # js-dos browser runtime source record
@@ -125,7 +133,9 @@ jobs:
 
           `26118692bbb180aec78ec1697eb1ea6b28ff410101870cfa3e68309914c7eaa6`
 
-          js-dos and its emulator components are distributed under their upstream GPL terms. Abandonware's MIT license applies only to original Kodaxa project code and does not relicense these runtime files.
+          The exact js-dos source tree declares `GPL-2.0` in its `package.json`; that declaration is copied into `legal/JSDOS-PACKAGE.json`. The full GPL-2.0 text distributed by the matching upstream emulator source is preserved as `legal/GPL-2.0-TEXT`, along with the emulator package metadata.
+
+          Abandonware's MIT license applies only to original Kodaxa project code and does not relicense these upstream runtime files.
           EOF
 
           python3 - <<'PY'
@@ -142,6 +152,8 @@ jobs:
                   'js-dos.js': hashlib.sha256(Path('runtime/jsdos/js-dos.js').read_bytes()).hexdigest(),
                   'js-dos.css': hashlib.sha256(Path('runtime/jsdos/js-dos.css').read_bytes()).hexdigest(),
               },
+              'license_declaration': 'runtime/jsdos/legal/JSDOS-PACKAGE.json',
+              'license_text': 'runtime/jsdos/legal/GPL-2.0-TEXT',
               'source_record': 'runtime/jsdos/SOURCE.md',
           }
           Path('runtime/jsdos/PROVENANCE.json').write_text(
@@ -157,8 +169,9 @@ jobs:
           test -s runtime/jsdos/js-dos.css
           test -s runtime/jsdos/PROVENANCE.json
           test -s runtime/jsdos/SOURCE.md
-          test -s runtime/jsdos/legal/JSDOS-LICENSE
-          test -s runtime/jsdos/legal/EMULATORS-LICENSE
+          test -s runtime/jsdos/legal/JSDOS-PACKAGE.json
+          test -s runtime/jsdos/legal/GPL-2.0-TEXT
+          test -s runtime/jsdos/legal/EMULATORS-PACKAGE.json
           find runtime/jsdos/emulators -type f -print -quit | grep -q .
 
           if find runtime/jsdos -type f -size +95M -print -quit | grep -q .; then
