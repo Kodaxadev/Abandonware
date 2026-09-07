@@ -61,8 +61,8 @@ try {
   assert(runtime.hasZip, "Pinned local JSZip global did not initialize");
   assert(runtime.jsdos?.version === "8.4.1", `Unexpected js-dos version marker: ${runtime.jsdos?.version}`);
   assert(runtime.jsdos?.pathPrefix === "runtime/jsdos/emulators/", "js-dos local emulator bridge is not active");
-  assert(runtime.gameCount >= 10, `Catalog unexpectedly small: ${runtime.gameCount}`);
-  assert(runtime.hostedCount >= 10, `Hosted catalog unexpectedly small: ${runtime.hostedCount}`);
+  assert(runtime.gameCount >= 11, `Catalog unexpectedly small: ${runtime.gameCount}`);
+  assert(runtime.hostedCount >= 11, `Hosted catalog unexpectedly small: ${runtime.hostedCount}`);
 
   // Launch a real hosted DOS title through the same UI path a user follows.
   await page.locator('[data-game-id="xargon"]').click();
@@ -139,6 +139,20 @@ try {
   assert(await frame.count() === 1, "Sfinx ScummVM player iframe was not created");
   assert((await frame.getAttribute("src"))?.endsWith("#sfinx"), "ScummVM did not receive the direct #sfinx target");
 
+  await stopAndCloseRuntime();
+
+  // Nippon's freeware preservation release is a real multi-disk DOS payload. Require the
+  // direct target and at least one original disk file to be fetched, not just the iframe.
+  await page.locator('[data-game-id="nippon-safes"]').click();
+  await page.locator("#details-play-hosted").click();
+  await waitForRequestPart("runtime/scummvm/data/games/nippon-1.0/index.json", 45000);
+  await waitForRequestPart("runtime/scummvm/data/games/nippon-1.0/DISK1", 45000);
+  await page.waitForTimeout(1000);
+
+  frame = page.locator("#dos-player iframe.scummvm-frame");
+  assert(await frame.count() === 1, "Nippon ScummVM player iframe was not created");
+  assert((await frame.getAttribute("src"))?.endsWith("#nippon"), "ScummVM did not receive the direct #nippon target");
+
   const originRootDataRequests = requests.filter(url => {
     try {
       return new URL(url).pathname === "/data/index.json";
@@ -176,6 +190,7 @@ try {
     scummvmRelativeDataRequests: requests.filter(url => url.includes("runtime/scummvm/data/")).length,
     steelSkyPayloadRequests: requests.filter(url => url.includes("sky-BASS-Floppy-1.3/sky.dsk")).length,
     sfinxPayloadRequests: requests.filter(url => url.includes("sfinx-en-v1.1/sfinx-en-v1.1/vol.dat")).length,
+    nipponPayloadRequests: requests.filter(url => url.includes("nippon-1.0/DISK1")).length,
     localWorkbenchZipDetected: true
   }, null, 2));
 } finally {
