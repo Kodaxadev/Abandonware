@@ -2,8 +2,9 @@
   "schema": 1,
   "id": "nathans-second-chance",
   "title": "Nathan's Second Chance",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "ScummVM distributes the SLUDGE game, but Abandonware requires an explicit package-level redistribution basis before production hosting.",
+  "status": "HOLD",
+  "decision": "research/decisions/nathans-second-chance.md",
+  "reason": "The exact package is verified but contains no legal notice from which a third-party redistribution grant can be established.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "nsc"
