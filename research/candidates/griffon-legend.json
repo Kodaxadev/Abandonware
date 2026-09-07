@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "griffon-legend",
+  "title": "The Griffon Legend",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "ScummVM and the original Syn9 site describe the game as freeware, but Abandonware requires package-level redistribution evidence before hosting.",
+  "runtime_candidate": {
+    "engine": "griffon",
+    "target": "griffon"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/Griffon%20Legend/griffon-1.0.zip",
+    "page": "https://www.scummvm.org/news/20200825/",
+    "sha256": "0aad5fb10f51afb5c121cf04cc86539a6f0d89db85809f9e1767dfdc8d3191a4"
+  }
+}
