@@ -1,0 +1,17 @@
+diff --git a/backends/fs/emscripten/http-fs.cpp b/backends/fs/emscripten/http-fs.cpp
+--- a/backends/fs/emscripten/http-fs.cpp
++++ b/backends/fs/emscripten/http-fs.cpp
+@@ -49,7 +49,12 @@ HTTPFilesystemNode::HTTPFilesystemNode(const Common::String &p) : _path(p), _isV
+ 	if (_path == DATA_PATH) { // need special case for handling the root of the http-filesystem
+ 		_isDirectory = true;
+ 		_isValid = true;
+-		_url = _path;
++		// DATA_PATH is the virtual ScummVM filesystem path (/data), but using
++		// that absolute path as a browser URL forces assets to the origin root.
++		// Resolve the HTTP side relative to the Emscripten document instead so
++		// the static runtime remains relocatable under paths such as
++		// /runtime/scummvm/ or a GitHub Pages repository prefix.
++		_url = Common::String(".") + _path;
+ 	} else { // we need to peek in the parent folder to see if the node exists and if it's a directory
+ 		AbstractFSNode *parent = getParent();
+ 		AbstractFSList tmp = AbstractFSList();

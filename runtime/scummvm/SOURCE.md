@@ -1,12 +1,17 @@
 # Corresponding source and build record
 
-This browser runtime is an unmodified build of ScummVM 2026.3.0 at commit:
+This browser runtime is built from ScummVM 2026.3.0 at pinned commit:
 
 `fed42f2068dcafc6aafa1c28c77e4c88def74b66`
 
-Corresponding source:
+Corresponding upstream source:
 
 https://github.com/scummvm/scummvm/tree/fed42f2068dcafc6aafa1c28c77e4c88def74b66
+
+Abandonware browser-hosting patches:
+
+- `patches/scummvm-emscripten-relative-data.patch` changes only the HTTP URL backing the virtual `/data` filesystem from origin-absolute `/data` to document-relative `./data`. This keeps ScummVM virtual paths unchanged while allowing static hosting below an origin path.
+- `patches/scummvm-emscripten-midi-permission.patch` handles a browser rejection of optional Web MIDI/SysEx access and continues without MIDI instead of leaving an unhandled promise rejection.
 
 Enabled game engines:
 
@@ -19,7 +24,7 @@ Enabled game engines:
 - `cge2`
 - `cge`
 
-Audited freeware data packages:
+Audited game-data packages:
 
 - Beneath a Steel Sky — target `sky` — rights: `docs/rights/beneath-a-steel-sky.md`
 - Flight of the Amazon Queen — target `queen` — rights: `docs/rights/flight-of-the-amazon-queen.md`
@@ -32,6 +37,9 @@ Audited freeware data packages:
 
 Build method:
 
-`./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl --enable-engine=drascula --enable-engine=dreamweb --enable-engine=cge2 --enable-engine=cge`
+1. Check out the pinned ScummVM commit.
+2. Apply both checked-in Emscripten browser-hosting patches.
+3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl --enable-engine=drascula --enable-engine=dreamweb --enable-engine=cge2 --enable-engine=cge`.
+4. SHA-256 verify and materialize each audited game-data package.
 
-Every game package is downloaded from its manifest URL and SHA-256 verified before extraction. Game-data licenses are separate from ScummVM GPL licensing.
+Game-data licenses are separate from ScummVM GPL licensing.
