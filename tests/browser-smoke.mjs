@@ -27,11 +27,20 @@ async function waitForRequestPart(part, timeout = 30000) {
   throw new Error(`Timed out waiting for request containing ${part}`);
 }
 
-async function stopRuntime() {
+async function stopAndCloseRuntime() {
   const stop = page.locator("#emulator-stop");
   if (await stop.isVisible()) {
     await stop.click();
     await page.waitForTimeout(500);
+  }
+
+  const dialog = page.locator("#launcher-modal");
+  if (await dialog.getAttribute("open") !== null) {
+    const close = dialog.locator("[data-close-launcher]");
+    if (await close.isVisible()) {
+      await close.click();
+      await page.waitForFunction(() => !document.getElementById("launcher-modal")?.open);
+    }
   }
 }
 
@@ -57,7 +66,8 @@ try {
   await page.locator('[data-game-id="xargon"]').click();
   await page.locator("#details-play-hosted").click();
   await waitForRequestPart("games/xargon.jsdos");
-  await waitForRequestPart("runtime/jsdos/emulators/");
+  await waitForRequestPart("runtime/jsdos/emulators/emulators.js");
+  await waitForRequestPart("runtime/jsdos/emulators/wdosbox.wasm");
   await page.waitForTimeout(1500);
 
   assert(
@@ -65,7 +75,7 @@ try {
     "DOS launch contacted the mutable js-dos /latest CDN"
   );
 
-  await stopRuntime();
+  await stopAndCloseRuntime();
 
   // Launch a ScummVM title and prove the generated WebAssembly runtime is requested.
   await page.locator('[data-game-id="beneath-a-steel-sky"]').click();
