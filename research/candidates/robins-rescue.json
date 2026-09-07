@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "robins-rescue",
+  "title": "Robin's Rescue",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "The authors publicly describe Robin's Rescue as LGPL 3.0 with CC-BY 3.0 assets. Abandonware is auditing the exact ScummVM SLG package to verify that the hosted payload and notices align with those author-published terms before production use.",
+  "runtime_candidate": {
+    "engine": "sludge",
+    "target": "robinsrescue"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/robinsrescue.zip",
+    "page": "https://www.scummvm.org/games/",
+    "sha256": "5727726234a85633f4bc5327f238de82cf6844cbc68d097c9ba3c9e798314859"
+  }
+}
