@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="restoration.css" />
   <link rel="icon" href="assets/abandonware-mark.svg" type="image/svg+xml" />
 </head>
 <body>
@@ -37,12 +38,12 @@
         <h1>Old games<br /><em>should still run.</em></h1>
         <p class="hero-lede">A browser-native preservation arcade for classic PC software. No installers. No virtual-machine ritual. No pretending that “abandoned” means “free to redistribute.”</p>
         <div class="hero-actions">
-          <button class="button button-primary" data-open-launcher>RUN YOUR COPY <span>↗</span></button>
-          <a class="button button-quiet" href="#archive">BROWSE THE QUEUE</a>
+          <a class="button button-primary" href="#archive">PLAY THE ARCHIVE <span>↗</span></a>
+          <button class="button button-quiet" data-open-launcher>RUN YOUR COPY</button>
         </div>
         <div class="hero-notes" aria-label="Platform principles">
+          <span>AUDITED HOSTING GATE</span>
           <span>LOCAL FILES STAY LOCAL</span>
-          <span>RIGHTS STATUS VISIBLE</span>
           <span>WEBASSEMBLY RUNTIME</span>
         </div>
       </div>
@@ -59,7 +60,7 @@
             <p><span class="muted">[CORE]</span> js-dos / wasm execution layer</p>
             <p><span class="muted">[FS]</span> local bundle bridge ready</p>
             <p><span class="muted">[LAW]</span> redistribution gate enabled</p>
-            <p><span class="ok">[PASS]</span> no game binaries hosted</p>
+            <p><span class="ok">[PASS]</span> audited hosting pipeline active</p>
             <p class="prompt">C:\ARCHIVE&gt;<span class="cursor">_</span></p>
           </div>
           <div class="terminal-art" aria-hidden="true">
@@ -70,25 +71,25 @@
         <div class="terminal-footer">
           <span>CPU <b>READY</b></span>
           <span>MEM <b>LOCAL</b></span>
-          <span>NET <b>OFF</b></span>
+          <span>NET <b>GATED</b></span>
         </div>
       </div>
     </section>
 
     <section class="status-strip" aria-label="Archive status">
-      <div><strong id="status-catalog-count">06</strong><span>RESTORATION TARGETS</span></div>
+      <div><strong id="status-catalog-count">00</strong><span>RESTORATION TARGETS</span></div>
       <div><strong>01</strong><span>EXECUTION ENGINE</span></div>
-      <div><strong>00</strong><span>HOSTED GAME BINARIES</span></div>
+      <div><strong id="status-hosted-count">00</strong><span>AUDITED HOSTED TITLES</span></div>
       <div><strong>∞</strong><span>LOCAL DOS BUNDLES</span></div>
     </section>
 
     <section class="section archive-section" id="archive">
       <div class="section-head">
         <div>
-          <div class="eyebrow">RESTORATION QUEUE</div>
+          <div class="eyebrow">RESTORATION ARCHIVE</div>
           <h2>The lost shelf.</h2>
         </div>
-        <p>Games are listed as preservation targets, not implied downloads. Every entry carries an execution path and a rights-state badge.</p>
+        <p>Browser-ready games have a documented redistribution basis and a pinned execution artifact. Everything else stays a compatibility target or runs from files you supply locally.</p>
       </div>
 
       <div class="archive-toolbar">
@@ -146,14 +147,14 @@
           <p>A game only becomes hostable here when there is a defensible redistribution basis: public domain, freeware grant, open license, publisher permission, or another documented authorization.</p>
         </article>
         <article>
-          <span>02 / LOCAL MODE</span>
-          <h3>Your copy, your browser.</h3>
-          <p>Commercial and uncertain titles can still receive compatibility profiles without us distributing their data. You provide the copy; the runtime stays client-side.</p>
+          <span>02 / IMMUTABLE INTAKE</span>
+          <h3>Trust the hash, not the filename.</h3>
+          <p>Hosted titles are built from pinned upstream packages. The materialization job verifies the expected package identity before adding emulator configuration and provenance.</p>
         </article>
         <article>
-          <span>03 / PRESERVATION LOG</span>
-          <h3>Every game gets a record.</h3>
-          <p>Engine, required files, known-good configuration, controls, save behavior, source trail, rights notes, and testing status belong beside the Play button.</p>
+          <span>03 / LOCAL MODE</span>
+          <h3>Your copy, your browser.</h3>
+          <p>Commercial and uncertain titles can still receive compatibility profiles without us distributing their data. You provide the copy; the runtime stays client-side.</p>
         </article>
       </div>
     </section>
@@ -169,8 +170,8 @@
     <div class="modal-frame">
       <header class="modal-header">
         <div>
-          <span class="modal-kicker">LOCAL EXECUTION NODE</span>
-          <h2>Restoration Workbench</h2>
+          <span class="modal-kicker">EXECUTION NODE</span>
+          <h2 id="launcher-title">Restoration Workbench</h2>
         </div>
         <button class="icon-button" data-close-launcher aria-label="Close launcher">×</button>
       </header>
@@ -179,7 +180,7 @@
         <aside class="launcher-sidebar">
           <div class="step active" data-step-marker="1"><span>01</span><div><b>GAME FILE</b><small>.jsdos or .zip</small></div></div>
           <div class="step" data-step-marker="2"><span>02</span><div><b>BOOT TARGET</b><small>choose executable</small></div></div>
-          <div class="step" data-step-marker="3"><span>03</span><div><b>PLAY</b><small>local emulator</small></div></div>
+          <div class="step" data-step-marker="3"><span>03</span><div><b>PLAY</b><small>browser emulator</small></div></div>
           <div class="privacy-note"><b>LOCAL MODE</b><p>Your selected game file is processed in this browser. Abandonware does not upload it to a Kodaxa server.</p></div>
         </aside>
 
@@ -239,6 +240,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
+  <script src="data/games.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
