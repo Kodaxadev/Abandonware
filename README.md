@@ -6,7 +6,7 @@ The project name describes the cultural problem, **not a legal status**. Old, un
 
 ## Current archive
 
-There are currently **10 audited browser-ready games across 2 browser execution runtimes**.
+There are currently **11 audited browser-ready games across 2 browser execution runtimes**.
 
 | Game | Original platform | Browser runtime | Rights basis |
 | --- | --- | --- | --- |
@@ -20,6 +20,7 @@ There are currently **10 audited browser-ready games across 2 browser execution 
 | DreamWeb | DOS | ScummVM Web | Creative Reality freeware redistribution license; game data remains unmodified |
 | Sfinx | DOS | ScummVM Web | original L.K. Avalon developer redistribution permission |
 | Sołtys | DOS | ScummVM Web | original L.K. Avalon developer redistribution permission |
+| Nippon Safes, Inc. | DOS | ScummVM Web | original-author freeware grant with permission to modify files |
 
 Commercial titles such as DOOM, Commander Keen 4, Jazz Jackrabbit, SimCity 2000, Monkey Island, and Diablo are **not** hosted merely because they are old. They remain local-file or future compatibility targets unless a valid redistribution basis is established.
 
@@ -56,9 +57,9 @@ Pinned records:
 
 The current runtime builds only the engines needed by audited hosted titles:
 
-`sky`, `queen`, `lure`, `adl`, `drascula`, `dreamweb`, `cge2`, and `cge`.
+`sky`, `queen`, `lure`, `adl`, `drascula`, `dreamweb`, `cge2`, `cge`, and `parallaction`.
 
-Each hosted ScummVM game launches directly through its configured target using the runtime URL hash, for example `runtime/scummvm/index.html#sky` or `#sfinx`.
+Each hosted ScummVM game launches directly through its configured target using the runtime URL hash, for example `runtime/scummvm/index.html#sky`, `#sfinx`, or `#nippon`.
 
 #### Reviewed Emscripten hosting patches
 
@@ -154,6 +155,7 @@ Current hosted records include:
 - `dreamweb.md`
 - `sfinx.md`
 - `soltys.md`
+- `nippon-safes.md`
 
 A hosted package must have a defensible basis such as public-domain status, explicit freeware redistribution permission, an applicable open license, or direct rights-holder authorization. “Abandonware,” “not sold anymore,” or “available elsewhere” are not sufficient.
 
@@ -211,12 +213,14 @@ It currently proves, through the actual UI:
 - the repository-local JSZip global loads
 - Xargon launches through js-dos
 - js-dos loads its worker/WASM files from `runtime/jsdos/emulators/`
+- a ZIP generated inside the browser is accepted by the local DOS workbench, `GAME.BAT` is detected, the rights gate unlocks execution, and the temporary bundle reaches js-dos
 - no mutable js-dos or JSZip functional CDN is contacted
 - Beneath a Steel Sky launches through ScummVM
 - ScummVM loads its WebAssembly binary and document-relative HTTP filesystem
 - the real `sky.dsk` payload is requested
 - no origin-root `/data/index.json` regression occurs
 - Sfinx launches through the corrected nested payload path and requests its real `vol.cat` and `vol.dat`
+- Nippon Safes launches through `#nippon` and requests the real `DISK1` payload from the audited four-disk DOS package
 - unexpected browser page/console errors fail the job
 
 The headless browser has no speech-synthesis voices, so ScummVM's known optional “No voice is available” capability warning is excluded from fatal-console classification; actual page errors remain fatal.
