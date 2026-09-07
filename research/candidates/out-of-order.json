@@ -2,8 +2,9 @@
   "schema": 1,
   "id": "out-of-order",
   "title": "Out Of Order",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "ScummVM distributes a compact SLUDGE package and supports the game directly, but Abandonware requires package-level evidence that the game data may be redistributed by third parties before hosting.",
+  "status": "HOLD",
+  "decision": "research/decisions/out-of-order.md",
+  "reason": "The exact package is verified but contains no rights notice; external records describe a custom non-free license and do not establish Kodaxa's third-party rehosting right.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "outoforder"
