@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "god-of-thunder",
+  "title": "God of Thunder",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "Adept Software's current site labels the game freeware and ScummVM distributes a current hash-pinned package, but Abandonware still requires explicit evidence that third-party redistribution/rehosting of the exact game data is permitted.",
+  "runtime_candidate": {
+    "engine": "got",
+    "target": "got"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/God%20of%20Thunder/gotfree.zip",
+    "page": "https://www.scummvm.org/games/",
+    "sha256": "94962e6fcbc6d547debda11224d00fdec7a0d03bacdf7d82d08ed8ea289c0c5e"
+  }
+}
