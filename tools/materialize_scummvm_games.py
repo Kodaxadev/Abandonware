@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Materialize audited ScummVM freeware packages into a built Web runtime.
+"""Materialize audited ScummVM game packages into a built Web runtime.
 
 This tool does not build ScummVM itself. It operates on an already-built Emscripten
 runtime directory, verifies each pinned game archive, extracts it safely, writes the
@@ -18,6 +18,7 @@ import urllib.request
 import zipfile
 
 NOTICE_NAMES = ("readme", "license", "licence", "copying", "copyright")
+ALLOWED_RIGHTS_BASES = {"freeware_redistribution", "public_domain"}
 
 
 def digest(path: Path, algorithm: str) -> str:
@@ -79,6 +80,33 @@ def normalize_games(manifest: dict) -> list[dict]:
     return games
 
 
+def validate_rights_policy(game: dict, notices: list[str]) -> str:
+    rights_basis = game.get("rights_basis", "freeware_redistribution")
+    if rights_basis not in ALLOWED_RIGHTS_BASES:
+        raise RuntimeError(
+            f"Unsupported rights_basis for {game['id']}: {rights_basis!r}"
+        )
+
+    rights_record = Path(game["rights_record"])
+    if not rights_record.is_file():
+        raise RuntimeError(
+            f"Audited rights record is missing for {game['id']}: {rights_record}"
+        )
+
+    if rights_basis == "freeware_redistribution":
+        if not notices:
+            raise RuntimeError(
+                f"Freeware package {game['id']} contains no preserved "
+                "readme/license/copyright notice"
+            )
+        return "package_notice_required"
+
+    # Public-domain artifacts do not necessarily carry a license file in the original
+    # disk image. In that case the checked-in rights record must document the external
+    # public-domain declaration and exact source artifact.
+    return "external_public_domain_record"
+
+
 def game_target_path(data_root: Path, game: dict) -> Path:
     outer = data_root / game["data_directory"]
     relative = game.get("relative_game_path", ".")
@@ -125,8 +153,6 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
     data_root = runtime_root / "data" / "games"
     data_root.mkdir(parents=True, exist_ok=True)
 
-    # The build directory is regenerated, but clean any declared target dirs anyway so
-    # rerunning locally cannot merge a new package with stale files.
     for game in games:
         destination = data_root / game["data_directory"]
         if destination.exists():
@@ -154,10 +180,7 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
                 safe_extract(archive, destination)
 
             notices = find_notices(destination)
-            if not notices:
-                raise RuntimeError(
-                    f"Audited package {game['id']} contains no preserved readme/license/copyright notice"
-                )
+            notice_policy = validate_rights_policy(game, notices)
 
             target_path = game_target_path(data_root, game)
             if not target_path.is_dir():
@@ -178,10 +201,13 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
                 "data_directory": game["data_directory"],
                 "relative_game_path": game.get("relative_game_path", "."),
                 "rights_record": game["rights_record"],
+                "rights_basis": game.get("rights_basis", "freeware_redistribution"),
+                "notice_policy": notice_policy,
                 "preserved_notices": notices,
             })
             print(
                 f"Verified {game['id']} ({archive_path.stat().st_size} bytes, "
+                f"rights={game.get('rights_basis', 'freeware_redistribution')}, "
                 f"{len(notices)} notice file(s))"
             )
 
@@ -193,7 +219,7 @@ def materialize(manifest_path: Path, runtime_root: Path) -> None:
         engines = [engine] if engine else []
 
     provenance = {
-        "schema": 2,
+        "schema": 3,
         "runtime": {
             **runtime,
             "engines": engines,
