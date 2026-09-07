@@ -158,6 +158,10 @@
   background: rgba(199, 255, 74, .055);
 }
 
+.filter-group {
+  flex-wrap: wrap;
+}
+
 .record-links {
   display: flex;
   flex-wrap: wrap;
@@ -218,6 +222,10 @@
 }
 
 @media (max-width: 720px) {
+  .filter-group {
+    width: 100%;
+  }
+
   .scummvm-frame {
     min-height: 420px;
     height: 65vh;
