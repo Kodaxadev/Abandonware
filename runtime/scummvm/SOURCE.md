@@ -13,15 +13,17 @@ Enabled game engines:
 - `sky`
 - `queen`
 - `lure`
+- `adl`
 
 Audited freeware data packages:
 
 - Beneath a Steel Sky — target `sky` — rights: `docs/rights/beneath-a-steel-sky.md`
 - Flight of the Amazon Queen — target `queen` — rights: `docs/rights/flight-of-the-amazon-queen.md`
 - Lure of the Temptress — target `lure` — rights: `docs/rights/lure-of-the-temptress.md`
+- Hi-Res Adventure #1: Mystery House — target `hires1-apple2` — rights: `docs/rights/mystery-house.md`
 
 Build method:
 
-`./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure`
+`./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl`
 
 Every game package is downloaded from its manifest URL and SHA-256 verified before extraction. Game-data licenses are separate from ScummVM GPL licensing.
