@@ -77,20 +77,33 @@ try {
 
   await stopAndCloseRuntime();
 
-  // Launch a ScummVM title and prove the generated WebAssembly runtime is requested.
+  // Launch a ScummVM title and prove both WASM and relocatable HTTP-FS paths work.
   await page.locator('[data-game-id="beneath-a-steel-sky"]').click();
   await page.locator("#details-play-hosted").click();
   await waitForRequestPart("runtime/scummvm/scummvm.wasm", 45000);
+  await waitForRequestPart("runtime/scummvm/data/index.json", 45000);
+  await waitForRequestPart("runtime/scummvm/data/games/", 45000);
   await page.waitForTimeout(1500);
 
   const frame = page.locator("#dos-player iframe.scummvm-frame");
   assert(await frame.count() === 1, "ScummVM player iframe was not created");
   assert((await frame.getAttribute("src"))?.endsWith("#sky"), "ScummVM did not receive the direct #sky target");
 
-  // Filter known non-fatal browser capability messages before failing on console errors.
+  const originRootDataRequests = requests.filter(url => {
+    try {
+      return new URL(url).pathname === "/data/index.json";
+    } catch {
+      return false;
+    }
+  });
+  assert(
+    originRootDataRequests.length === 0,
+    `ScummVM escaped its relocatable runtime and requested origin-root /data/index.json: ${originRootDataRequests.join(", ")}`
+  );
+
+  // Keep runtime errors strict; optional MIDI rejection is handled inside our patched ScummVM shell.
   const fatalConsoleErrors = consoleErrors.filter(message =>
-    !message.includes("No MIDI support in your browser") &&
-    !message.includes("requestMIDIAccess")
+    !message.includes("No MIDI support in your browser")
   );
 
   assert(pageErrors.length === 0, `Page errors: ${pageErrors.join(" | ")}`);
@@ -101,7 +114,8 @@ try {
     hostedCount: runtime.hostedCount,
     requestsObserved: requests.length,
     jsdosLocalEmulatorRequests: requests.filter(url => url.includes("runtime/jsdos/emulators/")).length,
-    scummvmWasmRequests: requests.filter(url => url.includes("runtime/scummvm/scummvm.wasm")).length
+    scummvmWasmRequests: requests.filter(url => url.includes("runtime/scummvm/scummvm.wasm")).length,
+    scummvmRelativeDataRequests: requests.filter(url => url.includes("runtime/scummvm/data/")).length
   }, null, 2));
 } finally {
   await browser.close();
