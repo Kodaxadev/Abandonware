@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "mandy-christmas-adventure",
+  "title": "Mandy Christmas Adventure",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "ScummVM distributes the SLUDGE game, but Abandonware requires an explicit package-level redistribution basis before production hosting.",
+  "runtime_candidate": {
+    "engine": "sludge",
+    "target": "mandy"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/mandy-1.2.zip",
+    "page": "https://www.scummvm.org/games/",
+    "sha256": "91627f0f43791cc2aa9b356d2e4075ea49f720263c09e668bb2b65c9648e2c75"
+  }
+}
