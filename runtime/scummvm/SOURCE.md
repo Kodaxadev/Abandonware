@@ -23,6 +23,7 @@ Enabled game engines:
 - `dreamweb`
 - `cge2`
 - `cge`
+- `parallaction`
 
 Audited game-data packages:
 
@@ -34,12 +35,13 @@ Audited game-data packages:
 - DreamWeb — target `dreamweb` — rights: `docs/rights/dreamweb.md`
 - Sfinx — target `sfinx` — rights: `docs/rights/sfinx.md`
 - Sołtys — target `soltys` — rights: `docs/rights/soltys.md`
+- Nippon Safes, Inc. — target `nippon` — rights: `docs/rights/nippon-safes.md`
 
 Build method:
 
 1. Check out the pinned ScummVM commit.
 2. Apply both checked-in Emscripten browser-hosting patches.
-3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl --enable-engine=drascula --enable-engine=dreamweb --enable-engine=cge2 --enable-engine=cge`.
+3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl --enable-engine=drascula --enable-engine=dreamweb --enable-engine=cge2 --enable-engine=cge --enable-engine=parallaction`.
 4. SHA-256 verify and materialize each audited game-data package.
 
 Game-data licenses are separate from ScummVM GPL licensing.
