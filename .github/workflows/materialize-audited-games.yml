@@ -7,10 +7,15 @@ on:
     paths:
       - "games/manifests/**"
       - "tools/build_audited_game.py"
+      - "tools/verify_audited_bundle.py"
       - ".github/workflows/materialize-audited-games.yml"
 
 permissions:
   contents: write
+
+concurrency:
+  group: materialize-audited-games
+  cancel-in-progress: true
 
 jobs:
   build-audited-games:
@@ -21,12 +26,29 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build hash-pinned browser bundles
+      - name: Build, verify, and reproduce browser bundles
         run: |
           set -euo pipefail
           for manifest in games/manifests/*.json; do
             echo "Building $manifest"
+            output=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["output"])' "$manifest")
+
             python3 tools/build_audited_game.py "$manifest"
+            python3 tools/verify_audited_bundle.py "$manifest"
+            first_sha=$(sha256sum "$output" | awk '{print $1}')
+
+            echo "Rebuilding $manifest to test byte reproducibility"
+            python3 tools/build_audited_game.py "$manifest"
+            python3 tools/verify_audited_bundle.py "$manifest"
+            second_sha=$(sha256sum "$output" | awk '{print $1}')
+
+            if [ "$first_sha" != "$second_sha" ]; then
+              echo "Non-reproducible artifact for $manifest" >&2
+              echo "first:  $first_sha" >&2
+              echo "second: $second_sha" >&2
+              exit 1
+            fi
+            echo "Reproducible: $output $second_sha"
           done
 
       - name: Commit generated artifacts when changed
