@@ -1,95 +1,6 @@
-const restorationTargets = [
-  {
-    id: "doom",
-    title: "DOOM",
-    year: "1993",
-    studio: "id Software",
-    platform: "DOS",
-    filter: "dos",
-    runtime: "DOSBox",
-    status: "LOCAL FILES",
-    statusClass: "local",
-    cover: "cover-doom",
-    summary: "The browser runtime is capable of running the original DOS release from a user-supplied copy. No WADs or commercial game data are hosted by this project.",
-    rights: "Game data not distributed",
-    compatibility: "Profile pending verification"
-  },
-  {
-    id: "keen4",
-    title: "Commander Keen 4",
-    year: "1991",
-    studio: "id Software / Apogee",
-    platform: "DOS",
-    filter: "dos",
-    runtime: "DOSBox",
-    status: "LOCAL FILES",
-    statusClass: "local",
-    cover: "cover-keen",
-    summary: "A target for a tested keyboard, sound, scaling, and save profile. Use your own legally obtained DOS files through the local workbench.",
-    rights: "Game data not distributed",
-    compatibility: "Profile pending verification"
-  },
-  {
-    id: "jazz",
-    title: "Jazz Jackrabbit",
-    year: "1994",
-    studio: "Epic MegaGames",
-    platform: "DOS",
-    filter: "dos",
-    runtime: "DOSBox",
-    status: "LOCAL FILES",
-    statusClass: "local",
-    cover: "cover-jazz",
-    summary: "Fast DOS-era platforming is a useful stress test for timing, audio latency, keyboard handling, and pixel-perfect scaling in the browser runtime.",
-    rights: "Game data not distributed",
-    compatibility: "Profile pending verification"
-  },
-  {
-    id: "simcity2000",
-    title: "SimCity 2000",
-    year: "1993",
-    studio: "Maxis",
-    platform: "DOS",
-    filter: "dos",
-    runtime: "DOSBox",
-    status: "LOCAL FILES",
-    statusClass: "local",
-    cover: "cover-simcity",
-    summary: "A mouse-heavy restoration target that will help harden pointer capture, save persistence, aspect handling, and longer play sessions.",
-    rights: "Game data not distributed",
-    compatibility: "Profile pending verification"
-  },
-  {
-    id: "monkey",
-    title: "The Secret of Monkey Island",
-    year: "1990",
-    studio: "Lucasfilm Games",
-    platform: "SCUMMVM",
-    filter: "scummvm",
-    runtime: "ScummVM",
-    status: "ENGINE PLANNED",
-    statusClass: "planned",
-    cover: "cover-monkey",
-    summary: "ScummVM is the planned second execution layer for classic adventures. The project will require user-supplied game data unless a title has explicit redistribution permission.",
-    rights: "Game data not distributed",
-    compatibility: "ScummVM web layer planned"
-  },
-  {
-    id: "diablo",
-    title: "Diablo",
-    year: "1996",
-    studio: "Blizzard North",
-    platform: "WIN9X",
-    filter: "win9x",
-    runtime: "DOSBox-X",
-    status: "ENGINE PLANNED",
-    statusClass: "planned",
-    cover: "cover-diablo",
-    summary: "A later Windows-era restoration target. js-dos can support Windows 9x through DOSBox-X, but this project will not claim one-click compatibility until a reproducible local-file profile is tested.",
-    rights: "Game data not distributed",
-    compatibility: "Win9x profile planned"
-  }
-];
+const restorationTargets = Array.isArray(window.ABANDONWARE_GAMES)
+  ? window.ABANDONWARE_GAMES
+  : [];
 
 const grid = document.getElementById("game-grid");
 const emptyState = document.getElementById("empty-state");
@@ -108,19 +19,20 @@ function renderGames() {
   });
 
   grid.innerHTML = visible.map((game, index) => `
-    <article class="game-card" role="button" tabindex="0" data-game-id="${game.id}" aria-label="View ${game.title} restoration record">
+    <article class="game-card" role="button" tabindex="0" data-game-id="${escapeAttribute(game.id)}" aria-label="View ${escapeAttribute(game.title)} restoration record">
       <div class="game-cover">
         <div class="game-cover-inner ${game.cover}">
           <span class="cover-number">REC ${String(index + 1).padStart(2, "0")}</span>
-          <span class="cover-title">${game.title}</span>
+          ${game.hostedUrl ? `<span class="cover-live">PLAYABLE</span>` : ""}
+          <span class="cover-title">${escapeHtml(game.title)}</span>
         </div>
       </div>
       <div class="game-card-body">
-        <div class="game-meta"><span>${game.year}</span><span>${game.platform}</span></div>
-        <h3>${game.title}</h3>
-        <div class="studio">${game.studio}</div>
+        <div class="game-meta"><span>${escapeHtml(game.year)}</span><span>${escapeHtml(game.platform)}</span></div>
+        <h3>${escapeHtml(game.title)}</h3>
+        <div class="studio">${escapeHtml(game.studio)}</div>
         <div class="game-card-footer">
-          <span class="rights-badge ${game.statusClass}">${game.status}</span>
+          <span class="rights-badge ${game.statusClass}">${escapeHtml(game.status)}</span>
           <span class="card-arrow">↗</span>
         </div>
       </div>
@@ -129,6 +41,9 @@ function renderGames() {
 
   emptyState.hidden = visible.length !== 0;
   document.getElementById("status-catalog-count").textContent = String(restorationTargets.length).padStart(2, "0");
+  const hostedCount = restorationTargets.filter((game) => game.hostedUrl && game.hostable).length;
+  const hostedCounter = document.getElementById("status-hosted-count") || document.querySelector(".status-strip div:nth-child(3) strong");
+  if (hostedCounter) hostedCounter.textContent = String(hostedCount).padStart(2, "0");
 }
 
 function openDetails(gameId) {
@@ -136,33 +51,47 @@ function openDetails(gameId) {
   if (!game) return;
 
   const canUseWorkbench = game.filter === "dos";
+  const action = game.hostedUrl
+    ? `<button class="button button-primary" id="details-play-hosted">PLAY IN BROWSER <span>↗</span></button>`
+    : canUseWorkbench
+      ? `<button class="button button-primary" id="details-open-workbench">RUN MY LOCAL COPY <span>↗</span></button>`
+      : `<button class="button" disabled aria-disabled="true">${escapeHtml(game.runtime.toUpperCase())} PROFILE NOT YET ENABLED</button>`;
+
+  const provenance = game.sourcePage
+    ? `<div class="record-links">
+        <a href="${escapeAttribute(game.sourcePage)}" target="_blank" rel="noreferrer">UPSTREAM RECORD ↗</a>
+        ${game.rightsRecord ? `<a href="${escapeAttribute(game.rightsRecord)}" target="_blank" rel="noreferrer">RIGHTS RECORD ↗</a>` : ""}
+      </div>`
+    : "";
+
   detailsContent.innerHTML = `
     <div class="details-hero ${game.cover}">
-      <div class="eyebrow">RESTORATION RECORD / ${game.year}</div>
-      <h2>${game.title}</h2>
+      <div class="eyebrow">RESTORATION RECORD / ${escapeHtml(game.year)}</div>
+      <h2>${escapeHtml(game.title)}</h2>
     </div>
     <div class="details-body">
       <div class="details-ledger">
-        <div><span>ORIGINAL PLATFORM</span><b>${game.platform}</b></div>
-        <div><span>EXECUTION PATH</span><b>${game.runtime}</b></div>
-        <div><span>RIGHTS MODE</span><b>${game.rights}</b></div>
+        <div><span>ORIGINAL PLATFORM</span><b>${escapeHtml(game.platform)}</b></div>
+        <div><span>EXECUTION PATH</span><b>${escapeHtml(game.runtime)}</b></div>
+        <div><span>RIGHTS MODE</span><b>${escapeHtml(game.rights)}</b></div>
       </div>
-      <p>${game.summary}</p>
-      <p><strong>Current compatibility record:</strong> ${game.compatibility}. A game is not promoted to browser-ready until its boot path, input, audio, save behavior, and rights basis have been checked.</p>
-      ${canUseWorkbench
-        ? `<button class="button button-primary" id="details-open-workbench">RUN MY LOCAL COPY <span>↗</span></button>`
-        : `<button class="button" disabled aria-disabled="true">${game.runtime.toUpperCase()} PROFILE NOT YET ENABLED</button>`}
+      <p>${escapeHtml(game.summary)}</p>
+      <p><strong>Current compatibility record:</strong> ${escapeHtml(game.compatibility)}. A game is only promoted to browser-ready after its boot path, execution package, and rights basis have been pinned.</p>
+      ${provenance}
+      ${action}
     </div>
   `;
   detailsModal.showModal();
 
-  const workbenchButton = document.getElementById("details-open-workbench");
-  if (workbenchButton) {
-    workbenchButton.addEventListener("click", () => {
-      detailsModal.close();
-      openLauncher();
-    });
-  }
+  document.getElementById("details-play-hosted")?.addEventListener("click", () => {
+    detailsModal.close();
+    startHostedGame(game);
+  });
+
+  document.getElementById("details-open-workbench")?.addEventListener("click", () => {
+    detailsModal.close();
+    openLauncher();
+  });
 }
 
 filterButtons.forEach((button) => {
@@ -172,11 +101,14 @@ filterButtons.forEach((button) => {
     renderGames();
   });
 });
+
 searchInput.addEventListener("input", renderGames);
+
 grid.addEventListener("click", (event) => {
   const card = event.target.closest("[data-game-id]");
   if (card) openDetails(card.dataset.gameId);
 });
+
 grid.addEventListener("keydown", (event) => {
   if (event.key !== "Enter" && event.key !== " ") return;
   const card = event.target.closest("[data-game-id]");
@@ -184,13 +116,15 @@ grid.addEventListener("keydown", (event) => {
   event.preventDefault();
   openDetails(card.dataset.gameId);
 });
+
 document.querySelector("[data-close-details]").addEventListener("click", () => detailsModal.close());
 detailsModal.addEventListener("click", (event) => {
   if (event.target === detailsModal) detailsModal.close();
 });
 
-// ----- Local restoration workbench -----
+// ----- Browser/local restoration workbench -----
 const launcherModal = document.getElementById("launcher-modal");
+const launcherTitle = document.getElementById("launcher-title") || document.querySelector(".modal-header h2");
 const fileInput = document.getElementById("game-file");
 const dropZone = document.getElementById("drop-zone");
 const selectedFileName = document.getElementById("selected-file-name");
@@ -208,7 +142,9 @@ const launcherState = {
   zip: null,
   targets: [],
   objectUrl: null,
-  dos: null
+  dos: null,
+  mode: "local",
+  hostedGame: null
 };
 
 function setError(message = "") {
@@ -225,13 +161,18 @@ function showLauncherStep(stepNumber) {
   });
 }
 
-function openLauncher() {
+function openLauncher(title = "Restoration Workbench") {
+  launcherTitle.textContent = title;
   if (!launcherModal.open) launcherModal.showModal();
 }
 
 async function disposeEmulator() {
   if (launcherState.dos) {
-    try { await launcherState.dos.stop(); } catch (error) { console.warn("Emulator stop failed", error); }
+    try {
+      await launcherState.dos.stop();
+    } catch (error) {
+      console.warn("Emulator stop failed", error);
+    }
     launcherState.dos = null;
   }
   if (launcherState.objectUrl) {
@@ -244,10 +185,16 @@ async function disposeEmulator() {
 async function closeLauncher() {
   await disposeEmulator();
   launcherModal.close();
+  launcherState.mode = "local";
+  launcherState.hostedGame = null;
+  launcherTitle.textContent = "Restoration Workbench";
   showLauncherStep(launcherState.file ? 2 : 1);
 }
 
-document.querySelectorAll("[data-open-launcher]").forEach((button) => button.addEventListener("click", openLauncher));
+document.querySelectorAll("[data-open-launcher]").forEach((button) => {
+  button.addEventListener("click", () => openLauncher());
+});
+
 document.querySelector("[data-close-launcher]").addEventListener("click", closeLauncher);
 launcherModal.addEventListener("cancel", (event) => {
   event.preventDefault();
@@ -271,6 +218,10 @@ function targetScore(path) {
 
 async function inspectSelectedFile(file) {
   setError();
+  launcherState.mode = "local";
+  launcherState.hostedGame = null;
+  launcherTitle.textContent = "Restoration Workbench";
+
   const lowerName = file.name.toLowerCase();
   if (!lowerName.endsWith(".jsdos") && !lowerName.endsWith(".zip")) {
     setError("Unsupported file. Choose a .jsdos bundle or a .zip containing a DOS game.");
@@ -313,7 +264,9 @@ async function inspectSelectedFile(file) {
 
     launcherState.zip = zip;
     launcherState.targets = targets;
-    bootTarget.innerHTML = targets.map((target, index) => `<option value="${escapeAttribute(target)}">${index === 0 ? "★ " : ""}${escapeHtml(target)}</option>`).join("");
+    bootTarget.innerHTML = targets
+      .map((target, index) => `<option value="${escapeAttribute(target)}">${index === 0 ? "★ " : ""}${escapeHtml(target)}</option>`)
+      .join("");
     targetPickerWrap.hidden = false;
     showLauncherStep(2);
   } catch (error) {
@@ -377,8 +330,64 @@ async function makePlayableUrl() {
   const zip = launcherState.zip;
   zip.file(".jsdos/dosbox.conf", createDosboxConfig(target));
   zip.file(".jsdos/jsdos.json", JSON.stringify({ version: 1 }, null, 2));
-  const bundle = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+  const bundle = await zip.generateAsync({
+    type: "blob",
+    compression: "DEFLATE",
+    compressionOptions: { level: 6 }
+  });
   return URL.createObjectURL(bundle);
+}
+
+function launchDosUrl(url) {
+  launcherState.dos = Dos(dosPlayer, {
+    url,
+    theme: "dark",
+    backend: "dosbox",
+    backendLocked: true,
+    autoStart: true,
+    autoSave: true,
+    workerThread: true,
+    imageRendering: "pixelated",
+    renderAspect: "Fit",
+    mouseCapture: false,
+    thinSidebar: true,
+    fsChanges: { local: true },
+    onEvent: (event) => {
+      if (event === "emu-ready") emulatorStatus.textContent = "RUNTIME READY";
+      if (event === "bnd-play") emulatorStatus.textContent = "STARTING";
+      if (event === "ci-ready") emulatorStatus.textContent = "RUNNING";
+    }
+  });
+  launcherState.dos.setNoCloud(true);
+}
+
+async function startHostedGame(game) {
+  await disposeEmulator();
+  setError();
+  launcherState.mode = "hosted";
+  launcherState.hostedGame = game;
+  openLauncher(game.title);
+  showLauncherStep(3);
+  emulatorStatus.textContent = `VERIFYING ${game.title.toUpperCase()}`;
+
+  try {
+    const response = await fetch(game.hostedUrl, { method: "HEAD", cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("The audited browser bundle has not been materialized on this deployment yet.");
+    }
+    emulatorStatus.textContent = "LOADING AUDITED BUNDLE";
+    launchDosUrl(game.hostedUrl);
+  } catch (error) {
+    console.error(error);
+    emulatorStatus.textContent = "BUNDLE UNAVAILABLE";
+    dosPlayer.innerHTML = `
+      <div class="runtime-error">
+        <b>RESTORATION ARTIFACT UNAVAILABLE</b>
+        <p>${escapeHtml(error?.message || "The browser bundle could not be loaded.")}</p>
+        <small>The source manifest remains pinned; the automated materialization job must succeed before this title can run here.</small>
+      </div>
+    `;
+  }
 }
 
 startButton.addEventListener("click", async () => {
@@ -389,30 +398,11 @@ startButton.addEventListener("click", async () => {
 
   try {
     await disposeEmulator();
+    launcherState.mode = "local";
     launcherState.objectUrl = await makePlayableUrl();
     showLauncherStep(3);
     emulatorStatus.textContent = "LOADING RUNTIME";
-
-    launcherState.dos = Dos(dosPlayer, {
-      url: launcherState.objectUrl,
-      theme: "dark",
-      backend: "dosbox",
-      backendLocked: true,
-      autoStart: true,
-      autoSave: true,
-      workerThread: true,
-      imageRendering: "pixelated",
-      renderAspect: "Fit",
-      mouseCapture: false,
-      thinSidebar: true,
-      fsChanges: { local: true },
-      onEvent: (event) => {
-        if (event === "emu-ready") emulatorStatus.textContent = "RUNTIME READY";
-        if (event === "bnd-play") emulatorStatus.textContent = "STARTING";
-        if (event === "ci-ready") emulatorStatus.textContent = "RUNNING";
-      }
-    });
-    launcherState.dos.setNoCloud(true);
+    launchDosUrl(launcherState.objectUrl);
   } catch (error) {
     console.error(error);
     setError(`Could not start this game: ${error?.message || "unknown emulator error"}`);
@@ -427,8 +417,18 @@ document.getElementById("emulator-fullscreen").addEventListener("click", () => {
 
 document.getElementById("emulator-stop").addEventListener("click", async () => {
   emulatorStatus.textContent = "STOPPING";
+  const wasHosted = launcherState.mode === "hosted";
   await disposeEmulator();
   emulatorStatus.textContent = "STOPPED";
+
+  if (wasHosted) {
+    launcherState.mode = "local";
+    launcherState.hostedGame = null;
+    launcherTitle.textContent = "Restoration Workbench";
+    showLauncherStep(1);
+    return;
+  }
+
   startButton.disabled = !rightsConfirm.checked;
   showLauncherStep(2);
 });
