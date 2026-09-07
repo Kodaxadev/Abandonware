@@ -8,6 +8,7 @@ on:
       - "runtime/scummvm-build.json"
       - "tools/materialize_scummvm_games.py"
       - "patches/scummvm-emscripten-relative-data.patch"
+      - "patches/scummvm-emscripten-midi-permission.patch"
       - ".github/workflows/build-scummvm-sky.yml"
 
 permissions:
@@ -70,15 +71,21 @@ jobs:
           PY
           test "$(git -C scummvm-src rev-parse HEAD)" = "$SCUMMVM_COMMIT"
           test -s patches/scummvm-emscripten-relative-data.patch
+          test -s patches/scummvm-emscripten-midi-permission.patch
 
-      - name: Apply reviewed Emscripten hosting patch
+      - name: Apply reviewed Emscripten hosting patches
         run: |
           set -euo pipefail
-          git -C scummvm-src apply --check ../patches/scummvm-emscripten-relative-data.patch
-          git -C scummvm-src apply ../patches/scummvm-emscripten-relative-data.patch
+          for patch in \
+            ../patches/scummvm-emscripten-relative-data.patch \
+            ../patches/scummvm-emscripten-midi-permission.patch; do
+            git -C scummvm-src apply --check "$patch"
+            git -C scummvm-src apply "$patch"
+          done
           grep -Fq '_url = Common::String(".") + _path;' scummvm-src/backends/fs/emscripten/http-fs.cpp
+          grep -Fq 'MIDI access unavailable; continuing without browser MIDI.' scummvm-src/dists/emscripten/custom_shell-pre.js
           test "$(git -C scummvm-src rev-parse HEAD)" = "$SCUMMVM_COMMIT"
-          echo "Applied relative HTTP data-root patch without changing the pinned source commit."
+          echo "Applied reviewed browser-hosting patches without changing the pinned source commit."
 
       - name: Cache Emscripten SDK
         uses: actions/cache@v4
@@ -132,6 +139,7 @@ jobs:
           cp scummvm-src/COPYING "$root/legal/SCUMMVM-COPYING"
           cp scummvm-src/COPYRIGHT "$root/legal/SCUMMVM-COPYRIGHT"
           cp patches/scummvm-emscripten-relative-data.patch "$root/patches/scummvm-emscripten-relative-data.patch"
+          cp patches/scummvm-emscripten-midi-permission.patch "$root/patches/scummvm-emscripten-midi-permission.patch"
           if [ -d scummvm-src/LICENSES ]; then
             cp -a scummvm-src/LICENSES "$root/legal/LICENSES"
           fi
@@ -156,9 +164,10 @@ jobs:
               '',
               f"https://github.com/{runtime['repository']}/tree/{runtime['commit']}",
               '',
-              'Abandonware portability patch:',
+              'Abandonware browser-hosting patches:',
               '',
-              '- `patches/scummvm-emscripten-relative-data.patch` changes only the HTTP URL backing the virtual `/data` filesystem from origin-absolute `/data` to document-relative `./data`. This allows the static Emscripten runtime to work when hosted below an origin path while preserving ScummVM virtual paths and game configuration.',
+              '- `patches/scummvm-emscripten-relative-data.patch` changes only the HTTP URL backing the virtual `/data` filesystem from origin-absolute `/data` to document-relative `./data`. This keeps ScummVM virtual paths unchanged while allowing static hosting below an origin path.',
+              '- `patches/scummvm-emscripten-midi-permission.patch` handles a browser rejection of optional Web MIDI/SysEx access and continues without MIDI instead of leaving an unhandled promise rejection.',
               '',
               'Enabled game engines:',
               '',
@@ -174,7 +183,7 @@ jobs:
               'Build method:',
               '',
               '1. Check out the pinned ScummVM commit.',
-              '2. Apply `patches/scummvm-emscripten-relative-data.patch`.',
+              '2. Apply both checked-in Emscripten browser-hosting patches.',
               '3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines ' +
               ' '.join(f'--enable-engine={engine}' for engine in engines) + '`.',
               '4. SHA-256 verify and materialize each audited game-data package.',
@@ -200,6 +209,7 @@ jobs:
           test -s "$root/SOURCE.md"
           test -s "$root/legal/SCUMMVM-COPYING"
           test -s "$root/patches/scummvm-emscripten-relative-data.patch"
+          test -s "$root/patches/scummvm-emscripten-midi-permission.patch"
 
           python3 - <<'PY'
           import json
