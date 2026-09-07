@@ -1,0 +1,12 @@
+diff --git a/dists/emscripten/custom_shell-pre.js b/dists/emscripten/custom_shell-pre.js
+--- a/dists/emscripten/custom_shell-pre.js
++++ b/dists/emscripten/custom_shell-pre.js
+@@ -21,5 +21,8 @@ if (!("requestMIDIAccess" in navigator)) {
+ 			midiAccess.onstatechange = (e) => {
+ 				midiOutputMap = e.target.outputs;
+ 			};
++		})
++		.catch((error) => {
++			console.warn("MIDI access unavailable; continuing without browser MIDI.", error);
+ 		});
+ }
