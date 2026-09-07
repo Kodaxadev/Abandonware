@@ -7,6 +7,7 @@ on:
     paths:
       - "runtime/scummvm-build.json"
       - "tools/materialize_scummvm_games.py"
+      - "patches/scummvm-emscripten-relative-data.patch"
       - ".github/workflows/build-scummvm-sky.yml"
 
 permissions:
@@ -68,6 +69,16 @@ jobs:
           print(f"Pinned manifest validated: {len(engines)} engine(s), {len(games)} game(s)")
           PY
           test "$(git -C scummvm-src rev-parse HEAD)" = "$SCUMMVM_COMMIT"
+          test -s patches/scummvm-emscripten-relative-data.patch
+
+      - name: Apply reviewed Emscripten hosting patch
+        run: |
+          set -euo pipefail
+          git -C scummvm-src apply --check ../patches/scummvm-emscripten-relative-data.patch
+          git -C scummvm-src apply ../patches/scummvm-emscripten-relative-data.patch
+          grep -Fq '_url = Common::String(".") + _path;' scummvm-src/backends/fs/emscripten/http-fs.cpp
+          test "$(git -C scummvm-src rev-parse HEAD)" = "$SCUMMVM_COMMIT"
+          echo "Applied relative HTTP data-root patch without changing the pinned source commit."
 
       - name: Cache Emscripten SDK
         uses: actions/cache@v4
@@ -117,9 +128,10 @@ jobs:
         run: |
           set -euo pipefail
           root=scummvm-src/build-emscripten
-          mkdir -p "$root/legal"
+          mkdir -p "$root/legal" "$root/patches"
           cp scummvm-src/COPYING "$root/legal/SCUMMVM-COPYING"
           cp scummvm-src/COPYRIGHT "$root/legal/SCUMMVM-COPYRIGHT"
+          cp patches/scummvm-emscripten-relative-data.patch "$root/patches/scummvm-emscripten-relative-data.patch"
           if [ -d scummvm-src/LICENSES ]; then
             cp -a scummvm-src/LICENSES "$root/legal/LICENSES"
           fi
@@ -136,19 +148,23 @@ jobs:
           lines = [
               '# Corresponding source and build record',
               '',
-              f"This browser runtime is an unmodified build of ScummVM {runtime['version']} at commit:",
+              f"This browser runtime is built from ScummVM {runtime['version']} at pinned commit:",
               '',
               f"`{runtime['commit']}`",
               '',
-              'Corresponding source:',
+              'Corresponding upstream source:',
               '',
               f"https://github.com/{runtime['repository']}/tree/{runtime['commit']}",
+              '',
+              'Abandonware portability patch:',
+              '',
+              '- `patches/scummvm-emscripten-relative-data.patch` changes only the HTTP URL backing the virtual `/data` filesystem from origin-absolute `/data` to document-relative `./data`. This allows the static Emscripten runtime to work when hosted below an origin path while preserving ScummVM virtual paths and game configuration.',
               '',
               'Enabled game engines:',
               '',
           ]
           lines.extend(f'- `{engine}`' for engine in engines)
-          lines.extend(['', 'Audited freeware data packages:', ''])
+          lines.extend(['', 'Audited game-data packages:', ''])
           lines.extend(
               f"- {game['title']} — target `{game['target']}` — rights: `{game['rights_record']}`"
               for game in games
@@ -157,10 +173,13 @@ jobs:
               '',
               'Build method:',
               '',
-              '`./dists/emscripten/build.sh build --enable-release --disable-all-engines ' +
-              ' '.join(f'--enable-engine={engine}' for engine in engines) + '`',
+              '1. Check out the pinned ScummVM commit.',
+              '2. Apply `patches/scummvm-emscripten-relative-data.patch`.',
+              '3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines ' +
+              ' '.join(f'--enable-engine={engine}' for engine in engines) + '`.',
+              '4. SHA-256 verify and materialize each audited game-data package.',
               '',
-              'Every game package is downloaded from its manifest URL and SHA-256 verified before extraction. Game-data licenses are separate from ScummVM GPL licensing.',
+              'Game-data licenses are separate from ScummVM GPL licensing.',
               '',
           ])
           Path('scummvm-src/build-emscripten/SOURCE.md').write_text(
@@ -180,6 +199,7 @@ jobs:
           test -s "$root/PROVENANCE.json"
           test -s "$root/SOURCE.md"
           test -s "$root/legal/SCUMMVM-COPYING"
+          test -s "$root/patches/scummvm-emscripten-relative-data.patch"
 
           python3 - <<'PY'
           import json
@@ -191,8 +211,11 @@ jobs:
           recorded = {game['id']: game for game in provenance.get('games', [])}
           assert len(recorded) == len(games)
           for game in games:
-              assert recorded[game['id']]['sha256'] == game['sha256']
-              assert recorded[game['id']]['target'] == game['target']
+              current = recorded[game['id']]
+              assert current['sha256'] == game['sha256']
+              assert current['target'] == game['target']
+              assert current['relative_game_path'] == game.get('relative_game_path', '.')
+              assert current.get('required_files', []) == game.get('required_files', [])
           print(f"Validated runtime provenance for {len(games)} game(s)")
           PY
 
