@@ -105,6 +105,27 @@ window.ABANDONWARE_GAMES = [
     hostable: true
   },
   {
+    id: "mystery-house",
+    title: "Mystery House",
+    year: "1980",
+    studio: "On-Line Systems / Sierra",
+    platform: "APPLE II / SCUMMVM",
+    filter: "scummvm",
+    runtime: "ScummVM Web 2026.3",
+    runtimeType: "scummvm",
+    status: "BROWSER READY",
+    statusClass: "ready",
+    cover: "cover-mystery-house",
+    summary: "Roberta and Ken Williams' early graphical adventure, using the Sierra-released public-domain Apple II disk image distributed by ScummVM. The exact package hash is verified before the browser runtime is materialized.",
+    rights: "Public domain / 1987 release",
+    compatibility: "ScummVM 2026.3.0; ADL engine; audited MYSTHOUS.DSK; direct #hires1-apple2 launch",
+    hostedUrl: "runtime/scummvm/index.html#hires1-apple2",
+    rightsRecord: "docs/rights/mystery-house.md",
+    sourceLabel: "Official ScummVM public-domain package",
+    sourcePage: "https://www.scummvm.org/games/",
+    hostable: true
+  },
+  {
     id: "doom",
     title: "DOOM",
     year: "1993",
