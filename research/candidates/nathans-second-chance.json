@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "nathans-second-chance",
+  "title": "Nathan's Second Chance",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "ScummVM distributes the SLUDGE game, but Abandonware requires an explicit package-level redistribution basis before production hosting.",
+  "runtime_candidate": {
+    "engine": "sludge",
+    "target": "nsc"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/nsc.zip",
+    "page": "https://www.scummvm.org/games/",
+    "sha256": "b269b11fc74ceeeeaa8692d2f695786ce6bd9b104a7bbf7fdf913ab62d45b4de"
+  }
+}
