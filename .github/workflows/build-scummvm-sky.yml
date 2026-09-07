@@ -1,0 +1,203 @@
+name: Build ScummVM Steel Sky
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "runtime/scummvm-build.json"
+      - ".github/workflows/build-scummvm-sky.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-scummvm-sky
+  cancel-in-progress: true
+
+jobs:
+  build-scummvm-sky:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      SCUMMVM_COMMIT: fed42f2068dcafc6aafa1c28c77e4c88def74b66
+      GAME_SHA256: d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818
+      GAME_URL: https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip
+      GAME_DIR: sky-BASS-Floppy-1.3
+
+    steps:
+      - name: Check out Abandonware
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check out pinned ScummVM source
+        uses: actions/checkout@v4
+        with:
+          repository: scummvm/scummvm
+          ref: fed42f2068dcafc6aafa1c28c77e4c88def74b66
+          path: scummvm-src
+          fetch-depth: 1
+
+      - name: Validate pinned build manifest
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
+          assert m['runtime']['commit'] == 'fed42f2068dcafc6aafa1c28c77e4c88def74b66'
+          assert m['runtime']['version'] == '2026.3.0'
+          assert m['runtime']['emsdk'] == '4.0.10'
+          assert m['runtime']['engine'] == 'sky'
+          assert m['game']['sha256'] == 'd0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818'
+          assert m['game']['target'] == 'sky'
+          print('Pinned ScummVM/game manifest validated')
+          PY
+          test "$(git -C scummvm-src rev-parse HEAD)" = "$SCUMMVM_COMMIT"
+
+      - name: Cache Emscripten SDK
+        uses: actions/cache@v4
+        with:
+          path: scummvm-src/dists/emscripten/emsdk-4.0.10
+          key: scummvm-emsdk-4.0.10
+
+      - name: Build ScummVM Web with only the sky engine
+        run: |
+          set -euo pipefail
+          cd scummvm-src
+          ./dists/emscripten/build.sh build \
+            --enable-release \
+            --disable-all-engines \
+            --enable-engine=sky
+
+      - name: Add and verify Beneath a Steel Sky freeware data
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --retry-delay 2 \
+            "$GAME_URL" -o /tmp/BASS-Floppy-1.3.zip
+          echo "$GAME_SHA256  /tmp/BASS-Floppy-1.3.zip" | sha256sum --check --strict
+
+          mkdir -p "scummvm-src/build-emscripten/data/games/$GAME_DIR"
+          unzip -q /tmp/BASS-Floppy-1.3.zip \
+            -d "scummvm-src/build-emscripten/data/games/$GAME_DIR"
+
+          if ! find "scummvm-src/build-emscripten/data/games/$GAME_DIR" \
+            -maxdepth 2 -type f \( -iname 'readme*' -o -iname '*license*' \) \
+            -print -quit | grep -q .; then
+            echo "The audited game package did not preserve its readme/license notice." >&2
+            exit 1
+          fi
+
+          python3 scummvm-src/dists/emscripten/build-make_http_index.py \
+            scummvm-src/build-emscripten/data
+
+      - name: Configure the browser launcher
+        run: |
+          set -euo pipefail
+          cat > scummvm-src/build-emscripten/scummvm.ini <<'INI'
+          [scummvm]
+          versioninfo=2026.3.0
+          always_run_fallback_detection_extern=false
+
+          [sky]
+          platform=pc
+          gameid=sky
+          description=Beneath a Steel Sky (v0.0348 Floppy/DOS)
+          extra=v0.0348 Floppy
+          path=/data/games/sky-BASS-Floppy-1.3
+          engineid=sky
+          guioptions=sndNoSpeech lang_English (GB) lang_German lang_French lang_English (US) lang_Swedish lang_Italian lang_Portuguese (Brazil) lang_Spanish
+          INI
+
+          cp scummvm-src/build-emscripten/scummvm.html \
+            scummvm-src/build-emscripten/index.html
+
+      - name: Preserve runtime licensing and provenance
+        run: |
+          set -euo pipefail
+          mkdir -p scummvm-src/build-emscripten/legal
+          cp scummvm-src/COPYING scummvm-src/build-emscripten/legal/SCUMMVM-COPYING
+          cp scummvm-src/COPYRIGHT scummvm-src/build-emscripten/legal/SCUMMVM-COPYRIGHT
+          if [ -d scummvm-src/LICENSES ]; then
+            cp -a scummvm-src/LICENSES scummvm-src/build-emscripten/legal/LICENSES
+          fi
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
+          provenance = {
+              'schema': 1,
+              'runtime': manifest['runtime'],
+              'game': manifest['game'],
+              'build_command': './dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky',
+              'corresponding_source': 'https://github.com/scummvm/scummvm/tree/fed42f2068dcafc6aafa1c28c77e4c88def74b66',
+              'notes': 'ScummVM runtime is unmodified upstream source compiled to WebAssembly. Game data is the hash-verified freeware floppy package from ScummVM.'
+          }
+          Path('scummvm-src/build-emscripten/PROVENANCE.json').write_text(
+              json.dumps(provenance, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          PY
+
+          cat > scummvm-src/build-emscripten/SOURCE.md <<'EOF'
+          # Corresponding source and build record
+
+          This browser runtime is an unmodified build of ScummVM 2026.3.0 at commit:
+
+          `fed42f2068dcafc6aafa1c28c77e4c88def74b66`
+
+          Corresponding source:
+
+          https://github.com/scummvm/scummvm/tree/fed42f2068dcafc6aafa1c28c77e4c88def74b66
+
+          Build command:
+
+          `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-engine=sky`
+
+          The `sky` game engine is the only ScummVM game engine enabled in this build.
+
+          Beneath a Steel Sky game data is separately licensed freeware. Its exact source, hash, and rights record are documented in `runtime/scummvm-build.json` and `docs/rights/beneath-a-steel-sky.md` in the Abandonware repository.
+          EOF
+
+      - name: Validate static runtime package
+        run: |
+          set -euo pipefail
+          root=scummvm-src/build-emscripten
+          test -s "$root/index.html"
+          test -s "$root/scummvm.js"
+          test -s "$root/scummvm.wasm"
+          test -s "$root/scummvm.ini"
+          test -s "$root/data/index.json"
+          test -s "$root/PROVENANCE.json"
+          test -s "$root/legal/SCUMMVM-COPYING"
+
+          if find "$root" -type f -size +95M -print -quit | grep -q .; then
+            echo "A generated ScummVM file exceeds the 95 MB repository safety threshold:" >&2
+            find "$root" -type f -size +95M -print >&2
+            exit 1
+          fi
+
+          echo "Runtime package size: $(du -sh "$root" | cut -f1)"
+          find "$root" -maxdepth 2 -type f -printf '%s %p\n' | sort -nr | head -20
+
+      - name: Materialize runtime into Abandonware
+        run: |
+          set -euo pipefail
+          rm -rf runtime/scummvm
+          mkdir -p runtime/scummvm
+          cp -a scummvm-src/build-emscripten/. runtime/scummvm/
+
+      - name: Commit generated runtime
+        run: |
+          set -euo pipefail
+          git config user.name "abandonware-preservation-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add runtime/scummvm
+          if git diff --cached --quiet; then
+            echo "ScummVM runtime already matches its pinned build."
+            exit 0
+          fi
+          git commit -m "build: materialize ScummVM Steel Sky runtime"
+          git pull --rebase origin main
+          git push origin HEAD:main
