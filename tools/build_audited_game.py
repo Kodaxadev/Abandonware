@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a js-dos bundle from an audited, hash-pinned upstream ZIP."""
+"""Build a byte-reproducible js-dos bundle from an audited, hash-pinned ZIP."""
 
 from __future__ import annotations
 
@@ -12,6 +12,8 @@ import tempfile
 import urllib.request
 import zipfile
 
+FIXED_ZIP_DATE = (1980, 1, 1, 0, 0, 0)
+
 
 def digest(path: Path, algorithm: str) -> str:
     hasher = hashlib.new(algorithm)
@@ -22,7 +24,10 @@ def digest(path: Path, algorithm: str) -> str:
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "Kodaxa-Abandonware-Preservation/1.0"})
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Kodaxa-Abandonware-Preservation/1.0"},
+    )
     with urllib.request.urlopen(request, timeout=90) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 
@@ -35,8 +40,16 @@ def locate_launch_target(archive: zipfile.ZipFile, basename: str) -> str:
         if not name.endswith("/") and PurePosixPath(name).name.casefold() == wanted
     ]
     if not candidates:
-        raise RuntimeError(f"Launch target {basename!r} was not found in the verified source archive")
-    candidates.sort(key=lambda value: (len(PurePosixPath(value).parts), len(value), value.casefold()))
+        raise RuntimeError(
+            f"Launch target {basename!r} was not found in the verified source archive"
+        )
+    candidates.sort(
+        key=lambda value: (
+            len(PurePosixPath(value).parts),
+            len(value),
+            value.casefold(),
+        )
+    )
     return candidates[0]
 
 
@@ -45,7 +58,11 @@ def make_dosbox_config(target: str, launch: dict) -> str:
     directory = "\\".join(target_path.parts[:-1])
     executable = target_path.name
     cd_line = f'cd "\\{directory}"' if directory else "cd \\"
-    run_line = f'call "{executable}"' if executable.casefold().endswith(".bat") else f'"{executable}"'
+    run_line = (
+        f'call "{executable}"'
+        if executable.casefold().endswith(".bat")
+        else f'"{executable}"'
+    )
     machine = launch.get("machine", "svga_s3")
     memory = int(launch.get("memory_mb", 16))
     cycles = launch.get("cycles", "auto")
@@ -75,6 +92,15 @@ def make_dosbox_config(target: str, launch: dict) -> str:
     )
 
 
+def write_synthetic(bundle: zipfile.ZipFile, name: str, payload: str) -> None:
+    """Write generated metadata with stable ZIP headers."""
+    info = zipfile.ZipInfo(name, FIXED_ZIP_DATE)
+    info.compress_type = zipfile.ZIP_DEFLATED
+    info.create_system = 3
+    info.external_attr = 0o100644 << 16
+    bundle.writestr(info, payload.encode("utf-8"))
+
+
 def build(manifest_path: Path) -> Path:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     source = manifest["source"]
@@ -89,12 +115,16 @@ def build(manifest_path: Path) -> Path:
         actual_size = source_path.stat().st_size
         expected_size = int(source["size"])
         if actual_size != expected_size:
-            raise RuntimeError(f"Source size mismatch: expected {expected_size}, received {actual_size}")
+            raise RuntimeError(
+                f"Source size mismatch: expected {expected_size}, received {actual_size}"
+            )
 
         actual_sha1 = digest(source_path, "sha1")
         expected_sha1 = source["sha1"].casefold()
         if actual_sha1.casefold() != expected_sha1:
-            raise RuntimeError(f"Source SHA-1 mismatch: expected {expected_sha1}, received {actual_sha1}")
+            raise RuntimeError(
+                f"Source SHA-1 mismatch: expected {expected_sha1}, received {actual_sha1}"
+            )
 
         source_sha256 = digest(source_path, "sha256")
         with zipfile.ZipFile(source_path, "r") as source_zip:
@@ -116,16 +146,33 @@ def build(manifest_path: Path) -> Path:
                 "rights_record": manifest.get("rights_record"),
             }
 
-            with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as bundle:
+            with zipfile.ZipFile(
+                output,
+                "w",
+                compression=zipfile.ZIP_DEFLATED,
+                compresslevel=9,
+            ) as bundle:
                 for item in source_zip.infolist():
                     if item.filename.startswith(".jsdos/"):
                         continue
                     bundle.writestr(item, source_zip.read(item.filename))
-                bundle.writestr(".jsdos/dosbox.conf", config)
-                bundle.writestr(".jsdos/jsdos.json", json.dumps({"version": 1}, indent=2) + "\n")
-                bundle.writestr(".jsdos/provenance.json", json.dumps(provenance, indent=2, sort_keys=True) + "\n")
 
-    print(f"Built {output} ({output.stat().st_size} bytes)")
+                write_synthetic(bundle, ".jsdos/dosbox.conf", config)
+                write_synthetic(
+                    bundle,
+                    ".jsdos/jsdos.json",
+                    json.dumps({"version": 1}, indent=2, sort_keys=True) + "\n",
+                )
+                write_synthetic(
+                    bundle,
+                    ".jsdos/provenance.json",
+                    json.dumps(provenance, indent=2, sort_keys=True) + "\n",
+                )
+
+    print(
+        f"Built {output} ({output.stat().st_size} bytes, "
+        f"sha256={digest(output, 'sha256')})"
+    )
     return output
 
 
