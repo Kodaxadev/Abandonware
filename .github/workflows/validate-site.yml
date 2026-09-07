@@ -40,7 +40,6 @@ jobs:
           set -euo pipefail
           node <<'NODE'
           const fs = require('fs');
-          const path = require('path');
 
           global.window = {};
           require('./data/games.js');
@@ -63,7 +62,9 @@ jobs:
               if (game.status !== 'BROWSER READY') {
                 throw new Error(`${game.id} is hostable but is not marked BROWSER READY`);
               }
-              if (!game.hostedUrl || !fs.existsSync(game.hostedUrl)) {
+
+              const artifactPath = String(game.hostedUrl || '').split(/[?#]/, 1)[0];
+              if (!artifactPath || !fs.existsSync(artifactPath)) {
                 throw new Error(`${game.id} points at missing hosted artifact ${game.hostedUrl}`);
               }
               if (!game.rightsRecord || !fs.existsSync(game.rightsRecord)) {
@@ -97,7 +98,6 @@ jobs:
           test -s runtime/scummvm/PROVENANCE.json
           test -s runtime/scummvm/SOURCE.md
           test -s runtime/scummvm/legal/SCUMMVM-COPYING
-          test -s docs/rights/beneath-a-steel-sky.md
 
           python3 - <<'PY'
           import json
@@ -108,8 +108,19 @@ jobs:
 
           assert provenance['runtime']['commit'] == build['runtime']['commit']
           assert provenance['runtime']['version'] == build['runtime']['version']
-          assert provenance['game']['sha256'] == build['game']['sha256']
-          assert provenance['game']['id'] == build['game']['id']
-          assert provenance['game']['rights_record'] == build['game']['rights_record']
-          print('ScummVM runtime provenance matches pinned build manifest.')
+
+          build_games = build.get('games') or [build['game']]
+          provenance_games = provenance.get('games') or [provenance['game']]
+          indexed_provenance = {game['id']: game for game in provenance_games}
+
+          for game in build_games:
+              game_id = game['id']
+              assert game_id in indexed_provenance, f'Missing ScummVM provenance for {game_id}'
+              recorded = indexed_provenance[game_id]
+              assert recorded['sha256'] == game['sha256']
+              assert recorded['rights_record'] == game['rights_record']
+              rights_path = Path(game['rights_record'])
+              assert rights_path.is_file(), f'Missing rights record for {game_id}: {rights_path}'
+
+          print(f'ScummVM runtime provenance matches {len(build_games)} pinned game manifest record(s).')
           PY
