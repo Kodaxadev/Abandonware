@@ -14,6 +14,9 @@ on:
       - "games/**"
       - "runtime/**"
       - "docs/rights/**"
+      - "patches/**"
+      - "tests/test_*.py"
+      - "tools/materialize_scummvm_games.py"
       - ".github/workflows/validate-site.yml"
 
 permissions:
@@ -36,6 +39,11 @@ jobs:
           node --check app.js
           node --check data/games.js
           node --check runtime/jsdos/bridge.js
+
+      - name: Run ScummVM intake unit tests
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
 
       - name: Validate catalog-to-artifact links
         run: |
@@ -152,6 +160,10 @@ jobs:
           test -s runtime/scummvm/PROVENANCE.json
           test -s runtime/scummvm/SOURCE.md
           test -s runtime/scummvm/legal/SCUMMVM-COPYING
+          test -s runtime/scummvm/patches/scummvm-emscripten-relative-data.patch
+          test -s runtime/scummvm/patches/scummvm-emscripten-midi-permission.patch
+          cmp patches/scummvm-emscripten-relative-data.patch runtime/scummvm/patches/scummvm-emscripten-relative-data.patch
+          cmp patches/scummvm-emscripten-midi-permission.patch runtime/scummvm/patches/scummvm-emscripten-midi-permission.patch
 
           python3 - <<'PY'
           import json
@@ -174,8 +186,14 @@ jobs:
               assert recorded['sha256'] == game['sha256']
               assert recorded['rights_record'] == game['rights_record']
               assert recorded['target'] == game['target']
+              assert recorded['relative_game_path'] == game.get('relative_game_path', '.')
+              assert recorded.get('required_files', []) == game.get('required_files', [])
+              assert recorded.get('target_direct_files'), f'No direct target payload recorded for {game_id}'
               rights_path = Path(game['rights_record'])
               assert rights_path.is_file(), f'Missing rights record for {game_id}: {rights_path}'
 
-          print(f'ScummVM runtime provenance matches {len(build_games)} pinned game manifest record(s).')
+          source = Path('runtime/scummvm/SOURCE.md').read_text(encoding='utf-8')
+          assert 'scummvm-emscripten-relative-data.patch' in source
+          assert 'scummvm-emscripten-midi-permission.patch' in source
+          print(f'ScummVM runtime provenance matches {len(build_games)} exact game path(s).')
           PY
