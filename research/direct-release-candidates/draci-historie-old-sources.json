@@ -1,15 +1,16 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "draci-historie-old-sources",
   "title": "Dračí Historie original source code",
-  "status": "SOURCE_HASH_DISCOVERY_ONLY",
+  "status": "SOURCE_IDENTITY_PINNED",
   "source": {
     "page": "https://www.ucw.cz/draci-historie/",
     "url": "https://www.ucw.cz/draci-historie/source/old-sources.zip",
     "allowed_host": "www.ucw.cz",
-    "discovery_mode": true,
-    "max_size": 5242880
+    "size": 2705574,
+    "sha256": "a1bfe3e21d2664d99066b0f8be3c048dd290bc4e323879c27c25adc001b6022e",
+    "sha512": "77bdbfccc38d45978962f73188c90f81816203c7f8e900a0e51b7014e1bc370ff0396d5f875d4a38658ebc4006649b95dfead809bafe3079d1e2a8488e26fe17"
   },
   "rights_basis": "Original developer site states the game is GPL-2 and explicitly offers the original source code (with later bug fixes).",
-  "reason": "Discover the exact original-site archive identity without executing it. The observed hash must be pinned and re-audited before this archive may be used as preserved corresponding source."
+  "reason": "Exact original-site source archive identity discovered in a non-publishing pass and now pinned by size, SHA-256 and SHA-512 for a mandatory reproducibility rerun before preservation."
 }
