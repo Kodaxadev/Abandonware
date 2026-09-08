@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "runtime/sources/robins-rescue-build.json"
+      - "runtime/sources/*-build.json"
       - "tools/materialize_source_snapshot.py"
       - ".github/workflows/materialize-source-snapshots.yml"
 
@@ -29,52 +29,85 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Materialize pinned Robin's Rescue source
+      - name: Materialize all pinned source snapshots
         run: |
           set -euo pipefail
-          python3 tools/materialize_source_snapshot.py runtime/sources/robins-rescue-build.json
-
-      - name: Validate source preservation package
-        run: |
-          set -euo pipefail
-          root=runtime/sources/robins-rescue
-          test -s "$root/PROVENANCE.json"
-          test -s "$root/SOURCE.md"
-          test -s "$root/legal/COPYING"
-          test -s "$root/legal/README.md"
-          test -s "$root/legal/sprite_sources__medieval_sharp__SIL - Open Font License.txt"
-          find "$root" -maxdepth 1 -name 'robins-rescue-*.tar.gz' -type f -size +1M -print -quit | grep -q .
-
-          python3 - <<'PY'
-          import hashlib, json
-          from pathlib import Path
-
-          manifest = json.loads(Path('runtime/sources/robins-rescue-build.json').read_text(encoding='utf-8'))
-          provenance = json.loads(Path('runtime/sources/robins-rescue/PROVENANCE.json').read_text(encoding='utf-8'))
-          assert provenance['commit'] == manifest['commit']
-          assert provenance['tree'] == manifest['tree']
-          assert provenance['file_count'] == manifest['file_count']
-          archive = Path('runtime/sources/robins-rescue') / provenance['archive_file']
-          actual = hashlib.sha256(archive.read_bytes()).hexdigest()
-          assert actual == manifest['archive_sha256'] == provenance['archive_sha256']
-          print(f"Verified corresponding source {provenance['commit']} ({archive.stat().st_size} bytes)")
-          PY
-
-          if find "$root" -type f -size +95M -print -quit | grep -q .; then
-            echo "A source preservation file exceeds the 95 MB repository safety threshold" >&2
+          shopt -s nullglob
+          manifests=(runtime/sources/*-build.json)
+          if [ ${#manifests[@]} -eq 0 ]; then
+            echo "No corresponding-source manifests found." >&2
             exit 1
           fi
+          for manifest in "${manifests[@]}"; do
+            echo "::group::Materialize $manifest"
+            python3 tools/materialize_source_snapshot.py "$manifest"
+            echo "::endgroup::"
+          done
 
-      - name: Commit corresponding source snapshot
+      - name: Validate source preservation packages
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          manifests = sorted(Path('runtime/sources').glob('*-build.json'))
+          if not manifests:
+              raise SystemExit('No corresponding-source manifests found')
+
+          for manifest_path in manifests:
+              manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+              root = Path(manifest['output'])
+              provenance_path = root / 'PROVENANCE.json'
+              source_note = root / 'SOURCE.md'
+              if not provenance_path.is_file() or not provenance_path.stat().st_size:
+                  raise SystemExit(f'Missing provenance: {provenance_path}')
+              if not source_note.is_file() or not source_note.stat().st_size:
+                  raise SystemExit(f'Missing source note: {source_note}')
+
+              provenance = json.loads(provenance_path.read_text(encoding='utf-8'))
+              assert provenance['id'] == manifest['id'], (provenance['id'], manifest['id'])
+              assert provenance['commit'] == manifest['commit']
+              assert provenance['tree'] == manifest['tree']
+              assert provenance['file_count'] == manifest['file_count']
+
+              archive = root / provenance['archive_file']
+              if not archive.is_file() or not archive.stat().st_size:
+                  raise SystemExit(f'Missing source archive: {archive}')
+              actual = hashlib.sha256(archive.read_bytes()).hexdigest()
+              assert actual == manifest['archive_sha256'] == provenance['archive_sha256']
+
+              preserved = provenance.get('preserved_notices', [])
+              if not preserved:
+                  raise SystemExit(f'No preserved notices recorded for {manifest["id"]}')
+              for notice in preserved:
+                  notice_path = root / notice['materialized_path']
+                  if not notice_path.is_file() or not notice_path.stat().st_size:
+                      raise SystemExit(f'Missing preserved notice: {notice_path}')
+                  notice_hash = hashlib.sha256(notice_path.read_bytes()).hexdigest()
+                  assert notice_hash == notice['sha256']
+
+              oversized = [p for p in root.rglob('*') if p.is_file() and p.stat().st_size > 95 * 1024 * 1024]
+              if oversized:
+                  raise SystemExit(f'Source preservation file exceeds 95 MiB safety threshold: {oversized[0]}')
+
+              print(
+                  f"Verified {manifest['id']} source {provenance['commit']} "
+                  f"({archive.stat().st_size} bytes, {len(preserved)} notice file(s))"
+              )
+          PY
+
+      - name: Commit corresponding source snapshots
         run: |
           set -euo pipefail
           git config user.name "abandonware-preservation-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add runtime/sources/robins-rescue
+          git add runtime/sources
           if git diff --cached --quiet; then
-            echo "Corresponding source already matches the pinned manifest."
+            echo "Corresponding sources already match all pinned manifests."
             exit 0
           fi
-          git commit -m "build: preserve Robin's Rescue corresponding source"
+          git commit -m "build: preserve pinned corresponding sources"
           git pull --rebase origin main
           git push origin HEAD:main
