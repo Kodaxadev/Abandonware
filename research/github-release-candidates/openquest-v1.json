@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "openquest-v1-author-release",
   "title": "OpenQuest",
   "status": "BINARY_IDENTITY_REVIEW_ONLY",
@@ -11,8 +11,9 @@
   "required_member_suffix": "data.dcp",
   "expected_payload": {
     "md5": "16893e3fc15a211a49654ae66f684f28",
+    "md5_bytes": 5000,
     "size": 82281736,
-    "comparison": "ScummVM Wintermute detector identity for Open Quest"
+    "comparison": "ScummVM Advanced Detector identity for Open Quest: default 5000-byte detector MD5 plus full file size"
   },
-  "reason": "The creator-controlled GitHub v1.0 release can establish whether the exact Windows data.dcp corresponds to the ScummVM detection identity. This lane is non-publishing; the OpenQuest candidate remains HOLD because the tagged source identifies a third-party Verb Bar with no formal redistribution license."
+  "reason": "The creator-controlled GitHub v1.0 release can establish whether the exact Windows data.dcp corresponds to the ScummVM detection identity. ScummVM's Advanced Detector defaults to hashing the first 5000 bytes unless an engine overrides that value; the pinned Wintermute detector does not override it. This lane is non-publishing; the OpenQuest candidate remains HOLD because the tagged source identifies a third-party Verb Bar with no formal redistribution license."
 }
