@@ -1,9 +1,10 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "frasse-and-the-peas-of-kejick",
   "title": "Frasse and the Peas of Kejick",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "ScummVM 2026.3 currently distributes the compact v1.04 SLUDGE package with a published SHA-256, but Abandonware requires package-level redistribution/license evidence before production hosting.",
+  "status": "HOLD",
+  "decision_record": "research/decisions/frasse-and-the-peas-of-kejick.md",
+  "reason": "The v1.04 readme permits copying only in unaltered form, expressly defining that as the original installer and prohibiting different packaging. Abandonware's browser materialization extracts/repackages game data, so that use is not established by the grant.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "frasse"
