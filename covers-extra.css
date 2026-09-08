@@ -173,3 +173,31 @@
   transform: rotate(-18deg);
   box-shadow: inset 14px -10px 0 rgba(229, 195, 104, .025), -48px 55px 0 -42px rgba(206, 221, 153, .48);
 }
+
+.cover-tremendous-corporation {
+  background:
+    radial-gradient(circle at 77% 18%, rgba(220, 63, 63, .16), transparent 12%),
+    linear-gradient(150deg, #29343a 0 27%, #192126 27% 61%, #090d0f 61%);
+}
+.cover-tremendous-corporation::before {
+  width: 72%;
+  height: 84%;
+  right: 4%;
+  bottom: -10%;
+  border: 1px solid rgba(184, 202, 207, .19);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 20px, rgba(184, 202, 207, .05) 21px 22px),
+    repeating-linear-gradient(0deg, transparent 0 16px, rgba(184, 202, 207, .035) 17px 18px);
+  clip-path: polygon(8% 100%, 8% 31%, 22% 31%, 22% 18%, 39% 18%, 39% 4%, 63% 4%, 63% 22%, 82% 22%, 82% 42%, 96% 42%, 96% 100%);
+}
+.cover-tremendous-corporation::after {
+  width: 58%;
+  height: 13px;
+  left: 9%;
+  top: 34%;
+  background: rgba(220, 63, 63, .22);
+  box-shadow:
+    18px 31px 0 -4px rgba(184, 202, 207, .12),
+    -3px 58px 0 -5px rgba(220, 63, 63, .16);
+  transform: rotate(-5deg);
+}
