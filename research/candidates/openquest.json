@@ -1,10 +1,10 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "openquest",
   "title": "OpenQuest",
   "status": "HOLD",
   "decision_record": "research/decisions/openquest.md",
-  "reason": "OpenQuest has strong first-party reuse and redistribution evidence and an author-controlled CC-BY-4.0 repository/release, but the pinned v1.0 license record identifies a bundled third-party Verb Bar with no formal license. A surviving author discussion offers MIT relicensing if needed, but Abandonware does not treat an offer as an executed redistribution license. Production stays fail-closed while source and creator-release identity audits continue.",
+  "reason": "OpenQuest has strong first-party reuse and redistribution evidence, a creator-controlled CC-BY-4.0 repository/release, a pinned v1.0 source identity, and an exact creator-release binary match to ScummVM's Wintermute detector. Production still remains HOLD because the pinned v1.0 license record identifies a bundled third-party Verb Bar with no formal redistribution license. A surviving author discussion offers MIT relicensing if needed, but Abandonware does not treat an offer as an executed grant.",
   "runtime_candidate": {
     "engine": "wintermute",
     "target": "openquest"
@@ -12,12 +12,25 @@
   "author_release": {
     "repository": "JenniBee/openquest",
     "tag": "v1.0",
-    "windows_asset": "openquest-win32.zip"
+    "tag_commit": "4f02a085fb2684aecc07413b9e804376d022b12d",
+    "windows_asset": "openquest-win32.zip",
+    "archive_sha256": "8a559d2c546bbc75ac81371adb94bd5bbdfd90471cb514c1b494a84d2f7949f7",
+    "archive_size": 89380745,
+    "payload": {
+      "path": "data/data.dcp",
+      "size": 82281736,
+      "detector_md5": "16893e3fc15a211a49654ae66f684f28",
+      "detector_md5_bytes": 5000,
+      "full_md5": "339df37f3e61b3b8fc22007d8f077f9c",
+      "sha256": "a4218ac420e6ba7221e8aabfa5df7cf08757e9cd5192e584353706482a580193",
+      "matches_scummvm_identity": true
+    }
   },
   "expected_payload": {
     "filename": "data.dcp",
     "md5": "16893e3fc15a211a49654ae66f684f28",
+    "md5_bytes": 5000,
     "size": 82281736,
-    "basis": "ScummVM Wintermute detection identity"
+    "basis": "ScummVM Wintermute Advanced Detector identity"
   }
 }
