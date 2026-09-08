@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "robins-rescue-v1-author-release",
   "title": "Robin's Rescue",
   "status": "BINARY_IDENTITY_REVIEW_ONLY",
@@ -7,11 +7,17 @@
   "allowed_host": "cheeseness.itch.io",
   "release_label": "Author-hosted Windows v1.0 release",
   "expected_filename": "robins-rescue-windows-v1.0.zip",
-  "required_member_suffix": "data/robins_rescue.slg",
+  "required_member_suffix": "Gamedata.slg",
   "expected_payload": {
     "md5": "16cbf2bf916ed89f9c1b14fab133cf96",
-    "size": 14413769,
-    "comparison": "Pinned ScummVM 2026.3.0 SLUDGE detector and exact ScummVM robinsrescue.zip payload"
+    "size": 14413754,
+    "comparison": "Pinned ScummVM 2026.3.0 SLUDGE detector Windows/unknown-platform v1.0 Gamedata.slg identity"
   },
-  "reason": "The author's current itch.io page still publishes the original v1.0 platform archives and identifies data/robins_rescue.slg as the game data file. This audit compares that author-hosted release payload to the exact binary identity used by ScummVM without executing either archive."
+  "alternate_scummvm_payload": {
+    "filename": "robins_rescue.slg",
+    "md5": "16cbf2bf916ed89f9c1b14fab133cf96",
+    "size": 14413769,
+    "note": "The ScummVM-hosted preservation package uses this 15-byte-larger container variant with the same game-data MD5 identity."
+  },
+  "reason": "The source README identifies the Windows release payload as Gamedata.slg. ScummVM's pinned SLUDGE detector records the Windows/unknown-platform v1.0 Gamedata.slg as the same MD5 game identity with a 14,413,754-byte container. The author-release audit remains non-publishing and executes no downloaded content."
 }
