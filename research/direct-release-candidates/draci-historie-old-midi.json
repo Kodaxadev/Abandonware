@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "id": "draci-historie-old-midi",
+  "title": "Dračí Historie original MIDI source",
+  "status": "SOURCE_HASH_DISCOVERY_ONLY",
+  "source": {
+    "page": "https://www.ucw.cz/draci-historie/",
+    "url": "https://www.ucw.cz/draci-historie/source/old-midi.zip",
+    "allowed_host": "www.ucw.cz",
+    "discovery_mode": true,
+    "max_size": 1048576
+  },
+  "rights_basis": "Original developer site states the game is GPL-2 and separately provides the original MIDI music omitted from the larger original game-file/source archive.",
+  "reason": "Discover the exact original-site MIDI archive identity without executing it. The observed hash must be pinned and re-audited before this archive may be used as preserved corresponding source."
+}
