@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import unittest
 
-from tools.audit_candidate_zip import scan_evidence
+from tools.audit_candidate_zip import is_notice_name, scan_evidence
 
 
 class CandidateAuditEvidenceTests(unittest.TestCase):
@@ -32,6 +32,22 @@ class CandidateAuditEvidenceTests(unittest.TestCase):
         self.assertIn("distribute", evidence)
         self.assertNotIn("redistribution_prohibited", evidence)
         self.assertNotIn("copying_prohibited", evidence)
+
+    def test_authorship_and_attribution_notice_names_are_preserved(self):
+        for filename in (
+            "AUTHORS.TXT",
+            "Credits.html",
+            "PATENTS.TXT",
+            "NOTICE",
+            "ATTRIBUTION.md",
+            "third-party-licenses.txt",
+        ):
+            with self.subTest(filename=filename):
+                self.assertTrue(is_notice_name(filename))
+
+    def test_game_payload_is_not_misclassified_as_notice(self):
+        self.assertFalse(is_notice_name("gamedata.slg"))
+        self.assertFalse(is_notice_name("gameicon.icns"))
 
 
 if __name__ == "__main__":
