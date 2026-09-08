@@ -366,6 +366,46 @@
         "readme.txt"
       ],
       "title": "Nippon Safes, Inc."
+    },
+    {
+      "data_directory": "robins-rescue",
+      "edition": "Open-License v1.0 Game Data",
+      "external_rights_evidence": {
+        "external_license_files": [
+          "runtime/sources/robins-rescue/legal/COPYING",
+          "runtime/sources/robins-rescue/legal/README.md",
+          "runtime/sources/robins-rescue/legal/sludge__doc__README",
+          "runtime/sources/robins-rescue/legal/sprite_sources__medieval_sharp__SIL - Open Font License.txt"
+        ],
+        "license_identifiers": [
+          "LGPL-3.0",
+          "CC-BY-3.0",
+          "CC0-1.0",
+          "OFL-1.1"
+        ],
+        "source_archive": "runtime/sources/robins-rescue/robins-rescue-62b0920ea93b38f54a8678cdee1d1434803c3e4c.tar.gz",
+        "source_archive_sha256": "c063f3a0a1bf1369ddb1bb9d80fdb57658bd00fc74040afe61107b65033fd7a4",
+        "source_commit": "62b0920ea93b38f54a8678cdee1d1434803c3e4c",
+        "source_record": "runtime/sources/robins-rescue/PROVENANCE.json",
+        "source_tree": "f2b1e2da131ee1ed12827844c2e088e10363bcd7"
+      },
+      "id": "robins-rescue",
+      "notice_policy": "external_open_license_record",
+      "preserved_notices": [],
+      "relative_game_path": "robinsrescue",
+      "required_files": [
+        "robins_rescue.slg"
+      ],
+      "rights_basis": "open_license",
+      "rights_record": "docs/rights/robins-rescue.md",
+      "sha256": "5727726234a85633f4bc5327f238de82cf6844cbc68d097c9ba3c9e798314859",
+      "source_page": "https://www.scummvm.org/games/",
+      "source_url": "https://downloads.scummvm.org/frs/extras/SLUDGE/robinsrescue.zip",
+      "target": "robinsrescue",
+      "target_direct_files": [
+        "robins_rescue.slg"
+      ],
+      "title": "Robin's Rescue"
     }
   ],
   "runtime": {
@@ -380,7 +420,8 @@
       "dreamweb",
       "cge2",
       "cge",
-      "parallaction"
+      "parallaction",
+      "sludge"
     ],
     "name": "ScummVM Web",
     "repository": "scummvm/scummvm",
