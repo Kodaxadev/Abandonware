@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "id": "draci-historie-old-sources",
+  "title": "Dračí Historie original source code",
+  "status": "SOURCE_HASH_DISCOVERY_ONLY",
+  "source": {
+    "page": "https://www.ucw.cz/draci-historie/",
+    "url": "https://www.ucw.cz/draci-historie/source/old-sources.zip",
+    "allowed_host": "www.ucw.cz",
+    "discovery_mode": true,
+    "max_size": 5242880
+  },
+  "rights_basis": "Original developer site states the game is GPL-2 and explicitly offers the original source code (with later bug fixes).",
+  "reason": "Discover the exact original-site archive identity without executing it. The observed hash must be pinned and re-audited before this archive may be used as preserved corresponding source."
+}
