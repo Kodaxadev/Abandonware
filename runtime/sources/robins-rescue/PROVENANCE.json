@@ -1,20 +1,21 @@
 {
-  "archive_file": "robins-rescue-8f0b7d96f6feafb109926769a8c5ee0ef80076be.tar.gz",
-  "archive_sha256": "9f69bc58b0f21a25b50d3e35d084b2690ab1806933e1d809b4008d8219cbad32",
+  "archive_file": "robins-rescue-62b0920ea93b38f54a8678cdee1d1434803c3e4c.tar.gz",
+  "archive_sha256": "c063f3a0a1bf1369ddb1bb9d80fdb57658bd00fc74040afe61107b65033fd7a4",
   "authors": [
     "Josh \"Cheeseness\" Bush",
     "Miriam \"Mimness\" Roser"
   ],
-  "branch_at_audit": "master",
+  "branch_at_audit": "refs/tags/v1.0",
   "build_manifest": "runtime/sources/robins-rescue-build.json",
-  "commit": "8f0b7d96f6feafb109926769a8c5ee0ef80076be",
+  "commit": "62b0920ea93b38f54a8678cdee1d1434803c3e4c",
   "file_count": 147,
   "id": "robins-rescue",
   "license_summary": {
     "first_party_images_audio": "CC-BY-3.0",
     "font": "SIL-OFL-1.1",
     "source_code": "LGPL-3.0",
-    "third_party_attribution_record": "README.md"
+    "third_party_music": "CC-BY-3.0 as enumerated in README.md",
+    "third_party_sound_effects": "CC0-1.0 and CC-BY-3.0 as enumerated in README.md"
   },
   "preserved_notices": [
     {
@@ -25,8 +26,8 @@
     },
     {
       "materialized_path": "legal/README.md",
-      "sha256": "35c65f8cad4d05530e6ab0c943a50abf98c39304cb89c3d0c41f5a6f58f08cfb",
-      "size": 7789,
+      "sha256": "989be3043a97fba6be9e4f28482b097800252c60c2610b07eb3b4e2e6cb12fd2",
+      "size": 7711,
       "source_path": "README.md"
     },
     {
@@ -46,5 +47,5 @@
   "schema": 1,
   "source_page": "https://codeberg.org/Cheeseness/robins-rescue",
   "title": "Robin's Rescue",
-  "tree": "c8c4fcd0fda0cbe78fd09b6d592d21804653dcd1"
+  "tree": "f2b1e2da131ee1ed12827844c2e088e10363bcd7"
 }
