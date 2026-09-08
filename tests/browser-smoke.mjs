@@ -64,8 +64,8 @@ try {
   assert(runtime.hasZip, "Pinned local JSZip global did not initialize");
   assert(runtime.jsdos?.version === "8.4.1", `Unexpected js-dos version marker: ${runtime.jsdos?.version}`);
   assert(runtime.jsdos?.pathPrefix === "runtime/jsdos/emulators/", "js-dos local emulator bridge is not active");
-  assert(runtime.gameCount >= 11, `Catalog unexpectedly small: ${runtime.gameCount}`);
-  assert(runtime.hostedCount >= 11, `Hosted catalog unexpectedly small: ${runtime.hostedCount}`);
+  assert(runtime.gameCount >= 12, `Catalog unexpectedly small: ${runtime.gameCount}`);
+  assert(runtime.hostedCount >= 12, `Hosted catalog unexpectedly small: ${runtime.hostedCount}`);
   assert(runtime.localDosCount >= 1, "No local DOS restoration targets were found");
 
   // Capability-aware filtering must reflect the same catalog truth used by the launch actions.
@@ -188,6 +188,25 @@ try {
   assert(await frame.count() === 1, "Nippon ScummVM player iframe was not created");
   assert((await frame.getAttribute("src"))?.endsWith("#nippon"), "ScummVM did not receive the direct #nippon target");
 
+  await stopAndCloseRuntime();
+
+  // Robin's Rescue is the first source-backed open-license intake. Require the user-facing
+  // catalog launch to reach the Sludge target and request the exact audited SLG payload.
+  await page.locator('[data-game-id="robins-rescue"]').click();
+  await page.locator("#details-play-hosted").click();
+  await waitForRequestPart("runtime/scummvm/data/games/robins-rescue/robinsrescue/index.json", 45000);
+  await waitForRequestPart("runtime/scummvm/data/games/robins-rescue/robinsrescue/robins_rescue.slg", 45000);
+  await page.waitForTimeout(1000);
+
+  frame = page.locator("#dos-player iframe.scummvm-frame");
+  assert(await frame.count() === 1, "Robin's Rescue ScummVM player iframe was not created");
+  assert(
+    (await frame.getAttribute("src"))?.endsWith("#robinsrescue"),
+    "ScummVM did not receive the direct #robinsrescue target"
+  );
+
+  await stopAndCloseRuntime();
+
   const originRootDataRequests = requests.filter(url => {
     try {
       return new URL(url).pathname === "/data/index.json";
@@ -227,6 +246,7 @@ try {
     steelSkyPayloadRequests: requests.filter(url => url.includes("sky-BASS-Floppy-1.3/sky.dsk")).length,
     sfinxPayloadRequests: requests.filter(url => url.includes("sfinx-en-v1.1/sfinx-en-v1.1/vol.dat")).length,
     nipponPayloadRequests: requests.filter(url => url.includes("nippon-1.0/DISK1")).length,
+    robinsRescuePayloadRequests: requests.filter(url => url.includes("robins-rescue/robinsrescue/robins_rescue.slg")).length,
     localWorkbenchZipDetected: true
   }, null, 2));
 } finally {
