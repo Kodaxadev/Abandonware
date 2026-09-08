@@ -6,7 +6,7 @@ The project name describes the cultural problem, **not a legal status**. Old, un
 
 ## Current archive
 
-There are currently **11 audited browser-ready games across 2 browser execution runtimes**.
+There are currently **12 audited browser-ready games across 2 browser execution runtimes**.
 
 | Game | Original platform | Browser runtime | Rights basis |
 | --- | --- | --- | --- |
@@ -21,6 +21,7 @@ There are currently **11 audited browser-ready games across 2 browser execution 
 | Sfinx | DOS | ScummVM Web | original L.K. Avalon developer redistribution permission |
 | Sołtys | DOS | ScummVM Web | original L.K. Avalon developer redistribution permission |
 | Nippon Safes, Inc. | DOS | ScummVM Web | original-author freeware grant with permission to modify files |
+| Robin's Rescue | SLUDGE | ScummVM Web | LGPL-3.0 source, CC-BY-3.0 first-party assets, preserved third-party license/attribution record |
 
 Commercial titles such as DOOM, Commander Keen 4, Jazz Jackrabbit, SimCity 2000, Monkey Island, and Diablo are **not** hosted merely because they are old. They remain local-file or future compatibility targets unless a valid redistribution basis is established.
 
@@ -57,9 +58,27 @@ Pinned records:
 
 The current runtime builds only the engines needed by audited hosted titles:
 
-`sky`, `queen`, `lure`, `adl`, `drascula`, `dreamweb`, `cge2`, `cge`, and `parallaction`.
+`sky`, `queen`, `lure`, `adl`, `drascula`, `dreamweb`, `cge2`, `cge`, `parallaction`, and `sludge`.
 
-Each hosted ScummVM game launches directly through its configured target using the runtime URL hash, for example `runtime/scummvm/index.html#sky`, `#sfinx`, or `#nippon`.
+Each hosted ScummVM game launches directly through its configured target using the runtime URL hash, for example `runtime/scummvm/index.html#sky`, `#sfinx`, `#nippon`, or `#robinsrescue`.
+
+#### Required Emscripten media features
+
+The build enables the codec/image support required by the hosted games:
+
+- PNG
+- zlib
+- Ogg
+- Vorbis
+
+The workflow does not assume that a requested ScummVM engine survived configure-time dependency resolution. After compilation it requires a real static library for **every requested engine** and separately requires `USE_VORBIS` to be present in `config.h`.
+
+Those checks were added after real browser testing exposed two otherwise silent gaps:
+
+1. Sludge was initially disabled by ScummVM configure because PNG support was absent even though the overall build exited successfully.
+2. Robin's Rescue then loaded its real game payload but reported unsupported `OggS` audio until the Emscripten Ogg/Vorbis decoder path was explicitly enabled.
+
+Both failure modes now fail closed in the build pipeline.
 
 #### Reviewed Emscripten hosting patches
 
@@ -119,7 +138,7 @@ DOS manifests live in `games/manifests/`.
 
 `.github/workflows/materialize-audited-games.yml` rebuilds audited DOS bundles twice and compares hashes so nondeterministic output fails closed.
 
-### ScummVM pipeline
+### ScummVM package pipeline
 
 `runtime/scummvm-build.json` is the manifest for the shared ScummVM runtime and hosted game data.
 
@@ -129,19 +148,80 @@ DOS manifests live in `games/manifests/`.
 2. verifies its SHA-256
 3. rejects unsafe ZIP paths
 4. extracts into a dedicated game directory
-5. applies the reviewed rights policy and requires package notices for redistributable freeware
+5. applies the declared rights policy
 6. validates the **exact** configured game directory rather than accepting arbitrary nested descendants
-7. optionally requires declared detection files such as `vol.cat`, `vol.dat`, or `MYSTHOUS.DSK`
+7. optionally requires declared detection files such as `vol.cat`, `vol.dat`, `MYSTHOUS.DSK`, or `robins_rescue.slg`
 8. generates `scummvm.ini`
-9. writes aggregate runtime/game provenance including direct payload files
+9. writes aggregate runtime/game provenance including direct payload files and rights evidence
 
 This exact-path rule was added after Sfinx exposed a real nested-package edge case: its archive contains `sfinx-en-v1.1/sfinx-en-v1.1/`, so the correct configured payload path is explicitly recorded and tested instead of assuming the first extracted directory is launchable.
 
 `.github/workflows/build-scummvm-sky.yml` builds the pinned ScummVM WebAssembly runtime and materializes all audited ScummVM titles.
 
+### Source-backed open-license intake
+
+Robin's Rescue is the first title using the stricter `open_license` path.
+
+Its ScummVM package contains only the compiled game payload, so the archive does **not** pretend an absent package notice is sufficient. Production materialization instead requires all of the following:
+
+- checked-in per-title rights record
+- non-empty license identifiers
+- checked-in corresponding-source provenance
+- an immutable corresponding-source archive whose SHA-256 matches that provenance
+- the expected source commit and tree
+- every declared external license/attribution file to be present in the preserved source record and hash correctly
+
+The preserved Robin's Rescue release source is under:
+
+`runtime/sources/robins-rescue/`
+
+It is pinned to the authors' `v1.0` release tag:
+
+- commit: `62b0920ea93b38f54a8678cdee1d1434803c3e4c`
+- tree: `f2b1e2da131ee1ed12827844c2e088e10363bcd7`
+- source archive SHA-256: `c063f3a0a1bf1369ddb1bb9d80fdb57658bd00fc74040afe61107b65033fd7a4`
+- source files: `147`
+
+The preserved legal/attribution set includes the authors' `COPYING`, `README.md`, the SLUDGE notice, and the Medieval Sharp OFL notice. The README is material because it enumerates third-party CC0/CC-BY sound and music credits.
+
+The generated browser runtime also receives copies under:
+
+`runtime/scummvm/legal/games/robins-rescue/`
+
+so the deployed artifact remains self-describing rather than requiring a user to reconstruct its rights evidence from source history.
+
+A separate non-publishing author-release audit exists for an additional binary-identity cross-check. At present GitHub-hosted runners receive HTTP 526 from the author's itch.io subdomain before any author binary is downloaded, so the repository explicitly records that transport failure instead of claiming a hash comparison that did not occur.
+
+## Candidate rights-review lane
+
+Potential titles live separately under `research/candidates/` until their rights are resolved.
+
+`tools/audit_candidate_zip.py` verifies exact package hashes, rejects unsafe archive paths, inventories package notices, and surfaces both affirmative and restrictive license wording. Its scanner has regression tests for wrapped clauses such as:
+
+- redistribution prohibited
+- copying prohibited
+- backup-only permission
+- affirmative distribution permission that must **not** be misclassified as a prohibition
+
+Candidate states are explicit:
+
+- `RIGHTS_REVIEW_ONLY` — unresolved; package may be audited but cannot enter production
+- `HOLD` — reviewed and not currently hostable under the project's policy
+- `CONDITIONAL_PASS` — rights are promising but an unsatisfied condition remains
+- `APPROVED_OPEN_LICENSE` — source-backed open-license evidence cleared production gates
+
+Resolved HOLD records are skipped on later audits rather than repeatedly downloaded.
+
+Examples of why titles have been held:
+
+- no affirmative third-party redistribution grant
+- a package license explicitly prohibiting distribution
+- no package legal notice and no stronger external grant
+- a grant allowing only the original unaltered package while browser materialization requires extracted/repackaged game data
+
 ## Rights records
 
-Per-title records live under `docs/rights/`.
+Per-title production records live under `docs/rights/`.
 
 Current hosted records include:
 
@@ -156,6 +236,7 @@ Current hosted records include:
 - `sfinx.md`
 - `soltys.md`
 - `nippon-safes.md`
+- `robins-rescue.md`
 
 A hosted package must have a defensible basis such as public-domain status, explicit freeware redistribution permission, an applicable open license, or direct rights-holder authorization. “Abandonware,” “not sold anymore,” or “available elsewhere” are not sufficient.
 
@@ -200,9 +281,28 @@ This generic path will not handle every DOS title. CD-ROM layouts, copy protecti
 - ScummVM runtime/game provenance matches the pinned manifest
 - exact ScummVM `relative_game_path`, required detection files, and direct payload records match
 - generated ScummVM patches byte-match their checked-in reviewed versions
+- open-license generated rights/source records match the checked-in source provenance
+- preserved open-license source archive hashes correctly
+- generated open-license legal files hash-match their source-preserved originals
 - repository-local JSZip 3.10.1 matches its manifest/provenance and jsDelivr has not been reintroduced
 
-Synthetic unit tests reproduce the nested-game-directory failure mode and path-escape attempts so later packages cannot regress that intake logic.
+Synthetic unit tests reproduce the nested-game-directory failure mode, path-escape attempts, open-license evidence tampering, and missing-license-evidence cases so later packages cannot regress the intake logic.
+
+### ScummVM build integrity
+
+`.github/workflows/build-scummvm-sky.yml` additionally:
+
+- fingerprints every build/evidence input before compilation
+- compiles only requested audited engines
+- requires every requested engine's static library to exist afterward
+- requires Vorbis decoder support to survive configure
+- verifies all exact game package hashes again
+- verifies source-backed open-license evidence again
+- embeds generated game legal/source records
+- validates the final static runtime
+- rebases before publishing generated files
+- verifies every fingerprinted build/evidence input is unchanged after the rebase
+- retries race-safe pushes and refuses to publish a stale runtime if inputs changed during the build
 
 ### Browser execution smoke
 
@@ -215,15 +315,27 @@ It currently proves, through the actual UI:
 - js-dos loads its worker/WASM files from `runtime/jsdos/emulators/`
 - a ZIP generated inside the browser is accepted by the local DOS workbench, `GAME.BAT` is detected, the rights gate unlocks execution, and the temporary bundle reaches js-dos
 - no mutable js-dos or JSZip functional CDN is contacted
-- Beneath a Steel Sky launches through ScummVM
+- Beneath a Steel Sky launches through ScummVM and requests real `sky.dsk`
 - ScummVM loads its WebAssembly binary and document-relative HTTP filesystem
-- the real `sky.dsk` payload is requested
 - no origin-root `/data/index.json` regression occurs
-- Sfinx launches through the corrected nested payload path and requests its real `vol.cat` and `vol.dat`
-- Nippon Safes launches through `#nippon` and requests the real `DISK1` payload from the audited four-disk DOS package
+- Sfinx launches through the corrected nested payload path and requests real `vol.cat` and `vol.dat`
+- Nippon Safes launches through `#nippon` and requests real `DISK1`
+- Robin's Rescue launches through `#robinsrescue` and requests the real `robins_rescue.slg`
+- the Sludge runtime includes the Ogg/Vorbis support required by Robin's Rescue without the prior unsupported-audio errors
 - unexpected browser page/console errors fail the job
 
-The headless browser has no speech-synthesis voices, so ScummVM's known optional “No voice is available” capability warning is excluded from fatal-console classification; actual page errors remain fatal.
+The latest full execution run reported:
+
+- 18 catalog records
+- 12 hosted titles
+- 4 local-DOS targets
+- 115 observed browser requests
+- real payload requests for Steel Sky, Sfinx, Nippon, and Robin's Rescue
+- successful local-workbench ZIP execution path
+
+The headless browser has no speech-synthesis voices, so ScummVM's known optional “No voice is available” capability warning is excluded from fatal-console classification; actual runtime/page errors remain fatal.
+
+Browser smoke runs on relevant normal pushes **and after successful ScummVM build workflow completion**. This is necessary because GitHub intentionally suppresses ordinary push-triggered workflows for commits made by another workflow using `GITHUB_TOKEN`.
 
 ## Run locally
 
@@ -260,19 +372,24 @@ runtime/jszip/                     pinned self-hosted JSZip 3.10.1
 runtime/jszip-build.json            JSZip source pin
 runtime/scummvm/                   generated patched ScummVM Web runtime + audited data
 runtime/scummvm-build.json          ScummVM source/game pins
+runtime/sources/                   preserved corresponding-source snapshots for open-license games
 
 patches/                           reviewed ScummVM browser-hosting patches
-docs/rights/                       per-title rights/provenance records
+docs/rights/                       per-title production rights/provenance records
+research/candidates/               non-publishing rights-review manifests
+research/decisions/                explicit candidate decisions / HOLD records
+research/source-candidates/        non-executing external source audits
+research/release-candidates/       non-publishing author-release identity audits
 tools/                             materialization and verification tools
 tests/                             static and browser-level regression tests
-.github/workflows/                 build, materialization, and integrity gates
+.github/workflows/                 build, audit, materialization, and integrity gates
 ```
 
 ## Next technical layers
 
 The strongest next additions are:
 
-1. more individually audited freeware/public-domain titles
+1. more individually audited freeware/public-domain/open-license titles
 2. local user-data intake for commercial ScummVM games
 3. tested Windows 9x/DOSBox-X profiles
 4. save export/import portability
