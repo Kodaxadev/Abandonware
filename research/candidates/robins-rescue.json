@@ -1,9 +1,10 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "robins-rescue",
   "title": "Robin's Rescue",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "The authors publicly describe Robin's Rescue as LGPL 3.0 with CC-BY 3.0 assets. Abandonware is auditing the exact ScummVM SLG package to verify that the hosted payload and notices align with those author-published terms before production use.",
+  "status": "APPROVED_OPEN_LICENSE",
+  "decision_record": "docs/rights/robins-rescue.md",
+  "reason": "The authors license Robin's Rescue source under LGPL-3.0 and first-party assets under CC-BY-3.0 with enumerated third-party exceptions. Abandonware preserves the v1.0 release source, license and attribution files and uses ScummVM's exact hash-pinned SLG package. The separate author-binary hash audit remains blocked by itch.io HTTP 526 and is not claimed as completed.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "robinsrescue"
@@ -12,5 +13,12 @@
     "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/robinsrescue.zip",
     "page": "https://www.scummvm.org/games/",
     "sha256": "5727726234a85633f4bc5327f238de82cf6844cbc68d097c9ba3c9e798314859"
+  },
+  "corresponding_source": {
+    "record": "runtime/sources/robins-rescue/PROVENANCE.json",
+    "revision": "refs/tags/v1.0",
+    "commit": "62b0920ea93b38f54a8678cdee1d1434803c3e4c",
+    "tree": "f2b1e2da131ee1ed12827844c2e088e10363bcd7",
+    "archive_sha256": "c063f3a0a1bf1369ddb1bb9d80fdb57658bd00fc74040afe61107b65033fd7a4"
   }
 }
