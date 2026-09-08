@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "draci-historie",
+  "title": "Dračí Historie",
+  "status": "RIGHTS_APPROVED_SOURCE_PRESERVATION_PENDING",
+  "decision_record": "docs/rights/draci-historie.md",
+  "reason": "The original NoSense developer site explicitly releases the game under GNU GPL v2 and publishes both playable archives and source materials. The English 2012 author-hosted game ZIP has been independently pinned by Gentoo and verified by Abandonware against both that SHA-512 and ScummVM's English INIT.DFW detector. Production is intentionally blocked until the original source-code, complete asset/source, and MIDI archives are hash-pinned, re-audited in pinned mode, and preserved with provenance.",
+  "runtime_candidate": {
+    "engine": "draci",
+    "target": "draci"
+  },
+  "game_release": {
+    "source_page": "https://www.ucw.cz/draci-historie/",
+    "url": "https://www.ucw.cz/draci-historie/binary/dh-en-2012.zip",
+    "size": 3310860,
+    "sha256": "807c625902051639a35871da2c5138615ae2c327c5f12eebb8dd22628874ae23",
+    "sha512": "a9b5ff15305c961f288fdf915f56ca204a2ebe5370dcf56c20a0057cf721c45445a20479a39fe1f5443e79e7c95bd5771abef2115396c418442d2e5e400ce10a",
+    "required_files": [
+      "INIT.DFW"
+    ],
+    "detector": {
+      "filename": "INIT.DFW",
+      "md5": "b890a5aeebaf16af39219cba2416b0a3",
+      "size": 906
+    }
+  },
+  "source_components": [
+    "research/direct-release-candidates/draci-historie-old-sources.json",
+    "research/direct-release-candidates/draci-historie-old-gfx.json",
+    "research/direct-release-candidates/draci-historie-old-midi.json"
+  ]
+}
