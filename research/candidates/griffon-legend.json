@@ -1,10 +1,10 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "griffon-legend",
   "title": "The Griffon Legend",
   "status": "HOLD",
-  "decision": "research/decisions/griffon-legend.md",
-  "reason": "The exact package is verified and contains a readme, but no explicit third-party redistribution or mirroring grant was found.",
+  "decision_record": "research/decisions/griffon-legend.md",
+  "reason": "The exact ScummVM package is verified. A maintained C-port repository now provides materially stronger rights evidence: source code is declared GPL-2.0 and all non-source assets CC-BY-NC-ND-3.0. HOLD remains because the preserved evidence does not establish that port maintainer Dmitry Smagin was authorized by original asset authors Daniel Kennedy and David Turner to license their graphics/music/sound/binary data, and the NC/ND terms would also require an explicit noncommercial, unmodified-asset deployment boundary before production.",
   "runtime_candidate": {
     "engine": "griffon",
     "target": "griffon"
@@ -13,5 +13,23 @@
     "url": "https://downloads.scummvm.org/frs/extras/Griffon%20Legend/griffon-1.0.zip",
     "page": "https://www.scummvm.org/news/20200825/",
     "sha256": "0aad5fb10f51afb5c121cf04cc86539a6f0d89db85809f9e1767dfdc8d3191a4"
+  },
+  "port_rights_evidence": {
+    "repository": "dmitrysmagin/griffon_legend",
+    "source_candidate": "research/source-candidates/griffon-legend-port.json",
+    "license_claim": {
+      "source_code": "GPL-2.0",
+      "non_source_assets": "CC-BY-NC-ND-3.0"
+    },
+    "license_introduced_commit": "8c1207b3dd65e9e14f318a3ceb4deef7057fcc32",
+    "original_authors": {
+      "programming_graphics": "Daniel \"Syn9\" Kennedy",
+      "music_sound_effects": "David Turner"
+    },
+    "unresolved": [
+      "authority of the port maintainer to license the original authors' assets",
+      "durable noncommercial deployment boundary",
+      "no-derivatives compliance for hosted asset material"
+    ]
   }
 }
