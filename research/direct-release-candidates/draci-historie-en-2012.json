@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "id": "draci-historie-en-2012",
+  "title": "Dračí Historie",
+  "status": "BINARY_IDENTITY_REVIEW_ONLY",
+  "source": {
+    "page": "https://www.ucw.cz/draci-historie/",
+    "url": "https://www.ucw.cz/draci-historie/binary/dh-en-2012.zip",
+    "allowed_host": "www.ucw.cz",
+    "size": 3310860,
+    "sha512": "a9b5ff15305c961f288fdf915f56ca204a2ebe5370dcf56c20a0057cf721c45445a20479a39fe1f5443e79e7c95bd5771abef2115396c418442d2e5e400ce10a",
+    "sha512_basis": "Gentoo games-rpg/draci-historie Manifest for the same original-author filename"
+  },
+  "required_payload": {
+    "filename": "INIT.DFW",
+    "md5": "b890a5aeebaf16af39219cba2416b0a3",
+    "size": 906,
+    "comparison": "Pinned ScummVM 2026.3 English Dračí Historie detector identity"
+  },
+  "rights_basis": {
+    "page": "https://www.ucw.cz/draci-historie/",
+    "statement": "Original developer site states the game is released under GNU GPL version 2 and provides the game plus source scripts, graphics, sounds, animations, original game files and source code."
+  },
+  "reason": "The original developer-controlled site supplies both an explicit GPL-2.0 game release statement and the English 2012 archive. This audit verifies the exact author-hosted artifact against Gentoo's independent SHA-512 pin and ScummVM's detector identity, without publishing or executing it."
+}
