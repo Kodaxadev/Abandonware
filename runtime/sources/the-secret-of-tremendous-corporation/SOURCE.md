@@ -14,7 +14,7 @@ The archive is generated with `git archive` from the pinned commit. Repository c
 
 - game code: LGPL-3.0 per the authors' official itch.io Version 6 release metadata
 - original game assets: CC-BY-SA-4.0 per current author metadata; the pinned Steam-tag in-game credits separately say game code and original assets CC-BY-SA-3.0
-- third party assets: Separate per-asset terms apply. The pinned in-game credits enumerate third-party music, Freesound effects, voice work and a font; known entries include noncommercial and Sampling+ licenses and therefore require asset-level review before production hosting.
+- third party assets: Separate per-asset terms apply. The pinned English and Polish in-game credits enumerate third-party music, Freesound effects, voice work and a font; known entries include noncommercial and Sampling+ licenses and therefore require asset-level review before production hosting.
 - package third party notice: Google/BSD-style SLUDGE package notices are preserved separately and do not license the game data as a whole
 
 The preserved author README contains the detailed third-party sound/music attribution record and the source tree contains the corresponding asset/source files.

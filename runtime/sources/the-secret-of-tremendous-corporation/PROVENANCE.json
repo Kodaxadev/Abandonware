@@ -15,7 +15,7 @@
     "game_code": "LGPL-3.0 per the authors' official itch.io Version 6 release metadata",
     "original_game_assets": "CC-BY-SA-4.0 per current author metadata; the pinned Steam-tag in-game credits separately say game code and original assets CC-BY-SA-3.0",
     "package_third_party_notice": "Google/BSD-style SLUDGE package notices are preserved separately and do not license the game data as a whole",
-    "third_party_assets": "Separate per-asset terms apply. The pinned in-game credits enumerate third-party music, Freesound effects, voice work and a font; known entries include noncommercial and Sampling+ licenses and therefore require asset-level review before production hosting."
+    "third_party_assets": "Separate per-asset terms apply. The pinned English and Polish in-game credits enumerate third-party music, Freesound effects, voice work and a font; known entries include noncommercial and Sampling+ licenses and therefore require asset-level review before production hosting."
   },
   "preserved_notices": [
     {
@@ -35,6 +35,12 @@
       "sha256": "f275cf3deb5a36d7b95b3b7e8ee7fe4489eab25afb940c3596948143b3e042c6",
       "size": 24424,
       "source_path": "rooms/room06/room06.slu"
+    },
+    {
+      "materialized_path": "legal/translations__polish.tra",
+      "sha256": "9df52bb72a95c795146ca1d711f4d2a0c1550c8a91867581ee083ae03b89f67b",
+      "size": 42173,
+      "source_path": "translations/polish.tra"
     }
   ],
   "repository_url": "https://github.com/dos1/AdventureTheGame.git",
