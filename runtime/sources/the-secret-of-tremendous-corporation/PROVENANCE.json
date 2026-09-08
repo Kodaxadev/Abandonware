@@ -12,9 +12,10 @@
   "file_count": 135,
   "id": "the-secret-of-tremendous-corporation",
   "license_summary": {
-    "game_assets": "CC-BY-SA-4.0 per the authors' official itch.io release metadata and the tagged source COPYING file",
     "game_code": "LGPL-3.0 per the authors' official itch.io Version 6 release metadata",
-    "package_third_party_notice": "Google BSD-style redistribution license preserved separately from the ScummVM game package"
+    "original_game_assets": "CC-BY-SA-4.0 per current author metadata; the pinned Steam-tag in-game credits separately say game code and original assets CC-BY-SA-3.0",
+    "package_third_party_notice": "Google/BSD-style SLUDGE package notices are preserved separately and do not license the game data as a whole",
+    "third_party_assets": "Separate per-asset terms apply. The pinned in-game credits enumerate third-party music, Freesound effects, voice work and a font; known entries include noncommercial and Sampling+ licenses and therefore require asset-level review before production hosting."
   },
   "preserved_notices": [
     {
@@ -28,6 +29,12 @@
       "sha256": "713f6e1cef85f510713b206509a20a9cddecf1bf4d4a2589803f34ea3b445043",
       "size": 236,
       "source_path": "README.md"
+    },
+    {
+      "materialized_path": "legal/rooms__room06__room06.slu",
+      "sha256": "f275cf3deb5a36d7b95b3b7e8ee7fe4489eab25afb940c3596948143b3e042c6",
+      "size": 24424,
+      "source_path": "rooms/room06/room06.slu"
     }
   ],
   "repository_url": "https://github.com/dos1/AdventureTheGame.git",

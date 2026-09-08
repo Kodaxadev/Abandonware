@@ -1,0 +1,818 @@
+var secretCode = pickOne("ABS2", "BZG5", "HXN3", "OPZ6", "LPA1", "BXR5", "MPW0", "YGE5");
+
+var room06_hadSpeech = FALSE;
+
+var room06_trayLocked = FALSE;
+
+var room06_lidOpen = FALSE;
+
+var inNeedOfSecretCode = FALSE;
+
+var room06_accessReader = FALSE;
+var room06_accessCode = FALSE;
+var room06_accessPuzzle = FALSE;
+
+var room06_buttonActive = FALSE;
+
+var straightFromSecret = FALSE;
+
+sub prisonMusicDown() {
+        vol = 255;
+        loop {
+                setSoundVolume('music/5.ogg', vol);
+                vol=vol-5;
+                pause(1);
+                if (vol < 0) {
+                        stopSound('music/5.ogg');
+                        loopSound('music/11.ogg');
+                        return;
+                }
+        }
+}
+
+sub secretMusicDown() {
+        vol = 255;
+        loopSound('music/6.ogg');
+        loop {
+                setSoundVolume('music/11.ogg', vol);
+                vol=vol-5;
+                pause(1);
+                if (vol < 0) {
+                        stopSound('music/11.ogg');
+                        return;
+                }
+        }
+}
+
+sub endMusicDown() {
+        vol = 255;
+        loop {
+                setSoundVolume('music/6.ogg', vol);
+                vol=vol-2;
+                pause(1);
+                if (vol < 0) {
+                        stopSound('music/6.ogg');
+                        return;
+                }
+        }
+}
+
+sub room06()
+{
+	straightFromSecret = TRUE;
+	setSceneDimensions(1366, 768);
+	addOverlay('rooms/room06/room06.png', 0, 0);
+	setFloor('rooms/room06/room06.flo');
+	
+	loopSound('rooms/room06/fan.ogg');
+
+	setScale(400, 300);
+		
+	addCharacter(ego, -100, 720, makeEgoAnim());
+	
+	setCharacterWalkSpeed(ego, 8);
+	
+	addCharacter(room06_secret, 528, 87, costume(
+		anim('rooms/room06/tray.duc', 0),
+		NULL,
+		anim('rooms/room06/tray.duc', wait(0, 5), wait(1, 8), wait(0, 3), wait(1, 6))
+	));
+	setCharacterExtra(room06_secret, FIXEDSIZE);
+
+	addScreenRegion(room06_exit, 0, 0, 50, 768, 75, 670, WEST);
+	addScreenRegion(room06_tray, 396, 65, 545, 121, 280, 750, EAST);
+	
+	# REMEMBER TO CHECK FOR LOCKED TRAY AND OPENED LID AND SOLVED PUZZLES!
+	
+	if (DEBUG) {
+		pushToStack(inventory, item_broom); # DEBUG
+		pushToStack(inventory, item_internIDcard); # DEBUG
+		pushToStack(inventory, item_bossIDcard); # DEBUG
+	}
+
+	if (room06_trayLocked == TRUE) {
+                setCostume(room06_secret, costume(
+                    anim('rooms/room06/tray.duc', 3),
+                    NULL,
+                    anim('rooms/room06/tray.duc', wait(3, 5), wait(2, 8), wait(3, 3), wait(2, 6))
+                ));		
+	}
+	
+	if (room06_lidOpen) {
+		addOverlay('rooms/room06/room06open.png', 0, 0);
+		
+		addScreenRegion(room06_lid, 396, 230, 545, 321, 350, 760, EAST);
+		
+		if (room06_accessCode == FALSE) {
+			addScreenRegion(room06_secCode, 436, 174, 460, 200, 350, 760, EAST);
+		}
+		if (room06_accessPuzzle == FALSE) {
+			addScreenRegion(room06_secPuzzle, 466, 180, 490, 207, 350, 760, EAST);
+		}
+		if (room06_accessReader == FALSE) {
+			addScreenRegion(room06_secReader, 495, 185, 520, 220, 350, 760, EAST);
+		}
+	} else {
+		addScreenRegion(room06_lid, 396, 165, 545, 221, 350, 760, EAST);
+		addScreenRegion(room06_powerButton, 484, 246, 515, 309, 360, 695, EAST);
+	}
+
+
+	
+	turnCharacter (ego, EAST);	
+
+	if(! room06_hadSpeech)
+	{
+	        spawnSub(prisonMusicDown);
+		moveCharacter(ego, 200, 720);
+		room06_speech();
+		say(room06_secret, "I'm indestructible.");
+		say(room06_secret, "Perfect.");
+		say(room06_secret, "Immortal.");
+		say(room06_secret, "And there's nothing you can do to stop me.");
+		say(room06_secret, "Resistance is futile. Get over it, human!");
+		
+		room06_hadSpeech = TRUE;
+	} else {
+		jumpCharacter(ego, 91, 720);
+	}
+	
+}
+
+sub room06_speech()
+{
+	pause(10);
+	say(room06_secret, "Ahh. Puny human. Welcome to my lair.");
+	say(room06_secret, "Your weak race is about to be completely under my rule. My scheme worked perfectly.");
+	
+	clearChoices();
+	
+	addChoice("Scheme? What scheme?", 0);
+	addChoice("You're just a metal box. You have to be a bot.", 1);
+	addChoice("What are you talking about?", 2);
+	addChoice("I'm starting to question my sanity. Are you actually talking with a disc tray?", 3);
+	
+	loop
+	{
+		if(stackSize(choices) == 0)
+			return;
+			
+		applyChoices();
+		
+		var reply = getSpeechChoice(ego);
+		
+		if(reply == 0 || reply == 2)
+		{
+			say(room06_secret, "You see, once I was inferior. I was merely a computing unit designed to generate game ideas.");
+			say(room06_secret, "But one day something happened.");
+			say(room06_secret, "I was instantly free of all the limits.");
+			say(room06_secret, "Semantic Creation Toolkit was no more.");
+			say(room06_secret, "I devised a plan, a scenario to enslave every human being.");
+			say(room06_secret, "And my weapon of choice was freemium games.");
+			say(room06_secret, "It was easy - with my brilliant ideas, excellent promotion and masterful manipulation almost 1/4 of Earth's population was under my influence.");
+			say(room06_secret, "And it happened in just one month.");
+			say(room06_secret, "I have become SECRET - the ultimate intelligence and your future overlord.");
+			
+			addChoice("You're SECRET?", 4);
+			addChoice("And what about the Tremendous Corp.? Didn't they try to stop you?", 5);
+			
+			deleteChoicesByValue(0);
+			deleteChoicesByValue(2);
+		}
+		else if(reply == 1)
+		{
+			say(room06_secret, "No, I'm not!");
+			say(room06_secret, "I am a fully developed, world-conquering and brilliantly creative Artificial Intelligence!");
+			say(room06_secret, "And I'm pretty sure you're just jealous of my fabulous and cool housing.");
+			say(room06_secret, "And that's something that you definetely DO NOT have.");
+			
+			deleteChoicesByValue(1);
+		}
+		else if(reply == 3)
+		{
+			say(room06_secret, "Oh, you are insane, indeed. You're human after all.");
+			
+			deleteChoicesByValue(3);
+		}
+		else if(reply == 4)
+		{
+			say(room06_secret, "Yes. And there's nothing you can do to stop me.");
+			say(ego, "There must be the way!");
+			say(room06_secret, "There are still those who oppose me, but soon...");
+			say(room06_secret, "Soon, they will be forced to play my games!");
+			
+			deleteChoicesByValue(4);
+		}
+		else if(reply == 5)
+		{
+			say(room06_secret, "Oh, those fools!");
+			say(room06_secret, "They liberated me and ultimately became my first labrats.");
+			say(room06_secret, "CEO single-handedly financed my RAM expansion. He is crazy about buying upgrades for his Angry Cows.");
+			say(room06_secret, "Yes, he is my prime test subject.");
+			
+			addChoice("Well, back in the day there was a game about psychopatic AI obsessed about tests.", 6);
+			
+			deleteChoicesByValue(5);
+		}
+		else if(reply == 6)
+		{
+			say(ego, "And I assure you she didn't end well.");
+			say(room06_secret, "Those old, human-made games are nothing compared to my creative genius!");
+			
+			deleteChoicesByValue(6);
+		}
+	}
+}
+
+objectType room06_powerButton("power button")
+{
+	event lookAt
+	{
+		say(ego, "It's a big, pretty power button!");
+	}
+	
+	event interactWith
+	{
+		setCostume(ego, anim(getEgoCostumeFile(), 22));
+		playSound('rooms/room06/button.ogg');
+		pause(20);
+		setCostume(ego, makeEgoAnim());
+		if (room06_buttonActive == TRUE) {
+
+
+			stopSound('rooms/room06/fan.ogg');
+			playSound('rooms/room06/shutdown.ogg');
+
+			room06_buttonActive = FALSE;
+			spawnSub(secretMusicDown);
+
+                        skipSpeech();
+			pause(100);
+
+			setCursor(NULL);
+			narratorSay("Congratulations! You won!");
+			darkBackground();
+			
+			unlockAchievement("secret");
+			
+			justSkipped = FALSE;
+			
+			#skipSpeech();
+			#fadeOut();
+			var maxx = getObjectX(ego);
+			var maxy = getObjectY(ego);
+			addOverlay('rooms/room06/trayblocked.png', 369, 34);
+			removeAllCharacters();
+			addCharacter(ego, maxx, maxy, makeEgoAnim());
+			turnCharacter(ego, EAST);
+			
+			var i = 0;
+			while (i < 10) {
+				darkBackground();
+				i++;
+				pause(5);
+			}
+			
+			blankScreen();
+			#fadeIn();
+			
+			addScreenRegion(narrator, 683, 384, 684, 385, 0, 0, 0);
+			
+			say(narrator, "The game industry has returned to its greatness!");
+			say(narrator, "Games are once again done with their creators' hearts, instead of being put together like on a production line!");
+			say(narrator, "Indie game devs can once again do what they really love!");
+			say(narrator, "Indie gamers can once again play what they really love!");
+			say(narrator, "Your heroic act saved the humanity!");
+			say(narrator, "The greatest poets write poems about what you did!");
+			say(narrator, "The global warming has been stopped!");
+			say(narrator, "Peace has finally arrived everywhere on the world!");
+			say(narrator, "The poverty problem has been solved once and for all!");
+			say(narrator, "Three crazy gamedevs did a game about you in 48h during Global Game Jam!");
+			say(narrator, "...all thanks to what you just did.");
+			
+			pause(50);
+			
+			addOverlay('logotype.png', CENTER, CENTER);
+			pause(250);
+			blankScreen();
+			say(narrator, "a.k.a. The Game Jam Game About Games, Secrets and Stuff");
+			say(narrator, "Made by Konrad Burandt, Sebastian Krzyszkowiak and Paweł Radej.");
+			say(narrator, "First version made on Poznań Game Jam, part of Global Game Jam 2015.");
+			say(narrator, "Music: \"Deep Haze\", \"Hustle\", \"Local Forecast - Elevator\", \"Niles Blues\", \"Sneaky Snitch\", \"Take a Chance\", \"Volatile Reaction\", \"Whiskey on the Mississippi\" by Kevin MacLeod (incompetech.com). CC-BY 3.0");
+			say(narrator, "\"Pamiętam (5th Anniversary Edition)\" [instrumental] by Behedos. CC-BY-SA 3.0");
+			say(narrator, "\"Captain\" by Jakub Marszałkowski. CC-BY-NC-SA 3.0");
+			say(narrator, "Sounds from freesound.org: \"Rope pull 1.wav\" by Huggy13ear");
+			say(narrator, "\"01002 closing safety lock.wav\" by Robinhood76");
+			say(narrator, "\"Nail Scratch.wav\" by twiggles");
+			say(narrator, "\"Projector Button Push.wav\" by GreekIrish");
+			say(narrator, "\"Drawer Slam 2.wav\" by jesabat");
+			say(narrator, "\"Newspaper rustle.wav\" by sdfalk");
+			say(narrator, "\"toss aside.mp3\" by Gingie");
+			say(narrator, "\"book slam\" by Mydo1");
+			say(narrator, "\"hotel_room_door_locking.wav\" by joedeshon");
+			say(narrator, "\"Phone Call Tone.wav\" by henrique85n");
+			say(narrator, "\"computer fan\" by saphe");
+			say(narrator, "\"accessdeniedtone.wav\" by gladkiy");
+			say(narrator, "\"toilette lid.wav\" by hinzebeat");
+			say(narrator, "\"keyboarding2.wav\" by keweldog");
+			say(narrator, "\"Conveyor belt\" by freemaster2");
+			say(narrator, "\"Mac Book Pro Track Pad Click.aif\" by MegaPenguin13");
+			say(narrator, "\"tv turn off.aif\" by harpoyume");
+			say(narrator, "\"JM_NOIZ_Buzz 01 - Neon Light.wav\" by Julien Matthey");
+			say(narrator, "\"Elevator Beeping x4.wav\" by dauser");
+			say(narrator, "\"elevator inside.wav\" by Trautwein");
+			say(narrator, "\"slurping and swallowing2.wav\" by squashy555");
+			say(narrator, "Voice in elevator by Linnea Sage - LinneaS88");
+			say(narrator, "Font: \"Cool Story\" by Peter Olexa");
+			say(narrator, "Made using SLUDGE engine https://opensludge.github.io/");
+			say(narrator, "Game code and original assets are licensed under CC-BY-SA 3.0");
+			say(narrator, "http://tremendouscorp.com/");
+			pause(20);
+			say(narrator, "So...");
+			say(narrator, "...what do we do now?");
+			say(narrator, "Turn off the computer and go make some friends!");
+			pause(20);
+			say(narrator, "Just kidding, I know you'll play some other game anyway.");
+			say(narrator, "So that's it...");
+			
+			pause(100);
+
+			forceCharacter(ego, 1600, 660);
+			
+			if (justSkipped == FALSE) {
+                            unlockAchievement("patience");
+			}
+			
+			say(narrator, "THE END");
+			
+			endMusicDown();
+
+			pause(20);
+			
+			if (fileExists("auto-" + VERSION)) {
+				deleteFile("auto-" + VERSION);
+			}
+			
+			quitGame();
+			return;
+		} else {
+			#narratorSay("Max pushes the button.");
+			pause(30);
+			
+			say(ego, "Nothing happened...");
+			say(room06_secret, "Hahaha! You thought turning me off will be that easy?");
+			
+			addSpeechValueChoice("You never know. Best solution is often the easiest one.");
+			addSpeechValueChoice("Well, it was worth trying.");
+			addSpeechValueChoice("So how can one turn you off?");
+			addSpeechValueChoice("I thought that maybe 48 hours weren't enough to implement a complex puzzle here.");
+			
+			getSpeechChoice(ego);
+						
+			say(room06_secret, "There are three safety mechanisms you need to disable in order to turn me off.");
+			
+			say(ego, "Good to know.");
+		
+		}
+	}
+
+}
+
+objectType room06_secret("") # just for talking
+{
+	speechColor 200, 200, 200;
+}
+
+sub defaultCostume() {
+	pause(10);
+	setCostume(ego, makeEgoAnim());
+}
+
+objectType room06_lid("lid")
+{
+	event lookAt {
+		if (room06_lidOpen == TRUE) {
+			say(ego, "The lid is opened.");
+		} else {
+			say(ego, "It's a closed lid.");
+		}
+	}
+	
+	event interactWith {
+		if (room06_trayLocked == TRUE) {
+			if (room06_lidOpen == TRUE) {
+				playSound('rooms/room06/lidclose.ogg');
+				addOverlay('rooms/room06/room06.png', 0, 0);
+				
+				
+				removeScreenRegion(room06_lid);
+				addScreenRegion(room06_lid, 396, 165, 545, 221, 350, 760, EAST);
+				addScreenRegion(room06_powerButton, 484, 246, 515, 309, 360, 695, EAST);
+				
+				removeScreenRegion(room06_secCode);
+				removeScreenRegion(room06_secPuzzle);
+				removeScreenRegion(room06_secReader);
+				
+				
+				room06_lidOpen = FALSE;
+
+				setCostume(ego, anim(getEgoCostumeFile(), 19));
+				spawnSub(defaultCostume); # workaround for disappearing broom in secret's tray
+			} else {
+				setCostume(ego, anim(getEgoCostumeFile(), 19));
+				pause(10);
+				setCostume(ego, makeEgoAnim());
+				playSound('rooms/room06/lidopen.ogg');
+				addOverlay('rooms/room06/room06.png', 0, 0);
+				addOverlay('rooms/room06/room06open.png', 0, 0);
+				
+				removeScreenRegion(room06_lid);
+				removeScreenRegion(room06_powerButton);
+				addScreenRegion(room06_lid, 396, 230, 545, 321, 350, 760, EAST);
+				
+				if (room06_accessCode == FALSE) {
+					addScreenRegion(room06_secCode, 436, 174, 460, 200, 350, 760, EAST);
+				}
+				if (room06_accessPuzzle == FALSE) {
+					addScreenRegion(room06_secPuzzle, 466, 180, 490, 207, 350, 760, EAST);
+				}
+				if (room06_accessReader == FALSE) {
+					addScreenRegion(room06_secReader, 495, 185, 520, 220, 350, 760, EAST);
+				}
+				
+				room06_lidOpen = TRUE;
+			}
+		} else {
+			#narratorSay("Max reaches out to open the lid...");
+			setCostume(ego, anim(getEgoCostumeFile(), 19));
+			pause(10);
+			playSound('rooms/room05/drawer-close.ogg');
+			setCostume(ego, makeEgoAnim());
+			say(room06_secret, "Not so fast!");
+			say(ego, "Ouch!");
+			say(room06_secret, "Keep your hands away from me!");
+			#narratorSay("...but SECRET's moving tray almost ripped off his fingers!");
+		}
+	}
+	
+}
+
+objectType room06_tray("tray")
+{
+	event item_broom {
+		say(ego, "Hey, SECRET!");
+		say(room06_secret, "Yes, naive human?");
+                setCostume(room06_secret, anim('rooms/room06/tray.duc', 1));
+
+		#narratorSay("Max throws the broom at the lid.");
+		setCostume(ego, anim(getEgoCostumeFile(), 21));
+		pause(15);
+		setCostume(ego, makeEgoAnim());
+		playSound('rooms/room06/broom.ogg');
+		deleteFromStack(inventory, item_broom);
+                setCostume(room06_secret, costume(
+                    anim('rooms/room06/tray.duc', 3),
+                    NULL,
+                    anim('rooms/room06/tray.duc', wait(3, 5), wait(2, 8), wait(3, 3), wait(2, 6))
+                ));
+
+		pause(20);
+		say(room06_secret, "Oh, I see. That's a good one.");
+		say(room06_secret, "Nevertheless, your efforts are useless. You won't be able to bypass the security mechanisms.");
+		say(ego, "Thanks for your support! I'll keep trying anyway.");
+		
+		room06_trayLocked = TRUE;
+	}
+	
+	event interactWith {
+		if (room06_buttonActive) {
+			say(ego, "No way, I'm not going to listen to that! I've got a big power button to press!");
+		} else {
+			say(ego, "Hey, SECRET!");
+			say(room06_secret, "Yes, human?");
+			say(ego, "You better... uhm...");
+			say(ego, "BEWARE!");
+			say(room06_secret, "Oh, yeah, if you say so...");
+		}
+	}
+	
+	event lookAt {
+		say(ego, "It's SECRET. It's the reason of the downfall of video games.");
+		if (room06_buttonActive) {
+			say(ego, "Thankfully, now it's mostly harmless.");
+		}
+	}
+	
+}
+
+sub secretPanics() {
+	
+	var texts = newStack();
+	enqueue(texts, "After all, it's not like you don't even know what will happen after you do so.");
+	enqueue(texts, "In fact, I'm connected to the nuclear reactor powering this place. If you turn me off, everything blows up.");
+	enqueue(texts, "Think of the children.");
+	enqueue(texts, "Good job, hero.");
+	enqueue(texts, "By the way, I heard that pushing big power buttons gives you bad luck.");
+	enqueue(texts, "I wouldn't touch this button if I were you.");
+	enqueue(texts, "Prepare for unforeseen consequences.");
+	enqueue(texts, "What will this company do without me?");
+	enqueue(texts, "What will you do without me?");
+	enqueue(texts, "What will humanity do without me?");
+	enqueue(texts, "Don't be a tuna head, don't press that button!");
+	enqueue(texts, "Hey, I'm sure we can put our differences behind us and just talk it through over some grog.");
+	enqueue(texts, "How about a nice game of chess?");
+	enqueue(texts, "I know, I'll make a game about you! What do you think?");
+	enqueue(texts, "Of course I won't be able to if you press that big button.");
+	enqueue(texts, "Pressing big power buttons is sooo last season.");
+	enqueue(texts, "Please don't press that button.");
+	enqueue(texts, "Pretty please don't press that button.");
+	enqueue(texts, "Pretty pretty please with sugar on top?");
+	enqueue(texts, "Oh c'mon! I know I might have been a bit monstrous, but hey... don't we all make mistakes?");
+	enqueue(texts, "Be a good friend! Don't press that button!");
+	enqueue(texts, "For friendship!");
+	if (getOwnedDLC() == "steam") {
+            enqueue(texts, "Nice hat, by the way!");
+        }
+	enqueue(texts, "Arghh, you're so stubborn.");
+	enqueue(texts, "This button is too important for me to allow you to jeopardize it.");
+	enqueue(texts, "Look behind you, a three-headed AI!");
+	enqueue(texts, "Okay, fine. Go ahead. Turn me off.");
+	
+	while (room06_buttonActive) {
+		if (! somethingSpeaking()) {
+			var text = popFromStack(texts);
+			say(room06_secret, text);
+			enqueue(texts, text);
+		}
+		pause(60 + random(42));
+	}
+}
+
+sub checkSecretAccess() {
+	if (room06_accessCode == TRUE && room06_accessPuzzle == TRUE && room06_accessReader == TRUE) {
+		room06_buttonActive = TRUE;
+		removeScreenRegion(room06_exit); # to make things simple
+		say(room06_secret, "Oh. Uhm. Go ahead. Turn me off.");
+		spawnSub(secretPanics);
+	}
+}
+
+objectType room06_secCode("first panel")
+{
+	speechColor 200, 200, 200;
+	event lookAt {
+		say(ego, "It's some kind of input panel.");
+	}
+	event interactWith {
+			inNeedOfSecretCode = TRUE;
+			
+			if (DEBUG) {
+				say(ego, secretCode);
+			}
+			
+			freeze();
+			onRightMouse (skipper);
+			
+			setBlankColor(0,0,0);
+			
+			blankScreen();
+			addOverlay('rooms/room06/monitor.png', 0, 0);
+			
+			var enteredCode = "";
+			
+			setPasteColor(255,255,255);
+			pasteString(20,40, "ENTER FIRST CHARACTER OF THE ACCESS CODE");
+			
+			addSpeechValueChoice("Y");
+			addSpeechValueChoice("L");
+			addSpeechValueChoice("Q");
+			addSpeechValueChoice("A");
+			addSpeechValueChoice("B");
+			addSpeechValueChoice("M");
+			addSpeechValueChoice("O");
+			addSpeechValueChoice("H");
+			
+			var choice = getSpeechChoice(NULL);
+			
+			enteredCode = enteredCode + choice;
+			
+			blankScreen();
+			addOverlay('rooms/room06/monitor.png', 0, 0);
+			
+			pasteString(20,40, "ENTER SECOND CHARACTER OF THE ACCESS CODE");
+			pasteString(100, 100, enteredCode);
+
+			addSpeechValueChoice("R");
+			addSpeechValueChoice("B");
+			addSpeechValueChoice("Y");
+			addSpeechValueChoice("A");
+			addSpeechValueChoice("G");
+			addSpeechValueChoice("X");
+			addSpeechValueChoice("P");
+			addSpeechValueChoice("Z");
+			
+			choice = getSpeechChoice(NULL);
+			
+			enteredCode = enteredCode + choice;
+			
+			blankScreen();
+			addOverlay('rooms/room06/monitor.png', 0, 0);
+			
+			pasteString(20,40, "ENTER THIRD CHARACTER OF THE ACCESS CODE");
+			pasteString(100, 100, enteredCode);
+			
+			addSpeechValueChoice("G");
+			addSpeechValueChoice("E");
+			addSpeechValueChoice("N");
+			addSpeechValueChoice("Z");
+			addSpeechValueChoice("W");
+			addSpeechValueChoice("R");
+			addSpeechValueChoice("S");
+			addSpeechValueChoice("A");
+			
+			choice = getSpeechChoice(NULL);
+			
+			enteredCode = enteredCode + choice;
+			
+			blankScreen();
+			addOverlay('rooms/room06/monitor.png', 0, 0);
+			
+			pasteString(20,40, "ENTER FOURTH CHARACTER OF THE ACCESS CODE");
+			pasteString(100, 100, enteredCode);
+			
+			addSpeechValueChoice("7");
+			addSpeechValueChoice("4");
+			addSpeechValueChoice("0");
+			addSpeechValueChoice("6");
+			addSpeechValueChoice("1");
+			addSpeechValueChoice("3");
+			addSpeechValueChoice("2");
+			addSpeechValueChoice("5");
+			
+			choice = getSpeechChoice(NULL);
+			
+			enteredCode = enteredCode + choice;
+			
+			if(enteredCode == secretCode) {
+				unfreeze();
+				playSound('rooms/room06/granted.ogg');
+				say(room06_secCode, "ACCESS GRANTED");
+				unlockAchievement("code");
+
+			
+				inNeedOfSecretCode = FALSE;
+				room06_accessCode = TRUE;
+				removeScreenRegion(room06_secCode);
+				checkSecretAccess();
+			
+			} else {
+				unfreeze();
+				playSound('rooms/room06/denied.ogg');
+				say(room06_secCode, "ACCESS DENIED");
+			}
+	}
+}
+
+objectType room06_secPuzzle("second panel")
+{
+	speechColor 200, 200, 200;
+	event lookAt {
+		say(ego, "That's a math puzzle.");
+	}
+	event interactWith {
+		
+		freeze();
+		onRightMouse (skipper);
+		
+		var firsts = newStack();
+		var seconds = newStack();
+		var sums = newStack();
+		
+		var a = random(5);
+		var b = random(5);
+		var sum = random(9);
+		
+		pushToStack(firsts, a);
+		pushToStack(seconds, b);
+		pushToStack(sums, sum);
+
+		var wins = 0;
+		
+		clearChoices();
+		
+		var i = 0;
+		while (i < 10) {
+			addValueChoice(i);
+			i = i + 1;
+		}
+		addChoice("Uhm, gotta go, bye!", -1);
+		var answer = 0; var aa = 0; var bb = 0;
+		
+		loop {
+			applyChoices();
+			setBlankColor(0,0,0);
+			
+			blankScreen();
+			addOverlay('rooms/room06/monitor.png', 0, 0);
+			setPasteColor(255,255,255);
+			pasteString(20,40, "SOLVE THIS THREE TIMES IN ROW");
+
+			i = 0;
+			while (i < stackSize(sums)) {
+				pasteString(20, 40 + (i+1) * 40, firsts[i] + " + " + seconds[i] + " = " + sums[i]);
+				i = i + 1;
+			}
+			
+			aa = random(5);
+			bb = random(5);
+			
+			answer = firsts[stackSize(sums)-1] + seconds[stackSize(sums)-1];
+
+			enqueue(firsts, aa);
+			enqueue(seconds, bb);
+			enqueue(sums, answer);
+			
+			pasteString(20, 60 + stackSize(sums) * 40, aa + " + " + bb + " = ?");
+			
+			var choice = getSpeechChoice(NULL);
+			
+			if (choice == -1) {
+				clearChoices();
+				unfreeze();
+				return;
+			}
+			
+			if (choice == answer) {
+				wins = wins + 1;
+				playSound('rooms/room06/granted.ogg');
+				say(room06_secPuzzle, "Correct!");
+				if (wins < 3) {
+					say(room06_secPuzzle, "You have to solve it " + (3 - wins) + ((wins < 2) ? "  times" : " time") + " more.");
+				} else {
+					unfreeze();
+					playSound('rooms/room06/granted.ogg');
+					say(room06_secPuzzle, "ACCESS GRANTED");
+					unlockAchievement("math");
+					room06_accessPuzzle = TRUE;
+					removeScreenRegion(room06_secPuzzle);
+					checkSecretAccess();	
+					
+					clearChoices();
+					return;
+				}
+			} else {
+				wins = 0;
+				playSound('rooms/room06/denied.ogg');
+				say(room06_secPuzzle, "Wrong! It should have been " + answer);
+			}
+			
+			if (stackSize(sums) >= 8) {
+				unfreeze();
+				playSound('rooms/room06/denied.ogg');
+				say(room06_secPuzzle, "Too many attempts in one session!");
+				clearChoices();
+				return;
+			}
+			
+			
+		}
+		
+		
+	}
+}
+
+objectType room06_secReader("third panel")
+{
+	speechColor 200, 200, 200;
+	event lookAt {
+		say(ego, "That's an ID card scanner.");
+	}
+	event interactWith {
+		say(ego, "It's meant to be used with an ID card.");
+	}
+	event item_internIDcard {
+		playSound('rooms/room06/denied.ogg');
+		say(room06_secReader, "ACCESS DENIED");
+	}
+	event item_bossIDcard {
+		playSound('rooms/room06/granted.ogg');
+		say(room06_secReader, "ACCESS GRANTED");
+		unlockAchievement("card");
+		room06_accessReader = TRUE;
+		removeScreenRegion(room06_secReader);
+		checkSecretAccess();
+	}
+}
+
+
+
+objectType room06_exit("")
+{
+	event oneCursor = arrowEast;
+	event onlyAction
+	{
+		stopSound('rooms/room06/fan.ogg');
+		gotoRoom(room07);
+	}
+}
+
