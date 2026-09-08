@@ -231,6 +231,27 @@ window.ABANDONWARE_GAMES = [
     hostable: true
   },
   {
+    id: "robins-rescue",
+    title: "Robin's Rescue",
+    year: "2015",
+    studio: "Cheeseness & Mimness",
+    platform: "SLUDGE / SCUMMVM",
+    filter: "scummvm",
+    runtime: "ScummVM Web 2026.3",
+    runtimeType: "scummvm",
+    status: "BROWSER READY",
+    statusClass: "ready",
+    cover: "cover-robins-rescue",
+    summary: "Josh Bush and Miriam Roser's open-source Robin Hood adventure, preserved from the exact ScummVM SLG package with the authors' v1.0 source tree, license split, and third-party attribution record kept alongside the browser runtime.",
+    rights: "LGPL-3.0 code / CC-BY-3.0 assets + preserved third-party licenses",
+    compatibility: "ScummVM 2026.3.0; sludge engine; audited robins_rescue.slg; direct #robinsrescue launch",
+    hostedUrl: "runtime/scummvm/index.html#robinsrescue",
+    rightsRecord: "docs/rights/robins-rescue.md",
+    sourceLabel: "ScummVM package + preserved author v1.0 source",
+    sourcePage: "https://cheeseness.itch.io/robins-rescue",
+    hostable: true
+  },
+  {
     id: "doom",
     title: "DOOM",
     year: "1993",
