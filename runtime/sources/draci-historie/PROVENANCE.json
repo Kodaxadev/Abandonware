@@ -1,0 +1,50 @@
+{
+  "build_manifest": "runtime/sources/draci-historie-direct-build.json",
+  "components": [
+    {
+      "materialized_path": "artifacts/old-sources.zip",
+      "name": "old-sources.zip",
+      "role": "Original game source code with later bug fixes",
+      "sha256": "a1bfe3e21d2664d99066b0f8be3c048dd290bc4e323879c27c25adc001b6022e",
+      "sha512": "77bdbfccc38d45978962f73188c90f81816203c7f8e900a0e51b7014e1bc370ff0396d5f875d4a38658ebc4006649b95dfead809bafe3079d1e2a8488e26fe17",
+      "size": 2705574,
+      "source_url": "https://www.ucw.cz/draci-historie/source/old-sources.zip"
+    },
+    {
+      "materialized_path": "artifacts/old-gfx.zip",
+      "name": "old-gfx.zip",
+      "role": "Complete original graphics, animations, sounds, scripts, variants and editor working files except MIDI",
+      "sha256": "36f259063d9d5749ca62c1572bfba2250e9993970b66371fafcc25c54ae809d9",
+      "sha512": "68dd9a8022a67a07c87538db61ac6f9b1a48c9c6465545a051056be3bd410e0bf010585997089161e451ca896356f5e3fad901063b72e30df6319583866c4cab",
+      "size": 42662583,
+      "source_url": "https://www.ucw.cz/draci-historie/source/old-gfx.zip"
+    },
+    {
+      "materialized_path": "artifacts/old-midi.zip",
+      "name": "old-midi.zip",
+      "role": "Original MIDI music source omitted from old-gfx.zip",
+      "sha256": "5351da04ed5a8e38fa01d6e09f8a8057e05bd6117223cb85c51c8caaef2483fe",
+      "sha512": "08794fe58555ae9722b85f11cce50cfd623490431a81a0710dafea2ee47f7d3f7bb920ac29127cc21b1d5153b56a96a0af10590ce2ea32b3b89465ad9685f930",
+      "size": 36816,
+      "source_url": "https://www.ucw.cz/draci-historie/source/old-midi.zip"
+    }
+  ],
+  "id": "draci-historie",
+  "license_identifiers": [
+    "GPL-2.0-only"
+  ],
+  "preserved_notices": [
+    {
+      "materialized_path": "legal/RIGHTS.md",
+      "sha256": "61291ed74cda7de1168b79a127c9b7ce5a0c7a9c43e622ff6b6961c63ba7bcde",
+      "size": 5307,
+      "source_path": "docs/rights/draci-historie.md"
+    }
+  ],
+  "rights_record": "docs/rights/draci-historie.md",
+  "schema": 1,
+  "source_kind": "direct_archives",
+  "source_page": "https://www.ucw.cz/draci-historie/",
+  "source_set_sha256": "7eb5d904b52fadf20b7dc018ea0de319d868cf1bc99c67a89792336a03637105",
+  "title": "Dra\u010d\u00ed Historie"
+}
