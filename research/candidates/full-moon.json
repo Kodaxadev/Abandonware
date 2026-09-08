@@ -1,9 +1,10 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "full-moon",
   "title": "Full Moon",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "Elliott Ridgway still provides Full Moon as a free creator-hosted download and ScummVM 2026.3 added an exact SLUDGE detection/package. Abandonware has not found an explicit author-controlled third-party redistribution grant, so the exact ScummVM package is being audited for bundled rights evidence before any decision. Free download and ScummVM hosting are not treated as permission by themselves.",
+  "status": "HOLD",
+  "decision_record": "research/decisions/full-moon.md",
+  "reason": "The exact ScummVM package was hash-verified and contains no license/readme/authorship/attribution notice files. Elliott Ridgway's current author-controlled itch.io page provides the game as a free download but does not grant third parties permission to redistribute, mirror, repackage, or browser-host the game data. Free download and ScummVM hosting are not treated as permission by themselves.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "fullmoon"
@@ -11,7 +12,10 @@
   "source": {
     "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/fullmoon.zip",
     "page": "https://www.scummvm.org/games/",
-    "sha256": "6f24b3e875f38d60dc1691a3ecc6bda5404119224efa0106491e214e6ddc842c"
+    "sha256": "6f24b3e875f38d60dc1691a3ecc6bda5404119224efa0106491e214e6ddc842c",
+    "observed_size": 73233832,
+    "member_count": 6,
+    "rights_notice_count": 0
   },
   "expected_payload": {
     "filename": "gamedata",
