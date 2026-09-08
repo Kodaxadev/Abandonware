@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Audit an external Git source repository without executing repository code.
 
-This lane is for corresponding-source and license evidence only. It clones a bare
+This lane is for corresponding-source and rights evidence only. It clones a bare
 repository, resolves an optional exact revision, records commit/tree identity, inventories
-files and gitlinks, preserves human-readable license/readme notices, records remote release
-tags, fingerprints requested blobs, and creates a deterministic git-archive tarball. It
-never checks out or runs files from the audited repository.
+files and gitlinks, preserves human-readable notice files and explicitly requested rights
+evidence, records remote release tags, fingerprints requested blobs, and creates a
+deterministic git-archive tarball. It never checks out or runs files from the audited
+repository.
 """
 
 from __future__ import annotations
@@ -19,7 +20,20 @@ import tempfile
 from urllib.parse import urlparse
 
 MAX_NOTICE_BYTES = 256 * 1024
-NOTICE_TOKENS = ("license", "licence", "copying", "copyright", "readme")
+NOTICE_TOKENS = (
+    "license",
+    "licence",
+    "copying",
+    "copyright",
+    "readme",
+    "authors",
+    "credits",
+    "patents",
+    "notice",
+    "attribution",
+    "third-party",
+    "third_party",
+)
 
 
 def run_git(git_dir: Path, *args: str, text: bool = True) -> str | bytes:
@@ -139,21 +153,44 @@ def decode_notice(data: bytes) -> str | None:
     return data.decode("utf-8", errors="replace")
 
 
-def fingerprint_blob(git_dir: Path, commit: str, value: str) -> dict:
+def source_blob_record(
+    git_dir: Path,
+    commit: str,
+    value: str,
+    *,
+    include_text: bool = False,
+) -> dict:
     path = safe_git_path(value)
     try:
         raw = run_git(git_dir, "show", f"{commit}:{path}", text=False)
     except subprocess.CalledProcessError as error:
-        raise RuntimeError(f"Requested fingerprint path is missing at {commit}: {path}") from error
+        raise RuntimeError(f"Requested source path is missing at {commit}: {path}") from error
     assert isinstance(raw, bytes)
     object_sha = str(run_git(git_dir, "rev-parse", f"{commit}:{path}")).strip()
-    return {
+    record = {
         "path": path,
         "object": object_sha,
         "size": len(raw),
         "md5": hashlib.md5(raw, usedforsecurity=False).hexdigest(),
         "sha256": hashlib.sha256(raw).hexdigest(),
     }
+    if include_text:
+        record["text"] = decode_notice(raw)
+    return record
+
+
+def fingerprint_blob(git_dir: Path, commit: str, value: str) -> dict:
+    return source_blob_record(git_dir, commit, value)
+
+
+def validate_path_list(manifest: dict, field: str) -> list[str]:
+    values = manifest.get(field, [])
+    if not isinstance(values, list) or any(not isinstance(value, str) for value in values):
+        raise RuntimeError(f"{field} must be a list of strings")
+    normalized = [safe_git_path(value) for value in values]
+    if len(set(normalized)) != len(normalized):
+        raise RuntimeError(f"{field} contains duplicate paths")
+    return normalized
 
 
 def audit(manifest_path: Path, output_dir: Path) -> dict:
@@ -171,9 +208,8 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
         )
 
     requested_revision = manifest.get("revision", "HEAD")
-    fingerprint_paths = manifest.get("fingerprint_paths", [])
-    if not isinstance(fingerprint_paths, list):
-        raise RuntimeError("fingerprint_paths must be a list")
+    fingerprint_paths = validate_path_list(manifest, "fingerprint_paths")
+    rights_evidence_paths = validate_path_list(manifest, "rights_evidence_paths")
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -219,6 +255,15 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
             })
 
         fingerprints = [fingerprint_blob(git_dir, commit, value) for value in fingerprint_paths]
+        rights_evidence = [
+            source_blob_record(git_dir, commit, value, include_text=True)
+            for value in rights_evidence_paths
+        ]
+        for evidence in rights_evidence:
+            if evidence["text"] is None:
+                raise RuntimeError(
+                    f"Explicit rights evidence must be human-readable text: {evidence['path']}"
+                )
 
         archive_path = output_dir / f"{candidate_id}-{commit}.tar.gz"
         subprocess.run(
@@ -235,7 +280,7 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
         )
 
         record = {
-            "schema": 3,
+            "schema": 4,
             "candidate_id": candidate_id,
             "title": manifest.get("title"),
             "repository_url": repository_url,
@@ -252,14 +297,16 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
             "files": files,
             "fingerprints": fingerprints,
             "notices": notice_records,
+            "rights_evidence": rights_evidence,
             "license_expectations": manifest.get("license_expectations", []),
             "archive_file": archive_path.name,
             "archive_sha256": sha256(archive_path),
             "decision": "REQUIRES_HUMAN_SOURCE_REVIEW",
             "warning": (
-                "This audit records source identity, remote tag refs, requested blob hashes, and "
-                "notice files only. It never executes repository code. A matching compiled blob "
-                "can establish release identity, but license scope still requires human review."
+                "This audit records source identity, remote tag refs, requested blob hashes, "
+                "automatic notice files, and explicitly requested human-readable rights evidence. "
+                "It never executes repository code. A matching compiled blob can establish release "
+                "identity, but license scope and third-party exceptions still require human review."
             ),
         }
 
@@ -279,6 +326,7 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
         "gitlinks": record["gitlinks"],
         "fingerprints": record["fingerprints"],
         "notice_paths": [notice["path"] for notice in notice_records],
+        "rights_evidence_paths": [evidence["path"] for evidence in rights_evidence],
         "archive_file": record["archive_file"],
         "archive_sha256": record["archive_sha256"],
         "decision": record["decision"],
@@ -292,8 +340,15 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
             print(notice["text"][:MAX_NOTICE_BYTES])
         print(f"===== END SOURCE NOTICE: {notice['path']} =====")
 
+    for evidence in rights_evidence:
+        print(f"\n===== EXPLICIT RIGHTS EVIDENCE: {evidence['path']} ({evidence['size']} bytes) =====")
+        print(evidence["text"][:MAX_NOTICE_BYTES])
+        print(f"===== END EXPLICIT RIGHTS EVIDENCE: {evidence['path']} =====")
+
     if not notice_records:
-        print("\nWARNING: no license/readme/copyright-style source notice files were found.")
+        print("\nWARNING: no automatic license/readme/authorship/attribution-style source notice files were found.")
+    if rights_evidence_paths and not rights_evidence:
+        print("\nWARNING: explicit rights evidence was requested but none was preserved.")
     if gitlinks:
         print("\nWARNING: source repository contains gitlinks/submodules not included in git archive.")
     if not resolved_tags:
