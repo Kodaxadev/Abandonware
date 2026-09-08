@@ -166,6 +166,7 @@ jobs:
           cmp patches/scummvm-emscripten-midi-permission.patch runtime/scummvm/patches/scummvm-emscripten-midi-permission.patch
 
           python3 - <<'PY'
+          import hashlib
           import json
           from pathlib import Path
 
@@ -179,6 +180,9 @@ jobs:
           provenance_games = provenance.get('games') or [provenance['game']]
           indexed_provenance = {game['id']: game for game in provenance_games}
 
+          def sha256(path: Path) -> str:
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+
           for game in build_games:
               game_id = game['id']
               assert game_id in indexed_provenance, f'Missing ScummVM provenance for {game_id}'
@@ -188,9 +192,47 @@ jobs:
               assert recorded['target'] == game['target']
               assert recorded['relative_game_path'] == game.get('relative_game_path', '.')
               assert recorded.get('required_files', []) == game.get('required_files', [])
+              assert recorded.get('rights_basis') == game.get('rights_basis', 'freeware_redistribution')
               assert recorded.get('target_direct_files'), f'No direct target payload recorded for {game_id}'
               rights_path = Path(game['rights_record'])
               assert rights_path.is_file(), f'Missing rights record for {game_id}: {rights_path}'
+
+              if game.get('rights_basis') == 'open_license':
+                  assert recorded.get('notice_policy') == 'external_open_license_record'
+                  evidence = recorded.get('external_rights_evidence')
+                  assert isinstance(evidence, dict), f'Missing external rights evidence for {game_id}'
+
+                  source_record = Path(game['corresponding_source_record'])
+                  assert source_record.is_file(), f'Missing source provenance for {game_id}'
+                  source = json.loads(source_record.read_text(encoding='utf-8'))
+                  assert source['id'] == game_id
+                  assert evidence['source_commit'] == source['commit']
+                  assert evidence['source_tree'] == source['tree']
+                  assert evidence['source_archive_sha256'] == source['archive_sha256']
+                  assert evidence['license_identifiers'] == game['license_identifiers']
+
+                  source_archive = source_record.parent / source['archive_file']
+                  assert source_archive.is_file(), f'Missing source archive for {game_id}'
+                  assert sha256(source_archive) == source['archive_sha256']
+
+                  legal_root = Path('runtime/scummvm/legal/games') / game_id
+                  assert (legal_root / 'RIGHTS.md').is_file()
+                  assert (legal_root / 'SOURCE-PROVENANCE.json').is_file()
+                  generated_source = json.loads(
+                      (legal_root / 'SOURCE-PROVENANCE.json').read_text(encoding='utf-8')
+                  )
+                  assert generated_source['commit'] == source['commit']
+                  assert generated_source['tree'] == source['tree']
+                  assert generated_source['archive_sha256'] == source['archive_sha256']
+
+                  for value in game.get('external_license_files', []):
+                      original = Path(value)
+                      generated = legal_root / original.name
+                      assert original.is_file(), f'Missing open-license evidence for {game_id}: {original}'
+                      assert generated.is_file(), f'Generated runtime omitted open-license evidence: {generated}'
+                      assert sha256(generated) == sha256(original), (
+                          f'Generated open-license evidence changed for {game_id}: {generated}'
+                      )
 
           source = Path('runtime/scummvm/SOURCE.md').read_text(encoding='utf-8')
           assert 'scummvm-emscripten-relative-data.patch' in source
