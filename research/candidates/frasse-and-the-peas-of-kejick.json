@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "frasse-and-the-peas-of-kejick",
+  "title": "Frasse and the Peas of Kejick",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "ScummVM 2026.3 currently distributes the compact v1.04 SLUDGE package with a published SHA-256, but Abandonware requires package-level redistribution/license evidence before production hosting.",
+  "runtime_candidate": {
+    "engine": "sludge",
+    "target": "frasse"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/frasse-1.04.zip",
+    "page": "https://www.scummvm.org/games/",
+    "sha256": "8c517241389073f8577b805ecd730cf255c867220ff108d837b21026d90c06cd"
+  }
+}
