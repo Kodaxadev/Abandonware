@@ -1,0 +1,57 @@
+name: Audit direct author ZIP releases
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "research/direct-release-candidates/**"
+      - "tools/audit_direct_zip_release.py"
+      - "tests/test_direct_zip_release_audit.py"
+      - ".github/workflows/audit-direct-release-candidates.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-direct-release-candidates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out Abandonware
+        uses: actions/checkout@v4
+
+      - name: Test direct-release auditor
+        run: |
+          set -euo pipefail
+          python3 -m unittest tests/test_direct_zip_release_audit.py -v
+
+      - name: Audit direct creator/developer release identities
+        run: |
+          set -euo pipefail
+          mkdir -p direct-release-audits
+          shopt -s nullglob
+          candidates=(research/direct-release-candidates/*.json)
+          if [ ${#candidates[@]} -eq 0 ]; then
+            echo "No direct release candidates found."
+            exit 0
+          fi
+
+          for manifest in "${candidates[@]}"; do
+            id=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["id"])' "$manifest")
+            echo "::group::Direct release audit: $id"
+            python3 tools/audit_direct_zip_release.py "$manifest" --output "direct-release-audits/$id.json"
+            echo "::endgroup::"
+          done
+
+      - name: Upload non-publishing direct-release audits
+        uses: actions/upload-artifact@v4
+        with:
+          name: direct-author-release-audits
+          path: direct-release-audits/*.json
+          if-no-files-found: error
+          retention-days: 30
