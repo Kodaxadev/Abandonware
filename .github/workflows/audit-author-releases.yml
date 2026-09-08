@@ -1,0 +1,62 @@
+name: Audit author-hosted release identity
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "research/release-candidates/**"
+      - "tools/audit_itch_release.py"
+      - ".github/workflows/audit-author-releases.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-author-releases-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out Abandonware
+        uses: actions/checkout@v4
+
+      - name: Audit exact author release without execution
+        id: audit
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p release-audits
+          shopt -s nullglob
+          manifests=(research/release-candidates/*.json)
+          if [ ${#manifests[@]} -eq 0 ]; then
+            echo "No author release candidates found."
+            exit 0
+          fi
+
+          failures=0
+          for manifest in "${manifests[@]}"; do
+            id=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["id"])' "$manifest")
+            echo "::group::Author release audit: $id"
+            if ! python3 tools/audit_itch_release.py "$manifest" --output "release-audits/$id.json"; then
+              failures=$((failures + 1))
+            fi
+            echo "::endgroup::"
+          done
+
+          if [ "$failures" -ne 0 ]; then
+            echo "$failures author release audit(s) did not produce an exact binary match."
+            exit 1
+          fi
+
+      - name: Upload non-publishing release audit records
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: author-release-audits
+          path: release-audits/*.json
+          if-no-files-found: ignore
+          retention-days: 30
