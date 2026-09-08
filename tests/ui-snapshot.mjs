@@ -7,7 +7,7 @@ const outputDir = process.env.ABANDONWARE_UI_OUTPUT || "ui-snapshots";
 await fs.mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 
-async function capture(name, viewport) {
+async function preparePage(viewport) {
   const page = await browser.newPage({ viewport });
   const consoleErrors = [];
   page.on("console", message => {
@@ -17,7 +17,10 @@ async function capture(name, viewport) {
   await page.goto(baseUrl, { waitUntil: "networkidle", timeout: 30000 });
   await page.waitForSelector(".classic-site");
   await page.waitForSelector("#game-grid [data-game-id]");
+  return { page, consoleErrors };
+}
 
+async function verifyPage(page, consoleErrors, name, viewport) {
   const facts = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,
     viewportHeight: window.innerHeight,
@@ -39,12 +42,43 @@ async function capture(name, viewport) {
   if (consoleErrors.some(message => message.includes("Failed to load resource"))) {
     throw new Error(`${name} resource error: ${consoleErrors.join(" | ")}`);
   }
+  return facts;
+}
 
+async function capture(name, viewport) {
+  const { page, consoleErrors } = await preparePage(viewport);
+  const facts = await verifyPage(page, consoleErrors, name, viewport);
   await page.screenshot({ path: `${outputDir}/${name}.png`, fullPage: true });
   await page.close();
   console.log(JSON.stringify({ name, ...facts }));
 }
 
+async function captureDialogs() {
+  const viewport = { width: 1280, height: 900 };
+  const { page, consoleErrors } = await preparePage(viewport);
+  await verifyPage(page, consoleErrors, "classic-dialogs-1280", viewport);
+
+  await page.locator('[data-game-id="xargon"]').click();
+  await page.waitForFunction(() => document.getElementById("details-modal")?.open === true);
+  await page.locator("#details-modal .details-frame").screenshot({
+    path: `${outputDir}/classic-details-1280.png`
+  });
+  await page.locator("[data-close-details]").click();
+  await page.waitForFunction(() => document.getElementById("details-modal")?.open !== true);
+
+  await page.locator("[data-open-launcher]").first().click();
+  await page.waitForFunction(() => document.getElementById("launcher-modal")?.open === true);
+  await page.locator("#launcher-modal .modal-frame").screenshot({
+    path: `${outputDir}/classic-launcher-1280.png`
+  });
+
+  if (consoleErrors.some(message => message.includes("Failed to load resource"))) {
+    throw new Error(`dialog resource error: ${consoleErrors.join(" | ")}`);
+  }
+  await page.close();
+}
+
 await capture("classic-desktop-1280", { width: 1280, height: 900 });
 await capture("classic-mobile-390", { width: 390, height: 844 });
+await captureDialogs();
 await browser.close();
