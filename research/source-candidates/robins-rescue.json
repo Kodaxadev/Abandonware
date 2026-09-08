@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "robins-rescue",
   "title": "Robin's Rescue",
   "status": "SOURCE_REVIEW_ONLY",
@@ -7,9 +7,21 @@
   "source_page": "https://codeberg.org/Cheeseness/robins-rescue",
   "allowed_host": "codeberg.org",
   "legacy_source_page": "https://gitlab.com/Cheeseness/robins-rescue",
+  "revision": "refs/tags/v1.0",
+  "fingerprint_paths": [
+    "data/robins_rescue.slg"
+  ],
+  "expected_binary": {
+    "path": "data/robins_rescue.slg",
+    "md5": "16cbf2bf916ed89f9c1b14fab133cf96",
+    "size": 14413769,
+    "basis": "Pinned ScummVM 2026.3.0 SLUDGE detection table and exact ScummVM-hosted robinsrescue.zip payload"
+  },
   "license_expectations": [
     "LGPL-3.0 game/source",
-    "CC-BY-3.0 assets"
+    "CC-BY-3.0 first-party assets",
+    "CC0/CC-BY-3.0 third-party audio as enumerated in README.md",
+    "SIL-OFL-1.1 Medieval Sharp font"
   ],
-  "reason": "The authors publicly identify Robin's Rescue as LGPL 3.0 with CC-BY 3.0 assets. The old GitLab source now requires authentication; Josh Bush stated in July 2026 that most of his repositories had migrated to Codeberg and specifically named Robin's Rescue among project URLs still needing updates. This lane tests the corresponding Codeberg path and inventories the exact Git source without executing repository code."
+  "reason": "The release tag v1.0 predates later branch changes and is the strongest candidate for the exact source corresponding to the ScummVM-distributed compiled SLG. The audit fingerprints data/robins_rescue.slg without executing repository code and compares it to ScummVM's exact detection identity."
 }
