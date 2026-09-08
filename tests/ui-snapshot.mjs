@@ -68,6 +68,30 @@ async function captureDialogs() {
 
   await page.locator("[data-open-launcher]").first().click();
   await page.waitForFunction(() => document.getElementById("launcher-modal")?.open === true);
+
+  const launcherSteps = await page.evaluate(() => {
+    const step1 = document.getElementById("launcher-step-1");
+    const step2 = document.getElementById("launcher-step-2");
+    const step3 = document.getElementById("launcher-step-3");
+    return {
+      step1Hidden: Boolean(step1?.hidden),
+      step1Display: step1 ? getComputedStyle(step1).display : "missing",
+      step2Hidden: Boolean(step2?.hidden),
+      step2Display: step2 ? getComputedStyle(step2).display : "missing",
+      step3Hidden: Boolean(step3?.hidden),
+      step3Display: step3 ? getComputedStyle(step3).display : "missing"
+    };
+  });
+
+  if (launcherSteps.step1Hidden || launcherSteps.step1Display === "none") {
+    throw new Error(`launcher step 1 is not visible: ${JSON.stringify(launcherSteps)}`);
+  }
+  for (const number of [2, 3]) {
+    if (!launcherSteps[`step${number}Hidden`] || launcherSteps[`step${number}Display`] !== "none") {
+      throw new Error(`launcher inactive step ${number} leaked into the UI: ${JSON.stringify(launcherSteps)}`);
+    }
+  }
+
   await page.locator("#launcher-modal .modal-frame").screenshot({
     path: `${outputDir}/classic-launcher-1280.png`
   });
