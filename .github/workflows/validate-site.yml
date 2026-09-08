@@ -15,6 +15,7 @@ on:
       - "runtime/**"
       - "docs/rights/**"
       - "research/candidates/**"
+      - "research/asset-rights/**"
       - "patches/**"
       - "tests/test_*.py"
       - "tools/materialize_scummvm_games.py"
