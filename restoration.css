@@ -252,8 +252,14 @@ html body .launcher-modal .modal-header {
 }
 html body .launcher-modal .modal-header h2 {
   margin: 1px 0 0 !important;
-  font-size: 12px !important;
+  font-size: 0 !important;
   letter-spacing: 0 !important;
+}
+html body .launcher-modal #launcher-title::after {
+  content: "MY GAMES // LOCAL SETUP";
+  display: block;
+  color: #fff;
+  font: bold 12px/1.1 Arial, sans-serif;
 }
 html body .launcher-modal .launcher-body {
   min-height: 0 !important;
@@ -287,6 +293,9 @@ html body .launcher-modal .launcher-main {
 html body .launcher-modal .launcher-step {
   min-height: 0 !important;
   height: auto !important;
+}
+html body .launcher-modal .launcher-step[hidden] {
+  display: none !important;
 }
 html body .launcher-modal .drop-zone {
   min-height: 188px !important;
