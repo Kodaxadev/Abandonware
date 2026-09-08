@@ -2,10 +2,10 @@
 """Audit an external Git source repository without executing repository code.
 
 This lane is for corresponding-source and license evidence only. It clones a bare
-repository, records the exact commit/tree, inventories files and gitlinks, preserves
-human-readable license/readme notices, records remote release tags, and creates a
-deterministic git-archive tarball. It never checks out or runs files from the audited
-repository.
+repository, resolves an optional exact revision, records commit/tree identity, inventories
+files and gitlinks, preserves human-readable license/readme notices, records remote release
+tags, fingerprints requested blobs, and creates a deterministic git-archive tarball. It
+never checks out or runs files from the audited repository.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import subprocess
 import tempfile
 from urllib.parse import urlparse
@@ -42,6 +42,13 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def safe_git_path(value: str) -> str:
+    normalized = PurePosixPath(value.replace("\\", "/"))
+    if not normalized.parts or normalized.is_absolute() or ".." in normalized.parts:
+        raise RuntimeError(f"Unsafe Git tree path: {value!r}")
+    return normalized.as_posix()
+
+
 def clone_bare(url: str, destination: Path) -> None:
     subprocess.run(
         [
@@ -57,6 +64,31 @@ def clone_bare(url: str, destination: Path) -> None:
         ],
         check=True,
     )
+
+
+def fetch_revision(git_dir: Path, revision: str) -> str:
+    """Fetch one requested remote revision and return its exact commit."""
+    if revision == "HEAD":
+        return str(run_git(git_dir, "rev-parse", "HEAD^{commit}")).strip()
+
+    if not revision.startswith("refs/"):
+        raise RuntimeError("Explicit source revision must be a full refs/... name")
+    subprocess.run(
+        [
+            "git",
+            "-c", "protocol.file.allow=never",
+            f"--git-dir={git_dir}",
+            "fetch",
+            "--no-tags",
+            "origin",
+            revision,
+        ],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    return str(run_git(git_dir, "rev-parse", "FETCH_HEAD^{commit}")).strip()
 
 
 def remote_tags(url: str) -> list[dict]:
@@ -107,6 +139,23 @@ def decode_notice(data: bytes) -> str | None:
     return data.decode("utf-8", errors="replace")
 
 
+def fingerprint_blob(git_dir: Path, commit: str, value: str) -> dict:
+    path = safe_git_path(value)
+    try:
+        raw = run_git(git_dir, "show", f"{commit}:{path}", text=False)
+    except subprocess.CalledProcessError as error:
+        raise RuntimeError(f"Requested fingerprint path is missing at {commit}: {path}") from error
+    assert isinstance(raw, bytes)
+    object_sha = str(run_git(git_dir, "rev-parse", f"{commit}:{path}")).strip()
+    return {
+        "path": path,
+        "object": object_sha,
+        "size": len(raw),
+        "md5": hashlib.md5(raw, usedforsecurity=False).hexdigest(),
+        "sha256": hashlib.sha256(raw).hexdigest(),
+    }
+
+
 def audit(manifest_path: Path, output_dir: Path) -> dict:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     candidate_id = manifest["id"]
@@ -121,20 +170,24 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
             f"got {parsed.hostname}"
         )
 
+    requested_revision = manifest.get("revision", "HEAD")
+    fingerprint_paths = manifest.get("fingerprint_paths", [])
+    if not isinstance(fingerprint_paths, list):
+        raise RuntimeError("fingerprint_paths must be a list")
+
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with tempfile.TemporaryDirectory(prefix="abandonware-source-audit-") as temp_dir:
         git_dir = Path(temp_dir) / "source.git"
         tags = remote_tags(repository_url)
         clone_bare(repository_url, git_dir)
-
-        commit = str(run_git(git_dir, "rev-parse", "HEAD")).strip()
-        tree = str(run_git(git_dir, "rev-parse", "HEAD^{tree}")).strip()
         branch = str(run_git(git_dir, "symbolic-ref", "--short", "HEAD")).strip()
-        commit_time = str(run_git(git_dir, "show", "-s", "--format=%cI", "HEAD")).strip()
-        head_tags = [tag["name"] for tag in tags if tag.get("resolved_commit") == commit]
+        commit = fetch_revision(git_dir, requested_revision)
+        tree = str(run_git(git_dir, "rev-parse", f"{commit}^{{tree}}")).strip()
+        commit_time = str(run_git(git_dir, "show", "-s", "--format=%cI", commit)).strip()
+        resolved_tags = [tag["name"] for tag in tags if tag.get("resolved_commit") == commit]
 
-        raw_tree = str(run_git(git_dir, "ls-tree", "-r", "HEAD"))
+        raw_tree = str(run_git(git_dir, "ls-tree", "-r", commit))
         files: list[dict] = []
         gitlinks: list[str] = []
         for line in raw_tree.splitlines():
@@ -150,20 +203,22 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
                 gitlinks.append(path)
 
         notice_records: list[dict] = []
-        for record in files:
-            path = record["path"]
-            if record["type"] != "blob" or not notice_name(path):
+        for file_record in files:
+            path = file_record["path"]
+            if file_record["type"] != "blob" or not notice_name(path):
                 continue
-            raw = run_git(git_dir, "show", f"HEAD:{path}", text=False)
+            raw = run_git(git_dir, "show", f"{commit}:{path}", text=False)
             assert isinstance(raw, bytes)
             decoded = decode_notice(raw)
             notice_records.append({
                 "path": path,
-                "object": record["object"],
+                "object": file_record["object"],
                 "size": len(raw),
                 "sha256": hashlib.sha256(raw).hexdigest(),
                 "text": decoded,
             })
+
+        fingerprints = [fingerprint_blob(git_dir, commit, value) for value in fingerprint_paths]
 
         archive_path = output_dir / f"{candidate_id}-{commit}.tar.gz"
         subprocess.run(
@@ -174,36 +229,37 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
                 "--format=tar.gz",
                 f"--prefix={candidate_id}-{commit}/",
                 f"--output={archive_path}",
-                "HEAD",
+                commit,
             ],
             check=True,
         )
 
         record = {
-            "schema": 2,
+            "schema": 3,
             "candidate_id": candidate_id,
             "title": manifest.get("title"),
             "repository_url": repository_url,
             "source_page": manifest.get("source_page"),
+            "requested_revision": requested_revision,
             "resolved_branch": branch,
             "resolved_commit": commit,
             "resolved_tree": tree,
             "commit_time": commit_time,
             "remote_tags": tags,
-            "tags_pointing_at_head": head_tags,
+            "tags_pointing_at_revision": resolved_tags,
             "file_count": len(files),
             "gitlinks": gitlinks,
             "files": files,
+            "fingerprints": fingerprints,
             "notices": notice_records,
             "license_expectations": manifest.get("license_expectations", []),
             "archive_file": archive_path.name,
             "archive_sha256": sha256(archive_path),
             "decision": "REQUIRES_HUMAN_SOURCE_REVIEW",
             "warning": (
-                "This audit records source identity, remote tag refs, and notice files only. "
-                "It does not execute the repository and does not itself establish that every "
-                "compiled game asset is covered by the expected licenses or that HEAD is the "
-                "exact source corresponding to a separately distributed binary."
+                "This audit records source identity, remote tag refs, requested blob hashes, and "
+                "notice files only. It never executes repository code. A matching compiled blob "
+                "can establish release identity, but license scope still requires human review."
             ),
         }
 
@@ -212,14 +268,16 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
 
     print(json.dumps({
         "candidate_id": candidate_id,
+        "requested_revision": record["requested_revision"],
         "branch": record["resolved_branch"],
         "commit": record["resolved_commit"],
         "commit_time": record["commit_time"],
         "tree": record["resolved_tree"],
         "remote_tags": record["remote_tags"],
-        "tags_pointing_at_head": record["tags_pointing_at_head"],
+        "tags_pointing_at_revision": record["tags_pointing_at_revision"],
         "file_count": record["file_count"],
         "gitlinks": record["gitlinks"],
+        "fingerprints": record["fingerprints"],
         "notice_paths": [notice["path"] for notice in notice_records],
         "archive_file": record["archive_file"],
         "archive_sha256": record["archive_sha256"],
@@ -238,8 +296,8 @@ def audit(manifest_path: Path, output_dir: Path) -> dict:
         print("\nWARNING: no license/readme/copyright-style source notice files were found.")
     if gitlinks:
         print("\nWARNING: source repository contains gitlinks/submodules not included in git archive.")
-    if not head_tags:
-        print("\nNOTE: no remote tag points directly at the audited branch HEAD.")
+    if not resolved_tags:
+        print("\nNOTE: no remote tag points directly at the audited revision.")
 
     return record
 
