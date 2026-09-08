@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "openquest",
+  "title": "OpenQuest",
+  "status": "HOLD",
+  "decision_record": "research/decisions/openquest.md",
+  "reason": "OpenQuest has strong first-party reuse and redistribution evidence and an author-controlled CC-BY-4.0 repository/release, but the pinned v1.0 license record identifies a bundled third-party Verb Bar with no formal license. A surviving author discussion offers MIT relicensing if needed, but Abandonware does not treat an offer as an executed redistribution license. Production stays fail-closed while source and creator-release identity audits continue.",
+  "runtime_candidate": {
+    "engine": "wintermute",
+    "target": "openquest"
+  },
+  "author_release": {
+    "repository": "JenniBee/openquest",
+    "tag": "v1.0",
+    "windows_asset": "openquest-win32.zip"
+  },
+  "expected_payload": {
+    "filename": "data.dcp",
+    "md5": "16893e3fc15a211a49654ae66f684f28",
+    "size": 82281736,
+    "basis": "ScummVM Wintermute detection identity"
+  }
+}
