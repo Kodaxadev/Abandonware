@@ -146,3 +146,30 @@
   transform: rotate(45deg);
   box-shadow: inset 0 0 0 15px rgba(239, 82, 65, .018), 0 0 0 20px rgba(112, 201, 222, .018);
 }
+
+.cover-robins-rescue {
+  background:
+    radial-gradient(circle at 76% 19%, rgba(229, 195, 104, .18), transparent 13%),
+    linear-gradient(148deg, #304a35 0 25%, #1d3024 25% 60%, #0b110d 60%);
+}
+.cover-robins-rescue::before {
+  width: 66%;
+  height: 82%;
+  left: 6%;
+  bottom: -11%;
+  border: 1px solid rgba(206, 221, 153, .23);
+  clip-path: polygon(0 100%, 4% 58%, 17% 64%, 23% 30%, 35% 47%, 46% 12%, 56% 48%, 72% 27%, 79% 62%, 94% 48%, 100% 100%);
+  background:
+    linear-gradient(90deg, rgba(36, 72, 43, .22), transparent),
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(206, 221, 153, .035) 19px 20px);
+}
+.cover-robins-rescue::after {
+  width: 88px;
+  height: 88px;
+  right: 13%;
+  top: 24%;
+  border: 1px solid rgba(229, 195, 104, .34);
+  border-radius: 50% 50% 46% 54%;
+  transform: rotate(-18deg);
+  box-shadow: inset 14px -10px 0 rgba(229, 195, 104, .025), -48px 55px 0 -42px rgba(206, 221, 153, .48);
+}
