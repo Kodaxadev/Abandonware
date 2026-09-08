@@ -1,9 +1,10 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "cubert-badbone",
   "title": "Cubert Badbone, P.I.",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "ScummVM 2026.3 currently distributes the compact SLUDGE package with a published SHA-256, but Abandonware requires exact package-level redistribution/license evidence before hosting.",
+  "status": "HOLD",
+  "decision_record": "research/decisions/cubert-badbone.md",
+  "reason": "The exact ScummVM package is hash-verified and the title is consistently described as freeware, but the package contains no legal notice and no author-controlled third-party redistribution/rehosting grant has been established.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "cubert"
