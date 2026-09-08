@@ -3,8 +3,8 @@
 
 The candidate lane is intentionally separate from hosted-game manifests. It verifies the
 exact source artifact, rejects unsafe paths, inventories archive structure, and records
-license/readme/copyright notices for human rights review. Passing this tool does NOT make
-a game hostable or browser-ready.
+license/readme/copyright/attribution notices for human rights review. Passing this tool
+does NOT make a game hostable or browser-ready.
 """
 
 from __future__ import annotations
@@ -18,7 +18,24 @@ import tempfile
 import urllib.request
 import zipfile
 
-NOTICE_TOKENS = ("license", "licence", "readme", "copying", "copyright", "legal")
+# Rights evidence is not always named LICENSE or README. Preserve common attribution,
+# authorship and patent/third-party notice files as well so package audits do not silently
+# omit material that can narrow or qualify a game's apparent license grant.
+NOTICE_TOKENS = (
+    "license",
+    "licence",
+    "readme",
+    "copying",
+    "copyright",
+    "legal",
+    "authors",
+    "credits",
+    "patents",
+    "notice",
+    "attribution",
+    "third-party",
+    "third_party",
+)
 MAX_NOTICE_BYTES = 256 * 1024
 MAX_ARCHIVE_BYTES = 2 * 1024 * 1024 * 1024
 
@@ -71,6 +88,12 @@ def safe_path(name: str) -> PurePosixPath:
     if not normalized.parts or normalized.is_absolute() or ".." in normalized.parts:
         raise RuntimeError(f"Unsafe archive member path: {name!r}")
     return normalized
+
+
+def is_notice_name(name: str) -> bool:
+    """Return True for filenames likely to carry legal/rights/attribution evidence."""
+    lower_name = name.casefold()
+    return any(token in lower_name for token in NOTICE_TOKENS)
 
 
 def download(url: str, destination: Path) -> None:
@@ -177,8 +200,7 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
                 if info.is_dir():
                     continue
 
-                lower_name = path.name.casefold()
-                if any(token in lower_name for token in NOTICE_TOKENS):
+                if is_notice_name(path.name):
                     raw = archive.read(info)
                     text = decode_notice(raw)
                     evidence = scan_evidence(text)
@@ -257,7 +279,7 @@ def audit(manifest_path: Path, output_path: Path | None) -> dict:
         print("\nWARNING: explicit restriction-style language was detected; review before any hosting decision.")
 
     if not notices:
-        print("\nWARNING: no readme/license/copyright-style notice files were found in the package.")
+        print("\nWARNING: no legal/readme/authorship/attribution-style notice files were found in the package.")
 
     return audit_record
 
