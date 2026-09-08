@@ -1,0 +1,29 @@
+{
+  "schema": 3,
+  "id": "griffon-legend-port",
+  "title": "The Griffon Legend maintained C port",
+  "status": "SOURCE_REVIEW_ONLY",
+  "repository_url": "https://github.com/dmitrysmagin/griffon_legend.git",
+  "source_page": "https://github.com/dmitrysmagin/griffon_legend",
+  "allowed_host": "github.com",
+  "revision": "HEAD",
+  "fingerprint_paths": [
+    "LICENSE",
+    "COPYING",
+    "README",
+    "griffon.bas",
+    "griffon.c"
+  ],
+  "rights_evidence_paths": [
+    "LICENSE",
+    "README"
+  ],
+  "license_expectations": [
+    "The maintained port states source code is GPL-2.0 and all non-source assets are CC-BY-NC-ND-3.0",
+    "README identifies Daniel Syn9 Kennedy as programming/graphics author and David Turner as music/sound-effects author",
+    "The asset-license statement first appeared in port maintainer Dmitry Smagin's 2013-10-10 commit 8c1207b3dd65e9e14f318a3ceb4deef7057fcc32",
+    "This audit does not establish that Daniel Kennedy and David Turner authorized Dmitry Smagin to license their original assets; production stays HOLD until that authority chain is established",
+    "Even if authority is established, CC-BY-NC-ND-3.0 requires a noncommercial and unmodified deployment boundary that Abandonware does not currently assume"
+  ],
+  "reason": "This source audit preserves materially stronger rights evidence discovered after the original Griffon Legend HOLD. It is non-publishing evidence gathering only: the maintained C port makes an explicit GPL/CC license claim, but the authority for relicensing the original authors' assets and the NC/ND deployment constraints remain unresolved."
+}
