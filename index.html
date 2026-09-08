@@ -3,178 +3,187 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0b0d0c" />
+  <meta name="theme-color" content="#26264e" />
   <meta name="description" content="Abandonware is a preservation-first browser arcade for keeping classic PC games playable without pretending old means copyright-free." />
-  <title>ABANDONWARE // Keep old games alive</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>ABANDONWARE.COM // Wanna Play?</title>
   <link rel="stylesheet" href="runtime/jsdos/js-dos.css" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="restoration.css" />
   <link rel="stylesheet" href="covers-extra.css" />
+  <link rel="stylesheet" href="classic-mplayer.css" />
   <link rel="icon" href="assets/abandonware-mark.svg" type="image/svg+xml" />
 </head>
 <body>
-  <div class="noise" aria-hidden="true"></div>
-  <header class="site-header" id="top">
-    <a class="brand" href="#top" aria-label="Abandonware home">
-      <img src="assets/abandonware-mark.svg" alt="" width="30" height="30" />
-      <span>ABANDONWARE</span>
-      <small>// PRESERVATION TERMINAL</small>
-    </a>
-    <nav class="nav" aria-label="Primary navigation">
-      <a href="#archive">Archive</a>
-      <a href="#workbench">Workbench</a>
-      <a href="#principles">Policy</a>
-      <a href="https://github.com/Kodaxadev/Abandonware" target="_blank" rel="noreferrer">GitHub ↗</a>
+  <div class="page-bg" aria-hidden="true"></div>
+
+  <div class="classic-site" id="top">
+    <div class="utility-strip">
+      <div><b>ABANDONWARE NETWORK</b> &nbsp;|&nbsp; CLASSIC PC GAME PRESERVATION</div>
+      <div class="utility-links"><a href="#principles">HELP</a><span>|</span><a href="https://github.com/Kodaxadev/Abandonware" target="_blank" rel="noreferrer">SOURCE</a></div>
+    </div>
+
+    <header class="classic-header">
+      <a class="classic-brand" href="#top" aria-label="Abandonware home">
+        <span class="brand-orbit" aria-hidden="true"><i></i><b>A</b></span>
+        <span class="brand-wordmark"><strong>abandonware</strong><small>.com</small></span>
+      </a>
+      <div class="header-promo">
+        <span>THE CLASSICS ARE ONLINE</span>
+        <strong>WANNA PLAY?</strong>
+      </div>
+      <button class="classic-join" data-open-launcher>RUN MY GAME</button>
+    </header>
+
+    <nav class="classic-nav" aria-label="Primary navigation">
+      <a class="active" href="#archive">GAMES</a>
+      <a href="#archive">PLAY NOW</a>
+      <a href="#workbench">MY GAMES</a>
+      <a href="#principles">PRESERVATION</a>
+      <a href="#principles">HELP</a>
+      <a href="https://github.com/Kodaxadev/Abandonware" target="_blank" rel="noreferrer">DEVELOPERS</a>
     </nav>
-    <button class="launch-small" data-open-launcher>OPEN GAME</button>
-  </header>
 
-  <main>
-    <section class="hero shell-grid">
-      <div class="hero-copy">
-        <div class="eyebrow"><span class="pulse-dot"></span> ARCHIVE NODE 01 / ONLINE</div>
-        <h1>Old games<br /><em>should still run.</em></h1>
-        <p class="hero-lede">A browser-native preservation arcade for classic PC software. No installers. No virtual-machine ritual. No pretending that “abandoned” means “free to redistribute.”</p>
-        <div class="hero-actions">
-          <a class="button button-primary" href="#archive">PLAY THE ARCHIVE <span>↗</span></a>
-          <button class="button button-quiet" data-open-launcher>RUN YOUR COPY</button>
-        </div>
-        <div class="hero-notes" aria-label="Platform principles">
-          <span>AUDITED HOSTING GATE</span>
-          <span>LOCAL FILES STAY LOCAL</span>
-          <span>WEBASSEMBLY RUNTIME</span>
-        </div>
-      </div>
+    <div class="ticker-bar" aria-label="Archive status">
+      <span class="ticker-led"></span>
+      <b>NETWORK STATUS:</b> ONLINE
+      <span class="ticker-sep">•</span>
+      <b id="status-hosted-count">00</b> GAMES READY TO PLAY
+      <span class="ticker-sep">•</span>
+      <b id="status-catalog-count">00</b> RESTORATION RECORDS
+      <span class="ticker-sep">•</span>
+      <b id="status-engine-count">00</b> BROWSER ENGINES
+    </div>
 
-      <div class="hero-terminal" aria-label="Preservation terminal status">
-        <div class="terminal-bar">
-          <span>ABW_OS :: RESTORATION CONSOLE</span>
-          <span>80×25</span>
-        </div>
-        <div class="terminal-screen">
-          <div class="scanline"></div>
-          <div class="terminal-copy" id="terminal-copy">
-            <p><span class="muted">[BOOT]</span> preservation runtime initialized</p>
-            <p><span class="muted">[CORE]</span> js-dos + ScummVM / wasm</p>
-            <p><span class="muted">[FS]</span> local + audited file bridges ready</p>
-            <p><span class="muted">[LAW]</span> redistribution gate enabled</p>
-            <p><span class="ok">[PASS]</span> audited hosting pipeline active</p>
-            <p class="prompt">C:\ARCHIVE&gt;<span class="cursor">_</span></p>
+    <main class="classic-main">
+      <section class="portal-grid" aria-label="Abandonware portal">
+        <div class="portal-primary">
+          <div class="classic-panel welcome-panel">
+            <div class="panel-titlebar"><span>WELCOME TO ABANDONWARE.COM</span><span class="titlebar-controls">_ □ ×</span></div>
+            <div class="welcome-body">
+              <div class="welcome-copy">
+                <div class="welcome-kicker">CLASSIC GAMES. MODERN BROWSERS.</div>
+                <h1>YOUR OLD PC<br />IS BACK ONLINE.</h1>
+                <p>Play preservation-cleared classics instantly, or bring your own DOS files and launch them locally in the browser.</p>
+                <div class="classic-actions">
+                  <a class="classic-button primary" href="#archive">BROWSE GAMES</a>
+                  <button class="classic-button" data-open-launcher>RUN YOUR COPY</button>
+                </div>
+              </div>
+              <div class="gizmo-card" aria-label="Archive node status">
+                <div class="gizmo-head"><b>ABW GIZMO</b><span>v1.0</span></div>
+                <div class="gizmo-channel live"><span class="latency-light green"></span><div><b>PLAYABLE ARCHIVE</b><small>audited browser-ready games</small></div><em>OPEN</em></div>
+                <div class="gizmo-channel"><span class="latency-light yellow"></span><div><b>LOCAL WORKBENCH</b><small>your files stay in your browser</small></div><em>READY</em></div>
+                <div class="gizmo-channel"><span class="latency-light red"></span><div><b>RIGHTS REVIEW</b><small>unverified titles stay offline</small></div><em>GATED</em></div>
+                <div class="gizmo-foot">STATUS &gt; preservation node connected</div>
+              </div>
+            </div>
           </div>
-          <div class="terminal-art" aria-hidden="true">
-            <div class="block block-a"></div><div class="block block-b"></div><div class="block block-c"></div>
-            <div class="wire wire-a"></div><div class="wire wire-b"></div>
+
+          <section class="classic-panel games-panel" id="archive">
+            <div class="panel-titlebar"><span>GAME CHANNELS</span><span>SELECT A GAME TO VIEW DETAILS</span></div>
+            <div class="archive-toolbar">
+              <div class="filter-group" role="group" aria-label="Filter archive">
+                <button class="filter active" data-filter="all">ALL GAMES</button>
+                <button class="filter" data-filter="playable">PLAY NOW</button>
+                <button class="filter" data-filter="local-dos">MY DOS</button>
+                <button class="filter" data-filter="dos">DOS</button>
+                <button class="filter" data-filter="scummvm">SCUMMVM</button>
+                <button class="filter" data-filter="win9x">WIN9X</button>
+              </div>
+              <label class="search-box">
+                <span>FIND GAME:</span>
+                <input id="archive-search" type="search" placeholder="type a title..." autocomplete="off" />
+              </label>
+            </div>
+            <div class="directory-header" aria-hidden="true">
+              <span>GAME / CHANNEL</span><span>PLATFORM</span><span>STATUS</span><span>ACTION</span>
+            </div>
+            <div class="game-grid" id="game-grid" aria-live="polite"></div>
+            <div class="empty-state" id="empty-state" hidden>No game channels match that filter.</div>
+          </section>
+        </div>
+
+        <aside class="portal-sidebar">
+          <section class="classic-panel side-panel">
+            <div class="panel-titlebar"><span>QUICK PLAY</span></div>
+            <div class="side-list">
+              <a href="#archive"><span class="mini-led green"></span><b>PLAYABLE GAMES</b><small>Launch verified titles</small></a>
+              <button data-open-launcher><span class="mini-led yellow"></span><b>LOCAL DOS</b><small>Use your own archive</small></button>
+              <a href="#principles"><span class="mini-led blue"></span><b>RIGHTS LEDGER</b><small>How hosting is approved</small></a>
+            </div>
+          </section>
+
+          <section class="classic-panel side-panel network-panel">
+            <div class="panel-titlebar"><span>NETWORK</span></div>
+            <dl class="network-stats">
+              <div><dt>RUNTIME</dt><dd>WASM</dd></div>
+              <div><dt>DOS</dt><dd>ONLINE</dd></div>
+              <div><dt>SCUMMVM</dt><dd>ONLINE</dd></div>
+              <div><dt>UPLOADS</dt><dd>OFF</dd></div>
+              <div><dt>RIGHTS GATE</dt><dd>ON</dd></div>
+            </dl>
+          </section>
+
+          <section class="classic-panel side-panel bulletin-panel">
+            <div class="panel-titlebar"><span>NEWS & UPDATES</span></div>
+            <div class="bulletin">
+              <article><time>09.08.26</time><b>Archive expansion continues</b><p>New candidates are audited before they ever reach the public game list.</p></article>
+              <article><time>LIVE</time><b>Browser play enabled</b><p>Verified titles run directly through pinned local emulator runtimes.</p></article>
+            </div>
+          </section>
+
+          <section class="classic-panel ad-panel" aria-label="Preservation message">
+            <div class="fake-ad-label">ADVERTISEMENT</div>
+            <div class="fake-ad"><strong>STILL GOT THE DISKS?</strong><span>Run your own DOS copy locally.</span><button data-open-launcher>OPEN WORKBENCH</button></div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="classic-panel workbench-section" id="workbench">
+        <div class="panel-titlebar"><span>MY GAMES // LOCAL RESTORATION WORKBENCH</span><span>FILES NEVER LEAVE YOUR BROWSER</span></div>
+        <div class="workbench-card">
+          <div class="workbench-copy">
+            <div class="section-chip">LOCAL MODE</div>
+            <h2>Bring the game.<br />We’ll bring the old PC.</h2>
+            <p>Drop a prepared <code>.jsdos</code> bundle or a ZIP containing a DOS game. Abandonware scans it in your browser, finds likely launch targets and builds a temporary DOSBox configuration locally.</p>
+            <div class="flow">
+              <div><span>1</span><b>CHOOSE FILE</b><small>.JSDOS or .ZIP</small></div>
+              <div><span>2</span><b>SELECT EXE</b><small>boot target</small></div>
+              <div><span>3</span><b>PLAY</b><small>browser runtime</small></div>
+            </div>
+            <button class="classic-button primary" data-open-launcher>OPEN MY GAMES</button>
           </div>
-        </div>
-        <div class="terminal-footer">
-          <span>CPU <b>READY</b></span>
-          <span>MEM <b>LOCAL</b></span>
-          <span>NET <b>GATED</b></span>
-        </div>
-      </div>
-    </section>
-
-    <section class="status-strip" aria-label="Archive status">
-      <div><strong id="status-catalog-count">00</strong><span>RESTORATION TARGETS</span></div>
-      <div><strong id="status-engine-count">00</strong><span>EXECUTION ENGINES</span></div>
-      <div><strong id="status-hosted-count">00</strong><span>AUDITED HOSTED TITLES</span></div>
-      <div><strong>∞</strong><span>LOCAL DOS BUNDLES</span></div>
-    </section>
-
-    <section class="section archive-section" id="archive">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">RESTORATION ARCHIVE</div>
-          <h2>The lost shelf.</h2>
-        </div>
-        <p>Browser-ready games have a documented redistribution basis and a pinned execution artifact. Everything else stays a compatibility target or runs from files you supply locally.</p>
-      </div>
-
-      <div class="archive-toolbar">
-        <div class="filter-group" role="group" aria-label="Filter archive">
-          <button class="filter active" data-filter="all">ALL</button>
-          <button class="filter" data-filter="playable">PLAYABLE</button>
-          <button class="filter" data-filter="local-dos">LOCAL DOS</button>
-          <button class="filter" data-filter="dos">DOS</button>
-          <button class="filter" data-filter="scummvm">SCUMMVM</button>
-          <button class="filter" data-filter="win9x">WIN9X</button>
-        </div>
-        <label class="search-box">
-          <span>SEARCH</span>
-          <input id="archive-search" type="search" placeholder="title / year / studio" autocomplete="off" />
-        </label>
-      </div>
-
-      <div class="game-grid" id="game-grid" aria-live="polite"></div>
-      <div class="empty-state" id="empty-state" hidden>No restoration targets match that filter.</div>
-    </section>
-
-    <section class="section workbench-section" id="workbench">
-      <div class="workbench-card">
-        <div class="workbench-copy">
-          <div class="eyebrow">LOCAL RESTORATION WORKBENCH</div>
-          <h2>Bring the files.<br />We’ll bring the machine.</h2>
-          <p>Drop a prepared <code>.jsdos</code> bundle or a normal ZIP containing a DOS game. For ordinary ZIPs, the workbench scans for launchable files and writes the DOSBox startup configuration in your browser.</p>
-          <div class="flow">
-            <div><span>01</span><b>SELECT</b><small>your legally obtained local files</small></div>
-            <div><span>02</span><b>DETECT</b><small>EXE / COM / BAT launch targets</small></div>
-            <div><span>03</span><b>EMULATE</b><small>DOSBox running through WebAssembly</small></div>
-          </div>
-          <button class="button button-primary" data-open-launcher>OPEN WORKBENCH <span>↗</span></button>
-        </div>
-        <div class="workbench-visual" aria-hidden="true">
-          <div class="diskette">
+          <div class="diskette" aria-hidden="true">
             <span class="disk-notch"></span>
-            <span class="disk-label"><b>LOCAL</b><i>GAME DATA</i></span>
+            <span class="disk-label"><b>ABANDONWARE</b><i>LOCAL GAME DISK</i></span>
             <span class="disk-window"></span>
           </div>
-          <div class="workbench-stamp">NOT UPLOADED</div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="section principles-section" id="principles">
-      <div class="section-head compact">
-        <div>
-          <div class="eyebrow">PRESERVATION WITHOUT FICTION</div>
-          <h2>The rules are part of the product.</h2>
+      <section class="classic-panel principles-section" id="principles">
+        <div class="panel-titlebar"><span>HELP CENTER // PRESERVATION POLICY</span></div>
+        <div class="principles-grid">
+          <article><span>01</span><h3>OLD DOESN’T MEAN FREE</h3><p>Hosted games need an explicit redistribution basis. “Abandonware” is a preservation label here, not a legal shortcut.</p></article>
+          <article><span>02</span><h3>HASH THE REAL ARTIFACT</h3><p>Every hosted release is tied to a pinned package and provenance record so the browser runs the exact artifact we reviewed.</p></article>
+          <article><span>03</span><h3>YOUR COPY STAYS YOURS</h3><p>For commercial or uncertain titles, use local mode. Your selected files are processed client-side and are not uploaded to Kodaxa.</p></article>
         </div>
-      </div>
-      <div class="principles-grid">
-        <article>
-          <span>01 / RIGHTS LEDGER</span>
-          <h3>Old ≠ public domain.</h3>
-          <p>A game only becomes hostable here when there is a defensible redistribution basis: public domain, freeware grant, open license, publisher permission, or another documented authorization.</p>
-        </article>
-        <article>
-          <span>02 / IMMUTABLE INTAKE</span>
-          <h3>Trust the hash, not the filename.</h3>
-          <p>Hosted titles are built from pinned upstream packages. The materialization job verifies the expected package identity before adding emulator configuration and provenance.</p>
-        </article>
-        <article>
-          <span>03 / LOCAL MODE</span>
-          <h3>Your copy, your browser.</h3>
-          <p>Commercial and uncertain titles can still receive compatibility profiles without us distributing their data. You provide the copy; the runtime stays client-side.</p>
-        </article>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
 
-  <footer class="site-footer">
-    <div class="footer-brand"><img src="assets/abandonware-mark.svg" alt="" /><span>ABANDONWARE</span></div>
-    <p>Classic software preservation project by Kodaxa. No affiliation with publishers or rights holders unless explicitly stated on a game record.</p>
-    <a href="#top">TOP ↑</a>
-  </footer>
+    <footer class="classic-footer">
+      <div><b>ABANDONWARE.COM</b> // a Kodaxa preservation project</div>
+      <div>Best viewed on literally anything newer than Netscape 4.0.</div>
+      <div><a href="#top">BACK TO TOP</a> &nbsp;|&nbsp; <a href="https://github.com/Kodaxadev/Abandonware" target="_blank" rel="noreferrer">GITHUB</a></div>
+    </footer>
+  </div>
 
   <dialog class="modal launcher-modal" id="launcher-modal">
     <div class="modal-frame">
       <header class="modal-header">
         <div>
-          <span class="modal-kicker">EXECUTION NODE</span>
-          <h2 id="launcher-title">Restoration Workbench</h2>
+          <span class="modal-kicker">ABANDONWARE GIZMO</span>
+          <h2 id="launcher-title">My Games</h2>
         </div>
         <button class="icon-button" data-close-launcher aria-label="Close launcher">×</button>
       </header>
