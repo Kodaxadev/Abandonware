@@ -38,7 +38,6 @@ Audited game-data packages:
 - Sołtys — target `soltys` — rights: `docs/rights/soltys.md`
 - Nippon Safes, Inc. — target `nippon` — rights: `docs/rights/nippon-safes.md`
 - Robin's Rescue — target `robinsrescue` — rights: `docs/rights/robins-rescue.md`
-- The Secret of Tremendous Corporation — target `tsotc` — rights: `docs/rights/the-secret-of-tremendous-corporation.md`
 
 Build method:
 

@@ -406,64 +406,6 @@
         "robins_rescue.slg"
       ],
       "title": "Robin's Rescue"
-    },
-    {
-      "data_directory": "tremendous-corporation-v6",
-      "edition": "Open-License Version 6",
-      "external_rights_evidence": {
-        "external_license_files": [
-          "runtime/sources/the-secret-of-tremendous-corporation/legal/COPYING",
-          "runtime/sources/the-secret-of-tremendous-corporation/legal/README.md"
-        ],
-        "license_identifiers": [
-          "LGPL-3.0",
-          "CC-BY-SA-4.0"
-        ],
-        "source_archive": "runtime/sources/the-secret-of-tremendous-corporation/the-secret-of-tremendous-corporation-29a5bc7fd603b6ccd41d93481bbcd3a1aa456d79.tar.gz",
-        "source_archive_sha256": "8edfd894388f44f6cb21a3c75cc332069a6d6a6c4e15a34b8d50a8c50e5e7a4f",
-        "source_commit": "29a5bc7fd603b6ccd41d93481bbcd3a1aa456d79",
-        "source_record": "runtime/sources/the-secret-of-tremendous-corporation/PROVENANCE.json",
-        "source_tree": "4558536cb66605e8213eec16c482896fe524fb98"
-      },
-      "id": "the-secret-of-tremendous-corporation",
-      "notice_policy": "external_open_license_record",
-      "preserved_notices": [
-        "tsotc-v6/LICENSE.TXT"
-      ],
-      "relative_game_path": "tsotc-v6",
-      "required_files": [
-        "gamedata.slg"
-      ],
-      "rights_basis": "open_license",
-      "rights_record": "docs/rights/the-secret-of-tremendous-corporation.md",
-      "sha256": "4493047914318167cf1e955795028c65592be99fe620a389745c5d6bec97d24b",
-      "source_page": "https://www.scummvm.org/games/",
-      "source_url": "https://downloads.scummvm.org/frs/extras/SLUDGE/tsotc-v6.zip",
-      "target": "tsotc",
-      "target_direct_files": [
-        "AUTHORS.TXT",
-        "Credits.html",
-        "LICENSE.TXT",
-        "PATENTS.TXT",
-        "SDLMain.nib",
-        "Sludge.icns",
-        "Startup.nib",
-        "color.frag",
-        "color.vert",
-        "fixScaleSprite.frag",
-        "fixScaleSprite.vert",
-        "gamedata.slg",
-        "gameicon.icns",
-        "scale.frag",
-        "scale.vert",
-        "scale_noaa.frag",
-        "sludge_launcher_logo_4c0c.png",
-        "texture.frag",
-        "texture.vert",
-        "yuv.frag",
-        "yuv.vert"
-      ],
-      "title": "The Secret of Tremendous Corporation"
     }
   ],
   "runtime": {
