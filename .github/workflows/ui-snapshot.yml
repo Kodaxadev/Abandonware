@@ -1,0 +1,61 @@
+name: Capture classic UI snapshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "classic-mplayer.css"
+      - "app.js"
+      - "data/**"
+      - "tests/ui-snapshot.mjs"
+      - ".github/workflows/ui-snapshot.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: classic-ui-snapshot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Playwright Chromium
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static archive server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/abandonware-http.log 2>&1 &
+          echo $! > /tmp/abandonware-http.pid
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8080/index.html >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/abandonware-http.log >&2
+          exit 1
+
+      - name: Capture desktop and mobile portal
+        run: node tests/ui-snapshot.mjs
+        env:
+          ABANDONWARE_BASE_URL: http://127.0.0.1:8080
+          ABANDONWARE_UI_OUTPUT: ui-snapshots
+
+      - name: Upload snapshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: classic-ui-snapshots
+          path: ui-snapshots/*.png
+          if-no-files-found: error
+          retention-days: 7
