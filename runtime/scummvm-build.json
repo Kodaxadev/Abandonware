@@ -253,6 +253,37 @@
         "description": "Robin's Rescue (Open License v1.0)",
         "extra": "Open License"
       }
+    },
+    {
+      "id": "the-secret-of-tremendous-corporation",
+      "target": "tsotc",
+      "engine": "sludge",
+      "title": "The Secret of Tremendous Corporation",
+      "edition": "Open-License Version 6",
+      "rights_basis": "open_license",
+      "license_identifiers": [
+        "LGPL-3.0",
+        "CC-BY-SA-4.0"
+      ],
+      "source_url": "https://downloads.scummvm.org/frs/extras/SLUDGE/tsotc-v6.zip",
+      "source_page": "https://www.scummvm.org/games/",
+      "sha256": "4493047914318167cf1e955795028c65592be99fe620a389745c5d6bec97d24b",
+      "data_directory": "tremendous-corporation-v6",
+      "relative_game_path": "tsotc-v6",
+      "required_files": ["gamedata.slg"],
+      "rights_record": "docs/rights/the-secret-of-tremendous-corporation.md",
+      "corresponding_source_record": "runtime/sources/the-secret-of-tremendous-corporation/PROVENANCE.json",
+      "external_license_files": [
+        "runtime/sources/the-secret-of-tremendous-corporation/legal/COPYING",
+        "runtime/sources/the-secret-of-tremendous-corporation/legal/README.md"
+      ],
+      "config": {
+        "gameid": "tsotc",
+        "engineid": "sludge",
+        "language": "en",
+        "description": "The Secret of Tremendous Corporation (Open License v6)",
+        "extra": "Open License v6"
+      }
     }
   ],
   "output": "runtime/scummvm"
