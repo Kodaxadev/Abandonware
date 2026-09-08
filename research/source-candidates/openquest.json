@@ -1,0 +1,37 @@
+{
+  "schema": 3,
+  "id": "openquest",
+  "title": "OpenQuest",
+  "status": "SOURCE_REVIEW_ONLY",
+  "repository_url": "https://github.com/JenniBee/openquest.git",
+  "source_page": "https://github.com/JenniBee/openquest/tree/v1.0",
+  "allowed_host": "github.com",
+  "revision": "refs/tags/v1.0",
+  "fingerprint_paths": [
+    "LICENSE",
+    "README.AGS",
+    "README.md",
+    "openquest.wpr",
+    "data/default.game",
+    "data/interface/verbbar/verbbar.script",
+    "data/interface/verbbar/verbbar_functions.inc"
+  ],
+  "rights_evidence_paths": [
+    "LICENSE",
+    "README.AGS",
+    "README.md"
+  ],
+  "expected_binary": {
+    "filename": "data.dcp",
+    "md5": "16893e3fc15a211a49654ae66f684f28",
+    "size": 82281736,
+    "basis": "ScummVM Wintermute detection identity for Open Quest"
+  },
+  "license_expectations": [
+    "Michael Sheail's original README.AGS explicitly permits reuse of anything in the original learning project",
+    "The repository project license is CC-BY-4.0",
+    "The v1.0 LICENSE also warns about externally sourced material and points to a third-party ledger that identifies the bundled Verb Bar as having no formal license",
+    "No production approval is allowed until the Verb Bar redistribution grant is resolved or the component is replaced"
+  ],
+  "reason": "The source audit pins the creator-controlled v1.0 tag, preserves the original reuse statement and release-tag license warning, and fingerprints the bundled Verb Bar code. This is non-publishing evidence gathering; the current candidate remains HOLD."
+}
