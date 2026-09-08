@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 import tarfile
 import tempfile
@@ -14,17 +15,38 @@ class GitHubReleaseAuditTests(unittest.TestCase):
     def test_zip_fingerprints_one_required_payload_and_notices(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             archive_path = Path(temp_dir) / "release.zip"
+            raw = b"payload"
             with zipfile.ZipFile(archive_path, "w") as archive:
-                archive.writestr("game/data.dcp", b"payload")
+                archive.writestr("game/data.dcp", raw)
                 archive.writestr("game/LICENSE", "redistribution evidence")
                 archive.writestr("game/README.md", "release notes")
 
-            members, payload, notices = inspect_archive(archive_path, archive_path.name, "data.dcp")
+            members, payload, notices = inspect_archive(
+                archive_path, archive_path.name, "data.dcp", detector_md5_bytes=5
+            )
 
             self.assertEqual(payload["path"], "game/data.dcp")
             self.assertEqual(payload["size"], 7)
+            self.assertEqual(payload["md5"], hashlib.md5(raw, usedforsecurity=False).hexdigest())
+            self.assertEqual(
+                payload["detector_md5"],
+                hashlib.md5(raw[:5], usedforsecurity=False).hexdigest(),
+            )
+            self.assertEqual(payload["detector_md5_bytes"], 5)
             self.assertEqual({notice["path"] for notice in notices}, {"game/LICENSE", "game/README.md"})
             self.assertEqual(len(members), 3)
+
+    def test_zero_detector_length_means_full_file(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            archive_path = Path(temp_dir) / "release.zip"
+            raw = b"payload"
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                archive.writestr("game/data.dcp", raw)
+            _members, payload, _notices = inspect_archive(
+                archive_path, archive_path.name, "data.dcp", detector_md5_bytes=0
+            )
+            self.assertEqual(payload["detector_md5"], payload["md5"])
+            self.assertEqual(payload["detector_md5_bytes"], 0)
 
     def test_tar_rejects_links(self):
         with tempfile.TemporaryDirectory() as temp_dir:
