@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Audit an exact author-controlled ZIP release without publishing it.
+"""Audit an author-controlled ZIP release without publishing or executing it.
 
-This lane is for direct creator/developer download URLs that are not GitHub Releases. The
-manifest must pin an expected size plus at least one strong external digest (SHA-512 or
-SHA-256). The audit downloads the exact HTTPS URL, verifies those pins, safely inventories
-the ZIP, validates one required detector payload, preserves notice-style files, and emits a
-SHA-256 suitable for later production manifests. Nothing from the archive is executed.
+Pinned mode verifies an exact size plus SHA-256/SHA-512 before using the artifact as identity
+evidence. Discovery mode exists only to fingerprint a fixed creator URL when no independent
+digest survives; its output is explicitly non-final and must be copied back into the manifest
+and re-run in pinned mode before the artifact can support production.
 """
 
 from __future__ import annotations
@@ -14,13 +13,12 @@ import argparse
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
-import shutil
 import tempfile
 from urllib.parse import urlparse
 import urllib.request
 import zipfile
 
-USER_AGENT = "Kodaxa-Abandonware-Direct-Release-Audit/1.0"
+USER_AGENT = "Kodaxa-Abandonware-Direct-Release-Audit/1.1"
 MAX_ARCHIVE_BYTES = 1024 * 1024 * 1024
 MAX_NOTICE_BYTES = 256 * 1024
 NOTICE_TOKENS = (
@@ -61,59 +59,85 @@ def decode_notice(raw: bytes) -> str | None:
     return raw.decode("utf-8", errors="replace")
 
 
-def download(url: str, destination: Path, allowed_host: str, expected_size: int) -> None:
+def download(
+    url: str,
+    destination: Path,
+    allowed_host: str,
+    *,
+    expected_size: int | None,
+    max_size: int,
+) -> int:
     parsed = urlparse(url)
     if parsed.scheme != "https" or parsed.hostname != allowed_host:
-        raise RuntimeError(
-            f"Direct release URL must use HTTPS on {allowed_host}: {url}"
-        )
+        raise RuntimeError(f"Direct release URL must use HTTPS on {allowed_host}: {url}")
+    if max_size <= 0 or max_size > MAX_ARCHIVE_BYTES:
+        raise RuntimeError(f"Invalid max_size: {max_size}")
+
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=180) as response, destination.open("wb") as output:
+    with urllib.request.urlopen(request, timeout=240) as response, destination.open("wb") as output:
         total = 0
         while True:
             chunk = response.read(1024 * 1024)
             if not chunk:
                 break
             total += len(chunk)
-            if total > MAX_ARCHIVE_BYTES:
-                raise RuntimeError(f"Archive exceeds {MAX_ARCHIVE_BYTES} bytes")
+            if total > max_size:
+                raise RuntimeError(f"Archive exceeds manifest max_size of {max_size} bytes")
             output.write(chunk)
+
     actual_size = destination.stat().st_size
-    if actual_size != expected_size:
+    if expected_size is not None and actual_size != expected_size:
         raise RuntimeError(
             f"Direct release size mismatch: expected {expected_size}, got {actual_size}"
         )
+    return actual_size
 
 
 def audit(manifest_path: Path, output_path: Path) -> dict:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     source = manifest["source"]
     url = source["url"]
-    expected_size = int(source["size"])
     allowed_host = source["allowed_host"]
+    discovery_mode = bool(source.get("discovery_mode", False))
+    expected_size = int(source["size"]) if source.get("size") is not None else None
+    max_size = int(source.get("max_size", expected_size or MAX_ARCHIVE_BYTES))
     expected_sha512 = str(source.get("sha512", "")).casefold()
     expected_sha256 = str(source.get("sha256", "")).casefold()
-    if not expected_sha512 and not expected_sha256:
-        raise RuntimeError("Direct release manifest must pin SHA-512 or SHA-256")
+    has_digest_pin = bool(expected_sha512 or expected_sha256)
 
-    required = manifest["required_payload"]
-    required_name = safe_path(required["filename"]).as_posix().casefold()
-    expected_payload_md5 = str(required["md5"]).casefold()
-    expected_payload_size = int(required["size"])
+    if not has_digest_pin and not discovery_mode:
+        raise RuntimeError(
+            "Direct release manifest must pin SHA-512/SHA-256 or explicitly use discovery_mode"
+        )
+    if discovery_mode and has_digest_pin:
+        raise RuntimeError("discovery_mode must be disabled once a digest is pinned")
+    if not discovery_mode and expected_size is None:
+        raise RuntimeError("Pinned direct release manifests must include exact size")
+
+    required = manifest.get("required_payload")
+    required_name = None
+    expected_payload_md5 = None
+    expected_payload_size = None
+    if required is not None:
+        required_name = safe_path(required["filename"]).as_posix().casefold()
+        expected_payload_md5 = str(required["md5"]).casefold()
+        expected_payload_size = int(required["size"])
 
     with tempfile.TemporaryDirectory(prefix="abandonware-direct-release-") as temp_dir:
         archive_path = Path(temp_dir) / "release.zip"
-        download(url, archive_path, allowed_host, expected_size)
+        actual_size = download(
+            url,
+            archive_path,
+            allowed_host,
+            expected_size=expected_size,
+            max_size=max_size,
+        )
         actual_sha512 = digest(archive_path, "sha512")
         actual_sha256 = digest(archive_path, "sha256")
         if expected_sha512 and actual_sha512 != expected_sha512:
-            raise RuntimeError(
-                f"SHA-512 mismatch: expected {expected_sha512}, got {actual_sha512}"
-            )
+            raise RuntimeError(f"SHA-512 mismatch: expected {expected_sha512}, got {actual_sha512}")
         if expected_sha256 and actual_sha256 != expected_sha256:
-            raise RuntimeError(
-                f"SHA-256 mismatch: expected {expected_sha256}, got {actual_sha256}"
-            )
+            raise RuntimeError(f"SHA-256 mismatch: expected {expected_sha256}, got {actual_sha256}")
 
         members: list[dict] = []
         notices: list[dict] = []
@@ -131,7 +155,7 @@ def audit(manifest_path: Path, output_path: Path) -> dict:
                 if info.is_dir():
                     continue
                 raw: bytes | None = None
-                if member_name.casefold().endswith(required_name):
+                if required_name and member_name.casefold().endswith(required_name):
                     raw = archive.read(info)
                     payload_matches.append({
                         "path": member_name,
@@ -149,34 +173,44 @@ def audit(manifest_path: Path, output_path: Path) -> dict:
                         "text": decode_notice(raw),
                     })
 
-    if len(payload_matches) != 1:
-        raise RuntimeError(
-            f"Expected exactly one payload ending in {required['filename']!r}; "
-            f"found {[item['path'] for item in payload_matches]}"
-        )
-    payload = payload_matches[0]
-    if payload["size"] != expected_payload_size or payload["md5"].casefold() != expected_payload_md5:
-        raise RuntimeError(
-            f"Detector payload mismatch for {manifest['id']}: {payload}"
-        )
+    payload = None
+    if required is not None:
+        if len(payload_matches) != 1:
+            raise RuntimeError(
+                f"Expected exactly one payload ending in {required['filename']!r}; "
+                f"found {[item['path'] for item in payload_matches]}"
+            )
+        payload = payload_matches[0]
+        if payload["size"] != expected_payload_size or payload["md5"].casefold() != expected_payload_md5:
+            raise RuntimeError(f"Detector payload mismatch for {manifest['id']}: {payload}")
 
+    decision = (
+        "HASH_DISCOVERY_REQUIRES_PINNED_RERUN"
+        if discovery_mode
+        else "IDENTITY_MATCH_REQUIRES_RIGHTS_REVIEW"
+    )
     record = {
-        "schema": 1,
+        "schema": 2,
         "id": manifest["id"],
         "title": manifest.get("title"),
         "source_page": source.get("page"),
         "source_url": url,
-        "archive_size": expected_size,
+        "discovery_mode": discovery_mode,
+        "archive_size": actual_size,
         "archive_sha256": actual_sha256,
         "archive_sha512": actual_sha512,
         "required_payload": payload,
         "member_count": len(members),
         "members": members,
         "notices": notices,
-        "decision": "IDENTITY_MATCH_REQUIRES_RIGHTS_REVIEW",
+        "decision": decision,
         "warning": (
-            "This non-publishing audit establishes artifact identity only. Production still "
-            "requires an independent rights decision that covers the complete game data."
+            "Discovery-mode hashes are observations, not immutable pins; copy the observed size/hash "
+            "back into the manifest and re-run with discovery_mode disabled. This non-publishing "
+            "audit never substitutes for an independent rights decision."
+            if discovery_mode
+            else "This non-publishing audit establishes artifact identity only. Production still "
+            "requires an independent rights decision covering the complete game data."
         ),
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -184,12 +218,13 @@ def audit(manifest_path: Path, output_path: Path) -> dict:
     print(json.dumps({
         "id": record["id"],
         "source_url": url,
-        "archive_size": expected_size,
+        "discovery_mode": discovery_mode,
+        "archive_size": actual_size,
         "archive_sha256": actual_sha256,
         "archive_sha512": actual_sha512,
         "payload": payload,
         "notice_paths": [notice["path"] for notice in notices],
-        "decision": record["decision"],
+        "decision": decision,
     }, indent=2))
     return record
 
