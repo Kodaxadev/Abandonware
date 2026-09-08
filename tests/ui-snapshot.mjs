@@ -8,7 +8,7 @@ await fs.mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 
 async function capture(name, viewport) {
-  const page = await browser.newPage({ viewportSize: viewport });
+  const page = await browser.newPage({ viewport });
   const consoleErrors = [];
   page.on("console", message => {
     if (message.type() === "error") consoleErrors.push(message.text());
@@ -19,12 +19,17 @@ async function capture(name, viewport) {
   await page.waitForSelector("#game-grid [data-game-id]");
 
   const facts = await page.evaluate(() => ({
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
     classicSite: Boolean(document.querySelector(".classic-site")),
     cards: document.querySelectorAll("#game-grid [data-game-id]").length,
     stylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("classic-mplayer.css")),
     horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
   }));
 
+  if (facts.viewportWidth !== viewport.width || facts.viewportHeight !== viewport.height) {
+    throw new Error(`${name} viewport mismatch: expected ${viewport.width}x${viewport.height}, got ${facts.viewportWidth}x${facts.viewportHeight}`);
+  }
   if (!facts.classicSite || !facts.stylesheetLoaded || facts.cards < 1) {
     throw new Error(`${name} classic UI did not initialize: ${JSON.stringify(facts)}`);
   }
