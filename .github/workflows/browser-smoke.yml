@@ -14,6 +14,7 @@ on:
       - "styles.css"
       - "restoration.css"
       - "covers-extra.css"
+      - "classic-mplayer.css"
       - "data/**"
       - "games/**"
       - "runtime/**"
