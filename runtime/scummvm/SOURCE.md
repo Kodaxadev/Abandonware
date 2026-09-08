@@ -43,8 +43,8 @@ Build method:
 
 1. Check out the pinned ScummVM commit.
 2. Apply both checked-in Emscripten browser-hosting patches.
-3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-png --enable-zlib --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl --enable-engine=drascula --enable-engine=dreamweb --enable-engine=cge2 --enable-engine=cge --enable-engine=parallaction --enable-engine=sludge`.
-4. Verify every requested engine produced its static library.
+3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-png --enable-zlib --enable-ogg --enable-vorbis --enable-engine=sky --enable-engine=queen --enable-engine=lure --enable-engine=adl --enable-engine=drascula --enable-engine=dreamweb --enable-engine=cge2 --enable-engine=cge --enable-engine=parallaction --enable-engine=sludge`.
+4. Verify every requested engine produced its static library and Vorbis support survived configuration.
 5. SHA-256 verify and materialize each audited game-data package.
 
 Game-data licenses are separate from ScummVM GPL licensing.
