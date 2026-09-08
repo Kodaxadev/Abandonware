@@ -14,9 +14,26 @@ OpenQuest has unusually strong first-party preservation evidence:
 - JenniBee publishes the Wintermute source and v1.0 Windows/Linux/macOS releases from an author-controlled GitHub repository;
 - ScummVM supports the Wintermute port as target `openquest` and records the `data.dcp` detection identity used for release comparison.
 
-## Release-tag exception
+## Exact source and creator-release identity
 
 The rights review is pinned to the actual `v1.0` tag rather than current `master`.
+
+- repository: `https://github.com/JenniBee/openquest.git`
+- ref: `refs/tags/v1.0`
+- commit: `4f02a085fb2684aecc07413b9e804376d022b12d`
+- creator Windows release: `openquest-win32.zip`
+- creator archive size: `89,380,745` bytes
+- creator archive SHA-256: `8a559d2c546bbc75ac81371adb94bd5bbdfd90471cb514c1b494a84d2f7949f7`
+- payload: `data/data.dcp`
+- payload size: `82,281,736` bytes
+- payload SHA-256: `a4218ac420e6ba7221e8aabfa5df7cf08757e9cd5192e584353706482a580193`
+- payload full-file MD5: `339df37f3e61b3b8fc22007d8f077f9c`
+- ScummVM detector MD5: `16893e3fc15a211a49654ae66f684f28`
+- detector hash span: first `5,000` bytes
+
+ScummVM's Advanced Detector defaults to a 5,000-byte MD5 and the pinned Wintermute detector does not override that value. The creator-hosted `data.dcp` matches both the ScummVM detector MD5 under that rule and the full expected file size. Binary provenance is therefore established; the remaining HOLD is a rights issue, not an identity uncertainty.
+
+## Release-tag exception
 
 At `refs/tags/v1.0`, the repository `LICENSE` says the work is CC-BY-4.0 but adds that some libraries/assets were sourced outside the contributing community and directs readers to JenniBee's `dfafadventure` issue #1 for their licenses.
 
@@ -33,13 +50,14 @@ A surviving forum discussion provides useful context: the original verb-bar auth
 
 - first-party OpenQuest reuse/redistribution permission: **strongly established**
 - repository project license: **CC-BY-4.0**
-- author-controlled v1.0 binary release: **established**
+- author-controlled v1.0 binary release: **established and detector-matched**
+- creator release archive/payload hashes: **recorded**
 - ScummVM Wintermute runtime candidate: **yes**
 - third-party Wintermute engine issue: **non-blocking / MIT**
-- third-party Verb Bar issue: **HOLD — no formal license in the release record**
+- third-party Verb Bar issue: **HOLD — no formal redistribution license in the release record**
 - production manifest: **do not add**
 - public catalog: **do not add**
-- non-publishing source/release identity audit: **permitted and recommended**
+- non-publishing compatibility/rebuild work: **permitted**
 
 ## Reconsideration triggers
 
@@ -49,4 +67,4 @@ OpenQuest can return to production review if one of these is preserved:
 2. an author/rightsholder statement clearly granting redistribution of the Verb Bar code, not merely modification;
 3. a clean OpenQuest source revision/rebuild replacing the unlicensed Verb Bar with code under a documented compatible license.
 
-Because the rest of the rights chain is comparatively strong, this is a narrow blocker rather than a general uncertainty about the game.
+Because source identity and creator-binary identity are now closed, this is a narrow blocker rather than a general uncertainty about the game.
