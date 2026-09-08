@@ -8,11 +8,9 @@
   "allowed_host": "codeberg.org",
   "legacy_source_page": "https://gitlab.com/Cheeseness/robins-rescue",
   "revision": "refs/tags/v1.0",
-  "fingerprint_paths": [
-    "data/robins_rescue.slg"
-  ],
+  "fingerprint_paths": [],
   "expected_binary": {
-    "path": "data/robins_rescue.slg",
+    "filename": "robins_rescue.slg",
     "md5": "16cbf2bf916ed89f9c1b14fab133cf96",
     "size": 14413769,
     "basis": "Pinned ScummVM 2026.3.0 SLUDGE detection table and exact ScummVM-hosted robinsrescue.zip payload"
@@ -23,5 +21,5 @@
     "CC0/CC-BY-3.0 third-party audio as enumerated in README.md",
     "SIL-OFL-1.1 Medieval Sharp font"
   ],
-  "reason": "The release tag v1.0 predates later branch changes and is the strongest candidate for the exact source corresponding to the ScummVM-distributed compiled SLG. The audit fingerprints data/robins_rescue.slg without executing repository code and compares it to ScummVM's exact detection identity."
+  "reason": "The v1.0 release tag resolved correctly, but the expected compiled SLG was not present at data/robins_rescue.slg. This pass inventories the complete tagged tree without executing it so the compiled payload can be located under any historical path/name before making a source/binary identity claim."
 }
