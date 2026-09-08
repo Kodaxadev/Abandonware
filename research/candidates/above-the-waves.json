@@ -1,9 +1,10 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "above-the-waves",
   "title": "Above The Waves",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "The original authors still publish the v0.1 game on itch.io and ScummVM 2026.3 distributes a hash-pinned SLUDGE package. Abandonware is auditing the exact package for redistribution/license terms before hosting.",
+  "status": "HOLD",
+  "decision_record": "research/decisions/above-the-waves.md",
+  "reason": "The authors still provide v0.1 as a free download and ScummVM publishes a hash-pinned SLUDGE package, but no explicit author-controlled grant permitting third-party redistribution, mirroring, repackaging, or browser rehosting of the game data has been established.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "atw"
