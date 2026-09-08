@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "cubert-badbone",
+  "title": "Cubert Badbone, P.I.",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "ScummVM 2026.3 currently distributes the compact SLUDGE package with a published SHA-256, but Abandonware requires exact package-level redistribution/license evidence before hosting.",
+  "runtime_candidate": {
+    "engine": "sludge",
+    "target": "cubert"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/cubert.zip",
+    "page": "https://www.scummvm.org/games/",
+    "sha256": "594c2c88405d239be689526e3af94bf164c60a9d40e01bee53fdc64c2ba8051c"
+  }
+}
