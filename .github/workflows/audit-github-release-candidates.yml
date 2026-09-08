@@ -1,0 +1,57 @@
+name: Audit creator GitHub releases
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "research/github-release-candidates/**"
+      - "tools/audit_github_release.py"
+      - "tests/test_github_release_audit.py"
+      - ".github/workflows/audit-github-release-candidates.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-github-release-candidates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out Abandonware
+        uses: actions/checkout@v4
+
+      - name: Test GitHub release auditor
+        run: |
+          set -euo pipefail
+          python3 -m unittest tests/test_github_release_audit.py -v
+
+      - name: Audit creator-hosted release identities
+        run: |
+          set -euo pipefail
+          mkdir -p github-release-audits
+          shopt -s nullglob
+          candidates=(research/github-release-candidates/*.json)
+          if [ ${#candidates[@]} -eq 0 ]; then
+            echo "No GitHub release candidates found."
+            exit 0
+          fi
+
+          for manifest in "${candidates[@]}"; do
+            id=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["id"])' "$manifest")
+            echo "::group::Creator release audit: $id"
+            python3 tools/audit_github_release.py "$manifest" --output "github-release-audits/$id.json"
+            echo "::endgroup::"
+          done
+
+      - name: Upload non-publishing creator-release audits
+        uses: actions/upload-artifact@v4
+        with:
+          name: creator-github-release-audits
+          path: github-release-audits/*.json
+          if-no-files-found: error
+          retention-days: 30
