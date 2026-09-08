@@ -10,6 +10,7 @@ on:
       - "styles.css"
       - "restoration.css"
       - "covers-extra.css"
+      - "classic-mplayer.css"
       - "data/**"
       - "games/**"
       - "runtime/**"
@@ -41,6 +42,15 @@ jobs:
           node --check app.js
           node --check data/games.js
           node --check runtime/jsdos/bridge.js
+
+      - name: Verify site shell assets
+        run: |
+          set -euo pipefail
+          test -s classic-mplayer.css
+          grep -q 'classic-mplayer.css' index.html
+          grep -q 'id="game-grid"' index.html
+          grep -q 'id="launcher-modal"' index.html
+          grep -q 'id="details-modal"' index.html
 
       - name: Run ScummVM intake unit tests
         run: |
