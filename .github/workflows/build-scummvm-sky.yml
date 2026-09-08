@@ -157,9 +157,9 @@ jobs:
           )
 
           # ScummVM's Emscripten configure path maps these explicit feature flags to
-          # Emscripten's built-in ports (-s USE_LIBPNG=1 / zlib). Sludge has a hard
-          # PNG dependency and configure otherwise silently drops the requested engine.
-          args=(build --enable-release --disable-all-engines --enable-png --enable-zlib)
+          # Emscripten ports. Sludge requires PNG support to compile and Robin's Rescue
+          # contains Ogg/Vorbis audio, so both image and audio codecs are hard build gates.
+          args=(build --enable-release --disable-all-engines --enable-png --enable-zlib --enable-ogg --enable-vorbis)
           for engine in "${engines[@]}"; do
             args+=("--enable-engine=$engine")
           done
@@ -182,6 +182,15 @@ jobs:
             fi
             echo "Verified compiled engine: $engine -> $archive"
           done
+
+          # Robin's Rescue exposed that a compiled engine is not sufficient proof of
+          # runtime media support. Require the decoder feature actually used by its Ogg
+          # assets to survive configure as well.
+          grep -Eq '^#define USE_VORBIS([[:space:]]|$)' config.h || {
+            echo "ScummVM was built without USE_VORBIS despite --enable-vorbis" >&2
+            exit 1
+          }
+          echo "Verified compiled Vorbis decoder support."
 
       - name: Verify and materialize audited game data
         run: |
@@ -251,9 +260,9 @@ jobs:
               '',
               '1. Check out the pinned ScummVM commit.',
               '2. Apply both checked-in Emscripten browser-hosting patches.',
-              '3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-png --enable-zlib ' +
+              '3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-png --enable-zlib --enable-ogg --enable-vorbis ' +
               ' '.join(f'--enable-engine={engine}' for engine in engines) + '`.',
-              '4. Verify every requested engine produced its static library.',
+              '4. Verify every requested engine produced its static library and Vorbis support survived configuration.',
               '5. SHA-256 verify and materialize each audited game-data package.',
               '',
               'Game-data licenses are separate from ScummVM GPL licensing.',
