@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - "runtime/scummvm-build.json"
+      - "runtime/sources/**"
+      - "docs/rights/**"
       - "tools/materialize_scummvm_games.py"
       - "patches/scummvm-emscripten-relative-data.patch"
       - "patches/scummvm-emscripten-midi-permission.patch"
@@ -45,10 +47,13 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import hashlib
           import json
+          import os
           from pathlib import Path
 
-          manifest = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
+          manifest_path = Path('runtime/scummvm-build.json')
+          manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
           runtime = manifest['runtime']
           games = manifest.get('games') or [manifest['game']]
           engines = runtime.get('engines') or [runtime['engine']]
@@ -62,12 +67,57 @@ jobs:
           assert len({game['target'] for game in games}) == len(games)
           assert set(game.get('engine', game['target']) for game in games).issubset(set(engines))
 
+          input_paths = {
+              manifest_path,
+              Path('tools/materialize_scummvm_games.py'),
+              Path('patches/scummvm-emscripten-relative-data.patch'),
+              Path('patches/scummvm-emscripten-midi-permission.patch'),
+              Path('.github/workflows/build-scummvm-sky.yml'),
+          }
+
           for game in games:
               assert len(game['sha256']) == 64
               assert game['source_url'].startswith('https://')
-              assert Path(game['rights_record']).is_file(), game['rights_record']
+              rights_record = Path(game['rights_record'])
+              assert rights_record.is_file(), rights_record
+              input_paths.add(rights_record)
 
-          print(f"Pinned manifest validated: {len(engines)} engine(s), {len(games)} game(s)")
+              source_record_value = game.get('corresponding_source_record')
+              if source_record_value:
+                  source_record = Path(source_record_value)
+                  assert source_record.is_file(), source_record
+                  input_paths.add(source_record)
+                  source_provenance = json.loads(source_record.read_text(encoding='utf-8'))
+                  archive_path = source_record.parent / source_provenance['archive_file']
+                  assert archive_path.is_file(), archive_path
+                  input_paths.add(archive_path)
+
+              for value in game.get('external_license_files', []):
+                  evidence = Path(value)
+                  assert evidence.is_file(), evidence
+                  input_paths.add(evidence)
+
+          def digest(path: Path) -> str:
+              h = hashlib.sha256()
+              with path.open('rb') as handle:
+                  for chunk in iter(lambda: handle.read(1024 * 1024), b''):
+                      h.update(chunk)
+              return h.hexdigest()
+
+          fingerprint = {
+              path.as_posix(): digest(path)
+              for path in sorted(input_paths, key=lambda item: item.as_posix())
+          }
+          fingerprint_path = Path(os.environ['RUNNER_TEMP']) / 'scummvm-build-inputs.json'
+          fingerprint_path.write_text(
+              json.dumps(fingerprint, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+
+          print(
+              f"Pinned manifest validated: {len(engines)} engine(s), "
+              f"{len(games)} game(s), {len(fingerprint)} immutable build/evidence input(s)"
+          )
           PY
           test "$(git -C scummvm-src rev-parse HEAD)" = "$SCUMMVM_COMMIT"
           test -s patches/scummvm-emscripten-relative-data.patch
@@ -106,7 +156,10 @@ jobs:
           PY
           )
 
-          args=(build --enable-release --disable-all-engines)
+          # ScummVM's Emscripten configure path maps these explicit feature flags to
+          # Emscripten's built-in ports (-s USE_LIBPNG=1 / zlib). Sludge has a hard
+          # PNG dependency and configure otherwise silently drops the requested engine.
+          args=(build --enable-release --disable-all-engines --enable-png --enable-zlib)
           for engine in "${engines[@]}"; do
             args+=("--enable-engine=$engine")
           done
@@ -118,7 +171,19 @@ jobs:
           cd scummvm-src
           ./dists/emscripten/build.sh "${args[@]}"
 
-      - name: Verify and materialize audited freeware data
+          # A requested --enable-engine flag is not proof that configure retained the
+          # engine: unmet dependencies can disable it while the build still exits 0.
+          # Require each requested engine's static archive to exist after compilation.
+          for engine in "${engines[@]}"; do
+            archive="engines/$engine/lib$engine.a"
+            if [ ! -s "$archive" ]; then
+              echo "Requested ScummVM engine was not actually built: $engine ($archive missing)" >&2
+              exit 1
+            fi
+            echo "Verified compiled engine: $engine -> $archive"
+          done
+
+      - name: Verify and materialize audited game data
         run: |
           set -euo pipefail
           python3 tools/materialize_scummvm_games.py \
@@ -131,7 +196,7 @@ jobs:
           cp scummvm-src/build-emscripten/scummvm.html \
             scummvm-src/build-emscripten/index.html
 
-      - name: Preserve runtime licensing and corresponding source record
+      - name: Preserve runtime and game licensing records
         run: |
           set -euo pipefail
           root=scummvm-src/build-emscripten
@@ -147,11 +212,13 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
+          import shutil
 
           manifest = json.loads(Path('runtime/scummvm-build.json').read_text(encoding='utf-8'))
           runtime = manifest['runtime']
           games = manifest.get('games') or [manifest['game']]
           engines = runtime.get('engines') or [runtime['engine']]
+          root = Path('scummvm-src/build-emscripten')
 
           lines = [
               '# Corresponding source and build record',
@@ -184,16 +251,32 @@ jobs:
               '',
               '1. Check out the pinned ScummVM commit.',
               '2. Apply both checked-in Emscripten browser-hosting patches.',
-              '3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines ' +
+              '3. Run `./dists/emscripten/build.sh build --enable-release --disable-all-engines --enable-png --enable-zlib ' +
               ' '.join(f'--enable-engine={engine}' for engine in engines) + '`.',
-              '4. SHA-256 verify and materialize each audited game-data package.',
+              '4. Verify every requested engine produced its static library.',
+              '5. SHA-256 verify and materialize each audited game-data package.',
               '',
               'Game-data licenses are separate from ScummVM GPL licensing.',
               '',
           ])
-          Path('scummvm-src/build-emscripten/SOURCE.md').write_text(
-              '\n'.join(lines), encoding='utf-8'
-          )
+          (root / 'SOURCE.md').write_text('\n'.join(lines), encoding='utf-8')
+
+          # Keep source-backed open-license evidence inside the generated browser
+          # artifact as well as in runtime/sources, so a deployed runtime remains
+          # self-describing even when viewed independently of the repository docs.
+          for game in games:
+              if game.get('rights_basis') != 'open_license':
+                  continue
+              destination = root / 'legal' / 'games' / game['id']
+              destination.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(game['rights_record'], destination / 'RIGHTS.md')
+              shutil.copy2(
+                  game['corresponding_source_record'],
+                  destination / 'SOURCE-PROVENANCE.json',
+              )
+              for value in game.get('external_license_files', []):
+                  source = Path(value)
+                  shutil.copy2(source, destination / source.name)
           PY
 
       - name: Validate static runtime package
@@ -226,7 +309,16 @@ jobs:
               assert current['target'] == game['target']
               assert current['relative_game_path'] == game.get('relative_game_path', '.')
               assert current.get('required_files', []) == game.get('required_files', [])
-          print(f"Validated runtime provenance for {len(games)} game(s)")
+              assert current.get('rights_basis') == game.get('rights_basis', 'freeware_redistribution')
+
+              if game.get('rights_basis') == 'open_license':
+                  legal = Path('scummvm-src/build-emscripten/legal/games') / game['id']
+                  assert (legal / 'RIGHTS.md').is_file()
+                  assert (legal / 'SOURCE-PROVENANCE.json').is_file()
+                  for value in game.get('external_license_files', []):
+                      assert (legal / Path(value).name).is_file()
+
+          print(f"Validated runtime provenance and licensing for {len(games)} game(s)")
           PY
 
           if find "$root" -type f -size +95M -print -quit | grep -q .; then
@@ -245,7 +337,7 @@ jobs:
           mkdir -p runtime/scummvm
           cp -a scummvm-src/build-emscripten/. runtime/scummvm/
 
-      - name: Commit generated runtime
+      - name: Commit generated runtime safely
         run: |
           set -euo pipefail
           git config user.name "abandonware-preservation-bot"
@@ -255,6 +347,57 @@ jobs:
             echo "ScummVM runtime already matches its pinned manifest."
             exit 0
           fi
-          git commit -m "build: materialize audited ScummVM freeware runtime"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          git commit -m "build: materialize audited ScummVM browser runtime"
+
+          verify_build_inputs() {
+            python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          fingerprint_path = Path(os.environ['RUNNER_TEMP']) / 'scummvm-build-inputs.json'
+          expected = json.loads(fingerprint_path.read_text(encoding='utf-8'))
+
+          def digest(path: Path) -> str:
+              h = hashlib.sha256()
+              with path.open('rb') as handle:
+                  for chunk in iter(lambda: handle.read(1024 * 1024), b''):
+                      h.update(chunk)
+              return h.hexdigest()
+
+          failures = []
+          for value, expected_hash in expected.items():
+              path = Path(value)
+              if not path.is_file():
+                  failures.append(f"missing: {value}")
+                  continue
+              actual = digest(path)
+              if actual != expected_hash:
+                  failures.append(f"changed: {value} expected={expected_hash} actual={actual}")
+
+          if failures:
+              raise SystemExit(
+                  "Build/evidence inputs changed while runtime was compiling; refusing stale publish:\n" +
+                  "\n".join(failures)
+              )
+          print(f"Verified {len(expected)} build/evidence inputs are unchanged after rebase")
+          PY
+          }
+
+          for attempt in 1 2 3 4; do
+            echo "Publish attempt $attempt/4"
+            git fetch origin main
+            git rebase origin/main
+            verify_build_inputs
+            if git push origin HEAD:main; then
+              echo "Published generated ScummVM runtime."
+              exit 0
+            fi
+            if [ "$attempt" -lt 4 ]; then
+              sleep "$attempt"
+            fi
+          done
+
+          echo "Could not publish generated runtime after 4 race-safe attempts." >&2
+          exit 1
