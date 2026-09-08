@@ -252,6 +252,27 @@ window.ABANDONWARE_GAMES = [
     hostable: true
   },
   {
+    id: "the-secret-of-tremendous-corporation",
+    title: "The Secret of Tremendous Corporation",
+    year: "2015",
+    studio: "Sebastian Krzyszkowiak / Konrad Burandt / Paweł Radej",
+    platform: "SLUDGE / SCUMMVM",
+    filter: "scummvm",
+    runtime: "ScummVM Web 2026.3",
+    runtimeType: "scummvm",
+    status: "BROWSER READY",
+    statusClass: "ready",
+    cover: "cover-tremendous-corporation",
+    summary: "An open-source point-and-click adventure preserved from ScummVM's exact Version 6 package with the authors' Steam-release source tag, CC-BY-SA license record, and source-backed browser provenance kept alongside the runtime.",
+    rights: "LGPL-3.0 code / CC-BY-SA-4.0 assets",
+    compatibility: "ScummVM 2026.3.0; sludge engine; audited gamedata.slg; direct #tsotc launch",
+    hostedUrl: "runtime/scummvm/index.html#tsotc",
+    rightsRecord: "docs/rights/the-secret-of-tremendous-corporation.md",
+    sourceLabel: "ScummVM v6 package + preserved Steam-tag author source",
+    sourcePage: "https://dos.itch.io/the-secret-of-tremendous-corporation",
+    hostable: true
+  },
+  {
     id: "doom",
     title: "DOOM",
     year: "1993",
