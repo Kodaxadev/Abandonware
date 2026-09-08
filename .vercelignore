@@ -1,0 +1,7 @@
+.github/
+tests/
+tools/
+research/
+ui-snapshots/
+node_modules/
+*.log
