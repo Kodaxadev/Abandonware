@@ -2,6 +2,10 @@ name: Browser runtime smoke
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Build ScummVM Freeware Archive"
+    types: [completed]
   push:
     branches: [main]
     paths:
@@ -20,16 +24,19 @@ permissions:
   contents: read
 
 concurrency:
-  group: browser-smoke-${{ github.ref }}
+  group: browser-smoke-${{ github.ref || 'workflow-run' }}
   cancel-in-progress: true
 
 jobs:
   smoke:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Install Playwright Chromium
         run: |
@@ -50,7 +57,7 @@ jobs:
           cat /tmp/abandonware-http.log >&2
           exit 1
 
-      - name: Launch one js-dos and one ScummVM game
+      - name: Launch hosted and local runtime paths
         run: node tests/browser-smoke.mjs
         env:
           ABANDONWARE_BASE_URL: http://127.0.0.1:8080
