@@ -1,0 +1,97 @@
+name: Materialize direct corresponding source sets
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "runtime/sources/*-direct-build.json"
+      - "tools/materialize_direct_source_set.py"
+      - "tests/test_direct_source_set.py"
+      - ".github/workflows/materialize-direct-source-sets.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-direct-source-sets
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out Abandonware
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Test direct source-set materializer
+        run: |
+          set -euo pipefail
+          python3 -m unittest tests/test_direct_source_set.py -v
+
+      - name: Materialize all direct source sets
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          manifests=(runtime/sources/*-direct-build.json)
+          if [ ${#manifests[@]} -eq 0 ]; then
+            echo "No direct source-set manifests found." >&2
+            exit 1
+          fi
+          for manifest in "${manifests[@]}"; do
+            echo "::group::Materialize $manifest"
+            python3 tools/materialize_direct_source_set.py "$manifest"
+            echo "::endgroup::"
+          done
+
+      - name: Validate direct source preservation output
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          for manifest_path in sorted(Path('runtime/sources').glob('*-direct-build.json')):
+              manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+              root = Path(manifest['output'])
+              provenance_path = root / 'PROVENANCE.json'
+              source_note = root / 'SOURCE.md'
+              if not provenance_path.is_file() or not source_note.is_file():
+                  raise SystemExit(f'Missing direct source provenance under {root}')
+              provenance = json.loads(provenance_path.read_text(encoding='utf-8'))
+              assert provenance['id'] == manifest['id']
+              assert provenance['source_kind'] == 'direct_archives'
+              assert len(provenance['components']) == len(manifest['components'])
+              for component in provenance['components']:
+                  path = root / component['materialized_path']
+                  if not path.is_file():
+                      raise SystemExit(f'Missing preserved direct source component: {path}')
+                  actual = hashlib.sha256(path.read_bytes()).hexdigest()
+                  assert actual == component['sha256']
+                  assert path.stat().st_size == component['size']
+              for notice in provenance['preserved_notices']:
+                  path = root / notice['materialized_path']
+                  if not path.is_file():
+                      raise SystemExit(f'Missing preserved direct source notice: {path}')
+                  actual = hashlib.sha256(path.read_bytes()).hexdigest()
+                  assert actual == notice['sha256']
+              print(f"Verified {manifest['id']} direct source set {provenance['source_set_sha256']}")
+          PY
+
+      - name: Commit direct source preservation sets
+        run: |
+          set -euo pipefail
+          git config user.name "abandonware-preservation-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add runtime/sources
+          if git diff --cached --quiet; then
+            echo "Direct source sets already match all pinned manifests."
+            exit 0
+          fi
+          git commit -m "build: preserve direct corresponding sources"
+          git pull --rebase origin main
+          git push origin HEAD:main
