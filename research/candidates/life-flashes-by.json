@@ -1,9 +1,10 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "life-flashes-by",
   "title": "Life Flashes By",
-  "status": "RIGHTS_REVIEW_ONLY",
-  "reason": "ScummVM distributes an exact SLUDGE package and links directly to the creator-hosted installer at games.squinky.me, establishing strong release provenance. Abandonware has not found an explicit creator-controlled redistribution grant, so the exact ScummVM package is being audited for bundled license/attribution evidence before a rights decision.",
+  "status": "HOLD",
+  "decision_record": "research/decisions/life-flashes-by.md",
+  "reason": "The exact ScummVM package was hash-verified and its only notice-style files are SLUDGE/SDL engine-library license texts. Those notices do not grant redistribution rights in Life Flashes By's game data. ScummVM links directly to the creator-hosted installer, establishing strong release provenance, but no creator-controlled third-party redistribution, mirroring, repackaging, or browser-hosting grant has been established.",
   "runtime_candidate": {
     "engine": "sludge",
     "target": "life"
@@ -11,7 +12,11 @@
   "source": {
     "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/life.zip",
     "page": "https://www.scummvm.org/games/",
-    "sha256": "9c8e61a9509e2b10080e735eade2db7f3a8dabee3f0febafeb537ed4e7eb4999"
+    "sha256": "9c8e61a9509e2b10080e735eade2db7f3a8dabee3f0febafeb537ed4e7eb4999",
+    "observed_size": 159698577,
+    "member_count": 168,
+    "notice_count": 2,
+    "notice_scope": "SLUDGE/SDL engine and library licensing only"
   },
   "expected_payload": {
     "filename": "LifeFlashesBy.slg or gamedata",
