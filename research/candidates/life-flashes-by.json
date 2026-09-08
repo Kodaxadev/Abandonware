@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "life-flashes-by",
+  "title": "Life Flashes By",
+  "status": "RIGHTS_REVIEW_ONLY",
+  "reason": "ScummVM distributes an exact SLUDGE package and links directly to the creator-hosted installer at games.squinky.me, establishing strong release provenance. Abandonware has not found an explicit creator-controlled redistribution grant, so the exact ScummVM package is being audited for bundled license/attribution evidence before a rights decision.",
+  "runtime_candidate": {
+    "engine": "sludge",
+    "target": "life"
+  },
+  "source": {
+    "url": "https://downloads.scummvm.org/frs/extras/SLUDGE/life.zip",
+    "page": "https://www.scummvm.org/games/",
+    "sha256": "9c8e61a9509e2b10080e735eade2db7f3a8dabee3f0febafeb537ed4e7eb4999"
+  },
+  "expected_payload": {
+    "filename": "LifeFlashesBy.slg or gamedata",
+    "md5": "a471759e071e5d2c0e8e6887607df778",
+    "size": 163794266,
+    "basis": "ScummVM SLUDGE detector identity"
+  },
+  "author_release": "https://games.squinky.me/downloads/lfb/LifeFlashesBy-setup.exe"
+}
