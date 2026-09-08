@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "openquest-v1-author-release",
+  "title": "OpenQuest",
+  "status": "BINARY_IDENTITY_REVIEW_ONLY",
+  "repository_full_name": "JenniBee/openquest",
+  "release_tag": "v1.0",
+  "expected_tag_commit": "4f02a085fb2684aecc07413b9e804376d022b12d",
+  "release_label": "Creator-hosted Windows v1.0 release",
+  "expected_filename": "openquest-win32.zip",
+  "required_member_suffix": "data.dcp",
+  "expected_payload": {
+    "md5": "16893e3fc15a211a49654ae66f684f28",
+    "size": 82281736,
+    "comparison": "ScummVM Wintermute detector identity for Open Quest"
+  },
+  "reason": "The creator-controlled GitHub v1.0 release can establish whether the exact Windows data.dcp corresponds to the ScummVM detection identity. This lane is non-publishing; the OpenQuest candidate remains HOLD because the tagged source identifies a third-party Verb Bar with no formal redistribution license."
+}
