@@ -1,5 +1,5 @@
 {
-  "schema": 3,
+  "schema": 4,
   "runtime": {
     "name": "ScummVM Web",
     "version": "2026.3.0",
@@ -15,7 +15,8 @@
       "dreamweb",
       "cge2",
       "cge",
-      "parallaction"
+      "parallaction",
+      "sludge"
     ]
   },
   "games": [
@@ -216,6 +217,41 @@
         "platform": "pc",
         "description": "Nippon Safes, Inc. (Freeware/DOS/Multilingual)",
         "extra": "Freeware"
+      }
+    },
+    {
+      "id": "robins-rescue",
+      "target": "robinsrescue",
+      "engine": "sludge",
+      "title": "Robin's Rescue",
+      "edition": "Open-License v1.0 Game Data",
+      "rights_basis": "open_license",
+      "license_identifiers": [
+        "LGPL-3.0",
+        "CC-BY-3.0",
+        "CC0-1.0",
+        "OFL-1.1"
+      ],
+      "source_url": "https://downloads.scummvm.org/frs/extras/SLUDGE/robinsrescue.zip",
+      "source_page": "https://www.scummvm.org/games/",
+      "sha256": "5727726234a85633f4bc5327f238de82cf6844cbc68d097c9ba3c9e798314859",
+      "data_directory": "robins-rescue",
+      "relative_game_path": "robinsrescue",
+      "required_files": ["robins_rescue.slg"],
+      "rights_record": "docs/rights/robins-rescue.md",
+      "corresponding_source_record": "runtime/sources/robins-rescue/PROVENANCE.json",
+      "external_license_files": [
+        "runtime/sources/robins-rescue/legal/COPYING",
+        "runtime/sources/robins-rescue/legal/README.md",
+        "runtime/sources/robins-rescue/legal/sludge__doc__README",
+        "runtime/sources/robins-rescue/legal/sprite_sources__medieval_sharp__SIL - Open Font License.txt"
+      ],
+      "config": {
+        "gameid": "robinsrescue",
+        "engineid": "sludge",
+        "language": "en",
+        "description": "Robin's Rescue (Open License v1.0)",
+        "extra": "Open License"
       }
     }
   ],
