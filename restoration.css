@@ -221,6 +221,162 @@
   line-height: 1.55;
 }
 
+/*
+ * Classic shell interaction overrides.
+ * These selectors intentionally outrank the later-loaded classic skin so the
+ * dialogs behave like compact desktop-client windows instead of modern full-screen panes.
+ */
+html body .classic-header .header-promo strong {
+  font-size: 0 !important;
+}
+html body .classic-header .header-promo strong::after {
+  content: "READY TO PLAY?";
+  display: block;
+  color: #4b347e;
+  font: 900 19px/1 Arial Black, Impact, sans-serif;
+  letter-spacing: -.5px;
+}
+
+html body .launcher-modal {
+  width: min(820px, calc(100vw - 24px)) !important;
+}
+html body .launcher-modal .modal-frame {
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: calc(100vh - 24px) !important;
+  overflow: auto !important;
+}
+html body .launcher-modal .modal-header {
+  min-height: 38px !important;
+  padding: 5px 7px !important;
+}
+html body .launcher-modal .modal-header h2 {
+  margin: 1px 0 0 !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+}
+html body .launcher-modal .launcher-body {
+  min-height: 0 !important;
+  grid-template-columns: 178px minmax(0, 1fr) !important;
+}
+html body .launcher-modal .launcher-sidebar {
+  padding: 10px 8px !important;
+  gap: 3px !important;
+}
+html body .launcher-modal .step {
+  min-height: 46px !important;
+  padding: 7px !important;
+  gap: 7px !important;
+}
+html body .launcher-modal .step > span {
+  padding-top: 2px !important;
+}
+html body .launcher-modal .step small {
+  margin-top: 3px !important;
+}
+html body .launcher-modal .privacy-note {
+  margin-top: 10px !important;
+  padding: 8px !important;
+  font-size: 8px !important;
+  line-height: 1.4 !important;
+}
+html body .launcher-modal .launcher-main {
+  min-height: 0 !important;
+  padding: 15px !important;
+}
+html body .launcher-modal .launcher-step {
+  min-height: 0 !important;
+  height: auto !important;
+}
+html body .launcher-modal .drop-zone {
+  min-height: 188px !important;
+}
+html body .launcher-modal .drop-icon {
+  width: 34px !important;
+  height: 34px !important;
+  margin-bottom: 10px !important;
+  font-size: 15px !important;
+}
+html body .launcher-modal .format-notes {
+  margin-top: 10px !important;
+}
+html body .launcher-modal .format-notes > div {
+  min-height: 42px !important;
+  padding: 8px 10px !important;
+}
+
+html body .details-modal {
+  width: min(680px, calc(100vw - 24px)) !important;
+}
+html body .details-modal .details-frame {
+  min-height: 0 !important;
+  max-height: calc(100vh - 24px) !important;
+  overflow: auto !important;
+}
+html body .details-modal .details-close {
+  top: 7px !important;
+  right: 7px !important;
+}
+html body .details-modal .details-hero {
+  min-height: 92px !important;
+  padding: 27px 16px 11px !important;
+  justify-content: end !important;
+  background: linear-gradient(105deg, #30345f, #222847 65%, #1b2632) !important;
+  border-bottom: 2px groove #e4e4e9 !important;
+}
+html body .details-modal .details-hero::before {
+  display: none !important;
+}
+html body .details-modal .details-hero::after {
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 4px),
+    linear-gradient(90deg, transparent, rgba(255,255,255,.025), transparent) !important;
+}
+html body .details-modal .details-hero .eyebrow {
+  color: #d9daea !important;
+  font: bold 8px/1.2 Arial, sans-serif !important;
+  letter-spacing: .03em !important;
+}
+html body .details-modal .details-hero h2 {
+  margin: 4px 0 0 !important;
+  color: #fff !important;
+  font: 900 28px/.95 Arial Black, Impact, sans-serif !important;
+  letter-spacing: -1px !important;
+  text-shadow: 1px 1px 0 #151628 !important;
+}
+html body .details-modal .details-body {
+  padding: 13px 16px 16px !important;
+}
+html body .details-modal .details-ledger {
+  margin-bottom: 13px !important;
+}
+html body .details-modal .details-ledger div {
+  padding: 8px !important;
+}
+html body .details-modal .details-ledger span {
+  font-size: 7px !important;
+}
+html body .details-modal .details-ledger b {
+  margin-top: 4px !important;
+  font-size: 9px !important;
+}
+html body .details-modal .details-body p {
+  margin: 10px 0 !important;
+  color: #51525e !important;
+  font: 9px/1.5 Verdana, Tahoma, Arial, sans-serif !important;
+}
+html body .details-modal .record-links {
+  gap: 7px 14px !important;
+  margin: 11px 0 4px !important;
+  padding-top: 9px !important;
+}
+html body .details-modal .details-body .button {
+  min-height: 29px !important;
+  margin-top: 7px !important;
+  padding: 0 11px !important;
+  gap: 8px !important;
+}
+
 @media (max-width: 720px) {
   .filter-group {
     width: 100%;
@@ -229,5 +385,30 @@
   .scummvm-frame {
     min-height: 420px;
     height: 65vh;
+  }
+
+  html body .launcher-modal .launcher-body {
+    grid-template-columns: 1fr !important;
+  }
+
+  html body .launcher-modal .launcher-sidebar {
+    display: none !important;
+  }
+
+  html body .launcher-modal .drop-zone {
+    min-height: 170px !important;
+  }
+
+  html body .details-modal .details-ledger {
+    grid-template-columns: 1fr !important;
+  }
+
+  html body .details-modal .details-ledger div {
+    border-right: 0 !important;
+    border-bottom: 1px solid #9697a2 !important;
+  }
+
+  html body .details-modal .details-ledger div:last-child {
+    border-bottom: 0 !important;
   }
 }
