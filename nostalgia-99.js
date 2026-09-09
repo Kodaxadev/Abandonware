@@ -11,6 +11,20 @@
 
   const hosted = games.filter(game => game.hostable && game.hostedUrl);
   const runtimeCount = new Set(hosted.map(game => game.runtimeType || 'jsdos')).size;
+  const byId = new Map(games.map(game => [game.id, game]));
+
+  const lobbyStyle = document.createElement('link');
+  lobbyStyle.rel = 'stylesheet';
+  lobbyStyle.href = 'nostalgia-lobby.css';
+  lobbyStyle.dataset.n99LobbyStyle = 'true';
+  document.head.appendChild(lobbyStyle);
+
+  const escapeHtml = value => String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 
   const browser = document.createElement('section');
   browser.className = 'n99-browser';
@@ -80,12 +94,135 @@
   linkbar.setAttribute('aria-label', 'Classic portal shortcuts');
   linkbar.innerHTML = `
     <a href="#featured">HOT GAMES</a>
+    <a href="#n99-lobby">LOBBY / ROOMS</a>
     <a href="#archive">GAME DIRECTORY</a>
     <button type="button" data-n99-open-launcher>MY DOS GAMES</button>
     <a href="#principles">HELP DESK</a>
     <a href="https://github.com/Kodaxadev/Abandonware" target="_blank" rel="noreferrer">SOURCE CODE</a>
   `;
   adDeck.insertAdjacentElement('afterend', linkbar);
+
+  function openGameRecord(gameId) {
+    const allFilter = document.querySelector('[data-filter="all"]');
+    if (allFilter && !allFilter.classList.contains('active')) allFilter.click();
+    requestAnimationFrame(() => {
+      document.querySelector(`#game-grid [data-game-id="${gameId}"]`)?.click();
+    });
+  }
+
+  function activateArchiveFilter(filter) {
+    const target = document.querySelector(`[data-filter="${filter}"]`);
+    target?.click();
+    document.getElementById('archive')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  const preferredRoomIds = [
+    'beneath-a-steel-sky',
+    'xargon',
+    'dreamweb',
+    'robins-rescue',
+    'sfinx',
+    'nippon-safes'
+  ];
+  const preferredRooms = preferredRoomIds.map(id => byId.get(id)).filter(game => game?.hostable && game?.hostedUrl);
+  const roomGames = [...preferredRooms];
+  for (const game of hosted) {
+    if (roomGames.length >= 6) break;
+    if (!roomGames.some(item => item.id === game.id)) roomGames.push(game);
+  }
+
+  const nonHosted = games.filter(game => !game.hostable || !game.hostedUrl).slice(0, 4);
+  const roomMarkup = roomGames.map((game, index) => `
+    <article class="n99-room" data-n99-room="${escapeHtml(game.id)}">
+      <div class="n99-room-head"><b>ROOM ${String(index + 1).padStart(2, '0')}</b><span>OPEN</span></div>
+      <div class="n99-room-orb" aria-hidden="true"></div>
+      <div class="n99-room-copy">
+        <strong>${escapeHtml(game.title)}</strong>
+        <small>${escapeHtml(game.platform)} // ${escapeHtml((game.runtimeType || game.runtime || 'browser').toUpperCase())}</small>
+      </div>
+      <button class="n99-room-join" type="button" data-n99-join="${escapeHtml(game.id)}">JOIN</button>
+      <span class="n99-room-signal" aria-label="runtime ready"><i></i><i></i><i></i><i></i></span>
+    </article>
+  `).join('');
+
+  const monitorRows = [
+    ...roomGames.slice(0, 3).map(game => ({ game, mode: 'READY', local: false })),
+    ...nonHosted.slice(0, 3).map(game => ({ game, mode: game.filter === 'dos' ? 'LOCAL' : 'INFO', local: true }))
+  ].slice(0, 6).map(({ game, mode, local }) => `
+    <div class="n99-monitor-row">
+      <b>${escapeHtml(game.title)}</b>
+      <small>${escapeHtml((game.runtimeType || game.filter || game.platform || 'record').toUpperCase())}</small>
+      <em class="${local ? 'local' : ''}">${mode}</em>
+    </div>
+  `).join('');
+
+  const lobby = document.createElement('section');
+  lobby.className = 'n99-lobby';
+  lobby.id = 'n99-lobby';
+  lobby.setAttribute('aria-label', 'Classic archive lobby');
+  lobby.innerHTML = `
+    <div class="n99-lobby-titlebar">
+      <b>ABANDONWARE MATCHMAKER // ARCHIVE LOBBY</b>
+      <span>ROOM DIRECTORY</span>
+      <em>MEMORY MODE · ARCHIVE STATUS</em>
+    </div>
+    <div class="n99-lobby-body">
+      <aside class="n99-lobby-index">
+        <strong>GAME INDEX</strong>
+        <button type="button" class="active" data-n99-filter="all">ALL CHANNELS</button>
+        <button type="button" data-n99-filter="playable">PLAYABLE NOW</button>
+        <button type="button" data-n99-filter="dos">DOS GAMES</button>
+        <button type="button" data-n99-filter="scummvm">SCUMMVM</button>
+        <button type="button" data-n99-filter="local-dos">LOCAL DOS</button>
+        <button type="button" data-n99-my-games>MY GAMES</button>
+        <div class="n99-lobby-index-note"><b>${hosted.length} CHANNELS OPEN</b><br>${runtimeCount} browser engines<br>${games.length} records indexed</div>
+      </aside>
+
+      <div class="n99-lobby-center">
+        <div class="n99-room-toolbar">
+          <button type="button" data-n99-quick-join>QUICK JOIN</button>
+          <button type="button" data-n99-list-view>LIST VIEW</button>
+          <span>ROOM SIGNAL = <b>RUNTIME READINESS</b></span>
+        </div>
+        <div class="n99-room-grid">${roomMarkup}</div>
+        <div class="n99-lobby-log" role="status">
+          <p><b>*** SYSOP:</b> connected to ABANDONWARE restoration network as ${escapeHtml(guestId)}</p>
+          <p><b>*** ARCHIVE:</b> ${hosted.length} browser-ready channels / ${runtimeCount} execution engines loaded</p>
+          <p><em>*** NOTE:</em> this lobby visualizes archive readiness, not live multiplayer users.</p>
+        </div>
+      </div>
+
+      <aside class="n99-lobby-monitor">
+        <strong>CHANNEL MONITOR</strong>
+        ${monitorRows}
+        <div class="n99-monitor-foot"><b>NO FAKE PLAYER COUNTS.</b><br>Green room signal means the audited browser runtime is available. LOCAL means bring your own copy.</div>
+      </aside>
+    </div>
+  `;
+
+  const portalTop = document.querySelector('.portal-top');
+  if (portalTop) portalTop.insertAdjacentElement('afterend', lobby);
+  else linkbar.insertAdjacentElement('afterend', lobby);
+
+  lobby.querySelectorAll('[data-n99-join]').forEach(button => {
+    button.addEventListener('click', () => openGameRecord(button.dataset.n99Join));
+  });
+  lobby.querySelector('[data-n99-quick-join]')?.addEventListener('click', () => {
+    const first = roomGames[0];
+    if (first) openGameRecord(first.id);
+  });
+  lobby.querySelector('[data-n99-list-view]')?.addEventListener('click', () => {
+    document.getElementById('archive')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  lobby.querySelectorAll('[data-n99-filter]').forEach(button => {
+    button.addEventListener('click', () => {
+      lobby.querySelectorAll('[data-n99-filter]').forEach(item => item.classList.toggle('active', item === button));
+      activateArchiveFilter(button.dataset.n99Filter);
+    });
+  });
+  lobby.querySelector('[data-n99-my-games]')?.addEventListener('click', () => {
+    document.querySelector('.classic-join[data-open-launcher], .classic-button[data-open-launcher]')?.click();
+  });
 
   const statusbar = document.createElement('div');
   statusbar.className = 'n99-statusbar';
