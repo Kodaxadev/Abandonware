@@ -211,12 +211,147 @@ body {
   font: bold 7px/1 "Courier New", monospace;
 }
 
+/* ---------- Local workbench as an actual utility/client panel ---------- */
+.workbench-v2 .workbench-card {
+  min-height: 250px !important;
+  padding: 14px 16px !important;
+  grid-template-columns: minmax(0, 1fr) 340px !important;
+  gap: 18px !important;
+  align-items: center !important;
+  background:
+    repeating-linear-gradient(0deg, rgba(52,54,82,.02) 0 1px, transparent 1px 4px),
+    linear-gradient(#d0d2da, #bbbEC8) !important;
+  border-top: 1px solid #f2f2f4;
+}
+
+.workbench-v2 .workbench-copy {
+  padding: 2px 4px !important;
+}
+
+.workbench-v2 .section-chip {
+  margin-bottom: 4px !important;
+  padding: 3px 5px !important;
+  display: inline-block;
+  color: #fff !important;
+  background: #474273 !important;
+  border: 1px solid #272644 !important;
+  font: bold 6px/1 Tahoma, Arial, sans-serif !important;
+}
+
+.workbench-v2 .workbench-copy h2 {
+  max-width: 470px !important;
+  margin: 4px 0 6px !important;
+  color: #24284e !important;
+  font: 900 25px/.92 "Arial Black", Impact, Arial, sans-serif !important;
+  letter-spacing: -1.25px !important;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.workbench-v2 .workbench-copy > p {
+  max-width: 520px !important;
+  margin: 0 !important;
+  color: #535563 !important;
+  font: 7px/1.5 Verdana, Tahoma, Arial, sans-serif !important;
+}
+
+.workbench-v2 .flow {
+  margin: 10px 0 9px !important;
+  border: 1px inset #9fa1ac !important;
+}
+
+.workbench-v2 .flow div {
+  min-height: 42px !important;
+  padding: 6px 7px !important;
+  background: #c4c6ce !important;
+}
+.workbench-v2 .flow div + div { border-left: 1px solid #9698a4 !important; }
+.workbench-v2 .flow span { font-size: 6px !important; }
+.workbench-v2 .flow b { font-size: 6px !important; }
+.workbench-v2 .flow small { font-size: 5px !important; }
+
+.workbench-v2 .classic-button {
+  min-height: 28px !important;
+  padding-inline: 10px !important;
+  font-size: 7px !important;
+}
+
+.workbench-v2 .workbench-console {
+  border: 2px outset #e4e5e8 !important;
+  box-shadow: 4px 4px 0 rgba(45,46,62,.21) !important;
+}
+.workbench-v2 .console-title {
+  min-height: 23px !important;
+  padding: 4px 6px !important;
+  font-size: 7px !important;
+}
+.workbench-v2 .console-screen {
+  min-height: 155px !important;
+  padding: 10px 11px !important;
+  font: 8px/1.55 "Courier New", monospace !important;
+}
+.workbench-v2 .console-screen p { margin-bottom: 2px !important; }
+.workbench-v2 .console-prompt { margin-top: 12px !important; }
+.workbench-v2 .console-drives {
+  min-height: 29px !important;
+  padding: 4px 6px !important;
+}
+.workbench-v2 .console-drives span {
+  min-width: 30px !important;
+  padding: 3px 5px !important;
+  font-size: 6px !important;
+}
+.workbench-v2 .console-drives strong { font-size: 6px !important; }
+
+/* ---------- Help center: compact documentation instead of modern feature cards ---------- */
+.principles-v2 .principles-grid {
+  background: #b8bac4 !important;
+  border-top: 1px solid #8c8e9b;
+}
+
+.principles-v2 .principles-grid article {
+  min-height: 118px !important;
+  padding: 11px 12px 26px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), transparent 38%),
+    #c9cbd3 !important;
+  border-right: 1px solid #9a9ca7 !important;
+}
+
+.principles-v2 .principles-grid article > span {
+  min-width: 22px !important;
+  padding: 3px 4px !important;
+  color: #fff !important;
+  background: #484272 !important;
+  font-size: 6px !important;
+}
+
+.principles-v2 .principles-grid h3 {
+  margin: 5px 0 4px !important;
+  color: #292b55 !important;
+  font: bold 9px/1.1 Tahoma, Arial, sans-serif !important;
+}
+
+.principles-v2 .principles-grid p {
+  margin: 0 !important;
+  color: #555764 !important;
+  font: 7px/1.45 Verdana, Tahoma, Arial, sans-serif !important;
+}
+
+.principles-v2 .principles-grid article > small {
+  bottom: 9px !important;
+  font-size: 6px !important;
+  text-decoration: underline;
+}
+
 @media (max-width: 900px) {
   .hero-panel .welcome-body {
     grid-template-columns: minmax(0,1fr) 275px !important;
   }
   .portal-grid.portal-top {
     grid-template-columns: 1fr !important;
+  }
+  .workbench-v2 .workbench-card {
+    grid-template-columns: minmax(0,1fr) 300px !important;
   }
 }
 
@@ -239,4 +374,27 @@ body {
   }
   .hero-network-art { min-height: 150px !important; }
   .n99-local-counter { display: none; }
+
+  .workbench-v2 .workbench-card {
+    min-height: 0 !important;
+    padding: 10px 9px !important;
+    grid-template-columns: 1fr !important;
+    gap: 11px !important;
+  }
+  .workbench-v2 .workbench-copy h2 {
+    font-size: 21px !important;
+    letter-spacing: -.8px !important;
+  }
+  .workbench-v2 .flow {
+    grid-template-columns: 1fr !important;
+  }
+  .workbench-v2 .flow div + div {
+    border-left: 0 !important;
+    border-top: 1px solid #9698a4 !important;
+  }
+  .workbench-v2 .console-screen { min-height: 135px !important; }
+
+  .principles-v2 .principles-grid article {
+    min-height: 105px !important;
+  }
 }
