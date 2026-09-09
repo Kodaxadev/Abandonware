@@ -1,0 +1,53 @@
+name: Capture featured runtime game shots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "tools/capture_featured_game_shots.mjs"
+      - ".github/workflows/capture-featured-game-shots.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Playwright Chromium
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static archive server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/abandonware-http.log 2>&1 &
+          echo $! > /tmp/abandonware-http.pid
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8080/index.html >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/abandonware-http.log >&2
+          exit 1
+
+      - name: Capture featured hosted game visuals
+        run: node tools/capture_featured_game_shots.mjs
+        env:
+          ABANDONWARE_BASE_URL: http://127.0.0.1:8080
+          ABANDONWARE_GAME_SHOT_OUTPUT: featured-game-shots
+
+      - name: Upload game shots
+        uses: actions/upload-artifact@v4
+        with:
+          name: featured-game-shots
+          path: featured-game-shots/*.png
+          if-no-files-found: error
+          retention-days: 3
