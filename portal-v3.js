@@ -99,6 +99,23 @@
     observer.observe(grid, { childList: true });
   }
 
+  function loadAuthenticityLayer() {
+    if (document.querySelector('link[data-n99-auth-style]')) return;
+
+    const authStyle = document.createElement('link');
+    authStyle.rel = 'stylesheet';
+    authStyle.href = 'nostalgia-authenticity.css';
+    authStyle.dataset.n99AuthStyle = 'true';
+    authStyle.addEventListener('load', () => {
+      if (document.querySelector('script[data-n99-auth-script]')) return;
+      const authScript = document.createElement('script');
+      authScript.src = 'nostalgia-authenticity.js';
+      authScript.dataset.n99AuthScript = 'true';
+      document.body.appendChild(authScript);
+    }, { once: true });
+    document.head.appendChild(authStyle);
+  }
+
   function loadNostalgiaLayer() {
     if (document.querySelector('link[data-n99-style]')) return;
 
@@ -111,6 +128,7 @@
       const nostalgiaScript = document.createElement('script');
       nostalgiaScript.src = 'nostalgia-99.js';
       nostalgiaScript.dataset.n99Script = 'true';
+      nostalgiaScript.addEventListener('load', loadAuthenticityLayer, { once: true });
       document.body.appendChild(nostalgiaScript);
     }, { once: true });
     document.head.appendChild(nostalgiaStyle);
