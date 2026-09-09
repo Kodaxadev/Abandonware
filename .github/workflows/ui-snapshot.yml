@@ -9,6 +9,7 @@ on:
       - "classic-mplayer.css"
       - "classic-polish.css"
       - "classic-portal-v2.css"
+      - "classic-portal-v3.css"
       - "restoration.css"
       - "app.js"
       - "data/**"
