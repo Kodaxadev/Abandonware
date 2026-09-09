@@ -79,6 +79,12 @@ html body .details-modal .details-hero.cover-diablo {
   background: radial-gradient(circle at 76% 23%, rgba(183,47,40,.22), transparent 16%), linear-gradient(118deg,#4f292a,#32283f 62%,#1c1725) !important;
 }
 
+/* Portal V2 already carries local-mode promotion in the workbench; hiding the
+   duplicate rail ad keeps the hero/featured column from ending in dead space. */
+.portal-top .local-promo-panel {
+  display: none !important;
+}
+
 /* Preserve the period look on touch devices without preserving period-sized targets. */
 @media (max-width: 650px) {
   .classic-nav a {
