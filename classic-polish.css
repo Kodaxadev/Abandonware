@@ -704,8 +704,8 @@ select:focus-visible,
 /* ---------- Dialogs / client windows ---------- */
 
 .modal::backdrop {
-  background:
-    radial-gradient(circle at 50% 35%, rgba(40,43,85,.26), rgba(7,7,18,.82));
+  background: rgba(7,7,18,.84);
+  backdrop-filter: none;
 }
 
 .modal-frame,
@@ -769,9 +769,8 @@ select:focus-visible,
 .privacy-note b { color: #31783a !important; }
 
 .launcher-main {
-  background:
-    repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px),
-    #c9cad2 !important;
+  background-color: #c9cad2 !important;
+  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px) !important;
 }
 
 .drop-zone {
@@ -830,6 +829,39 @@ select:focus-visible,
   background:
     repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0 1px, transparent 1px 4px),
     #4d4f5e !important;
+}
+
+/* CI screenshot audit: native dialog compositing must remain fully opaque. */
+html body .launcher-modal {
+  opacity: 1 !important;
+}
+html body .launcher-modal .modal-frame {
+  opacity: 1 !important;
+  isolation: isolate;
+  background: #bfc0c9 !important;
+}
+html body .launcher-modal .modal-header {
+  background-color: #3b3f70 !important;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.028) 0 1px, transparent 1px 4px),
+    linear-gradient(90deg,#2e315f,#555b90) !important;
+}
+html body .launcher-modal .launcher-body {
+  background: #bfc0ca !important;
+}
+html body .launcher-modal .launcher-sidebar {
+  background-color: #aaabb7 !important;
+  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 4px) !important;
+}
+html body .launcher-modal .launcher-main {
+  background-color: #c9cad2 !important;
+  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px) !important;
+}
+html body .launcher-modal .drop-zone {
+  background: #dedee4 !important;
+}
+html body .launcher-modal .format-notes > div {
+  background: #d8d9df !important;
 }
 
 /* Details dialog: make it a database window, not a modern hero modal. */
@@ -950,7 +982,13 @@ select:focus-visible,
   .utility-strip::before,
   .classic-header::after { display: none; }
 
+  .portal-grid {
+    grid-template-columns: 1fr !important;
+    gap: 7px;
+  }
+
   .portal-sidebar {
+    grid-template-columns: repeat(3,1fr) !important;
     padding: 0;
     background: transparent;
     border: 0;
@@ -1025,6 +1063,10 @@ select:focus-visible,
 
   .games-panel::after {
     font-size: 6px;
+  }
+
+  .portal-sidebar {
+    grid-template-columns: 1fr !important;
   }
 
   .workbench-card::before { display:none; }
