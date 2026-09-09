@@ -1,7 +1,7 @@
 /*
  * ABANDONWARE.COM — classic portal polish entrypoint
  * The substantial refinement layer lives in classic-polish-core.css; this
- * entrypoint also owns invariants that must win the final cascade.
+ * entrypoint owns final-cascade invariants and the last interaction details.
  */
 @import url("./classic-polish-core.css");
 
@@ -16,4 +16,99 @@ dialog.modal:not([open]) {
 dialog.modal[open] {
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+/*
+ * Restoration records should still feel like the game selected in the channel
+ * guide. Keep the compact database-window geometry, but restore a restrained
+ * version of each game's catalog palette instead of flattening every record to
+ * the same blue title field.
+ */
+html body .details-modal .details-hero.cover-xargon {
+  background: radial-gradient(circle at 77% 25%, rgba(111,235,255,.20), transparent 17%), linear-gradient(118deg,#254b56,#20284e 62%,#171a34) !important;
+}
+html body .details-modal .details-hero.cover-kiloblaster {
+  background: radial-gradient(circle at 72% 23%, rgba(237,96,255,.18), transparent 17%), linear-gradient(118deg,#47295b,#29254f 62%,#17172e) !important;
+}
+html body .details-modal .details-hero.cover-steel-sky {
+  background: radial-gradient(circle at 77% 24%, rgba(239,122,45,.18), transparent 16%), linear-gradient(118deg,#4b606a,#303852 62%,#1a2130) !important;
+}
+html body .details-modal .details-hero.cover-amazon-queen {
+  background: radial-gradient(circle at 76% 23%, rgba(255,212,98,.20), transparent 16%), linear-gradient(118deg,#456a4e,#334850 62%,#1c2630) !important;
+}
+html body .details-modal .details-hero.cover-lure {
+  background: radial-gradient(circle at 75% 24%, rgba(192,159,105,.18), transparent 16%), linear-gradient(118deg,#55483f,#34354e 62%,#1d1d2c) !important;
+}
+html body .details-modal .details-hero.cover-mystery-house {
+  background: radial-gradient(circle at 74% 22%, rgba(210,221,181,.16), transparent 16%), linear-gradient(118deg,#33453b,#2c3549 62%,#171d29) !important;
+}
+html body .details-modal .details-hero.cover-drascula {
+  background: radial-gradient(circle at 77% 23%, rgba(234,58,79,.18), transparent 16%), linear-gradient(118deg,#572a36,#352847 62%,#1d1728) !important;
+}
+html body .details-modal .details-hero.cover-dreamweb {
+  background: radial-gradient(circle at 74% 23%, rgba(85,191,217,.18), transparent 16%), linear-gradient(118deg,#294654,#28364f 62%,#151c2b) !important;
+}
+html body .details-modal .details-hero.cover-sfinx {
+  background: radial-gradient(circle at 76% 23%, rgba(230,189,104,.20), transparent 16%), linear-gradient(118deg,#65503a,#3a3b4c 62%,#1c202a) !important;
+}
+html body .details-modal .details-hero.cover-soltys {
+  background: radial-gradient(circle at 74% 23%, rgba(212,220,143,.16), transparent 16%), linear-gradient(118deg,#405344,#303c49 62%,#19212a) !important;
+}
+html body .details-modal .details-hero.cover-nippon {
+  background: radial-gradient(circle at 78% 22%, rgba(239,82,65,.18), transparent 15%), linear-gradient(118deg,#36505f,#30394f 62%,#19202c) !important;
+}
+html body .details-modal .details-hero.cover-robins-rescue {
+  background: radial-gradient(circle at 76% 21%, rgba(229,195,104,.18), transparent 15%), linear-gradient(118deg,#405d46,#30434b 62%,#19242b) !important;
+}
+html body .details-modal .details-hero.cover-doom {
+  background: radial-gradient(circle at 78% 25%, rgba(208,107,57,.22), transparent 17%), linear-gradient(118deg,#5a342a,#383042 62%,#1d1b26) !important;
+}
+html body .details-modal .details-hero.cover-keen {
+  background: radial-gradient(circle at 78% 23%, rgba(222,88,61,.18), transparent 16%), linear-gradient(118deg,#294858,#30384f 62%,#19202c) !important;
+}
+html body .details-modal .details-hero.cover-jazz {
+  background: radial-gradient(circle at 76% 23%, rgba(76,225,142,.18), transparent 16%), linear-gradient(118deg,#24554d,#2e3d4c 62%,#17222b) !important;
+}
+html body .details-modal .details-hero.cover-simcity {
+  background: radial-gradient(circle at 76% 23%, rgba(220,205,132,.17), transparent 16%), linear-gradient(118deg,#43565b,#343c4d 62%,#1b212b) !important;
+}
+html body .details-modal .details-hero.cover-monkey {
+  background: radial-gradient(circle at 76% 23%, rgba(213,157,80,.19), transparent 16%), linear-gradient(118deg,#5b4932,#37364a 62%,#1c1e29) !important;
+}
+html body .details-modal .details-hero.cover-diablo {
+  background: radial-gradient(circle at 76% 23%, rgba(183,47,40,.22), transparent 16%), linear-gradient(118deg,#4f292a,#32283f 62%,#1c1725) !important;
+}
+
+/* Preserve the period look on touch devices without preserving period-sized targets. */
+@media (max-width: 650px) {
+  .classic-nav a {
+    height: 30px !important;
+    min-height: 30px;
+    padding-top: 9px;
+  }
+
+  .filter {
+    min-height: 30px !important;
+    padding: 5px 8px !important;
+  }
+
+  .search-box input {
+    height: 30px !important;
+    padding: 4px 6px !important;
+  }
+
+  .classic-button,
+  .classic-join {
+    min-height: 34px;
+  }
+
+  .card-arrow {
+    min-height: 30px !important;
+  }
+
+  .record-links a {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+  }
 }
