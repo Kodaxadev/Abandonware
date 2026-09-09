@@ -10,9 +10,11 @@ on:
       - "classic-polish.css"
       - "classic-portal-v2.css"
       - "classic-portal-v3.css"
+      - "nostalgia-99.css"
       - "restoration.css"
       - "app.js"
       - "portal-v3.js"
+      - "nostalgia-99.js"
       - "data/**"
       - "tests/ui-snapshot.mjs"
       - ".github/workflows/ui-snapshot.yml"
@@ -33,7 +35,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check portal script syntax
-        run: node --check portal-v3.js
+        run: |
+          node --check portal-v3.js
+          node --check nostalgia-99.js
 
       - name: Install Playwright Chromium
         run: |
