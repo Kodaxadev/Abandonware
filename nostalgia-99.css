@@ -1,0 +1,459 @@
+/*
+ * ABANDONWARE.COM — 1999 memory-trigger layer
+ *
+ * The portal underneath is intentionally usable on modern browsers. This last
+ * layer restores the pieces people actually remember: browser chrome, little
+ * banners, badges, moving network copy, loud promo accents and status surfaces.
+ */
+
+:root {
+  --n99-win-blue: #0b246a;
+  --n99-win-blue-hi: #3157a4;
+  --n99-purple: #3d2d76;
+  --n99-purple-hi: #6a52a5;
+  --n99-orange: #ff8a13;
+  --n99-yellow: #ffd929;
+  --n99-cyan: #54e5ee;
+  --n99-green: #53d45f;
+  --n99-paper: #d9dae1;
+  --n99-mid: #a7a9b5;
+  --n99-ink: #17182d;
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% -120px, rgba(94,99,166,.42), transparent 650px),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.009) 0 1px, transparent 1px 4px),
+    #0d1026 !important;
+}
+
+.classic-site {
+  border: 2px outset #c8cad4 !important;
+  box-shadow: 0 0 0 1px #11142c, 0 26px 90px rgba(0,0,0,.62) !important;
+}
+
+/* ---------- Faux browser frame ---------- */
+
+.n99-browser {
+  color: #111;
+  background: #c0c0c0;
+  border-bottom: 2px groove #8d8d8d;
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+  user-select: none;
+}
+
+.n99-titlebar {
+  height: 22px;
+  padding: 2px 3px 2px 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  background: linear-gradient(90deg, var(--n99-win-blue), var(--n99-win-blue-hi));
+  font: bold 11px/1 Tahoma, Arial, sans-serif;
+}
+
+.n99-titlebar-logo {
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: radial-gradient(circle at 36% 35%, #ff9d1f 0 18%, transparent 19%), linear-gradient(135deg,#744fa8,#202b73);
+  border: 1px solid rgba(255,255,255,.7);
+  font: bold 8px/1 Arial, sans-serif;
+}
+
+.n99-window-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.n99-window-controls { margin-left: auto; display: flex; gap: 2px; }
+.n99-window-controls i {
+  width: 17px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  color: #111;
+  background: #c0c0c0;
+  border: 2px outset #eee;
+  font: bold 9px/1 Arial, sans-serif;
+  font-style: normal;
+}
+
+.n99-menubar {
+  height: 23px;
+  padding: 3px 7px;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  background: #c0c0c0;
+  border-bottom: 1px solid #858585;
+  font: 10px/1 Tahoma, Arial, sans-serif;
+}
+
+.n99-menubar span::first-letter { text-decoration: underline; }
+
+.n99-toolbar {
+  min-height: 38px;
+  padding: 4px 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(#d2d2d2,#bdbdbd);
+  border-top: 1px solid #f2f2f2;
+  border-bottom: 1px solid #777;
+}
+
+.n99-tool {
+  height: 29px;
+  min-width: 54px;
+  padding: 2px 7px;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  background: #c6c6c6;
+  border: 2px outset #efefef;
+  cursor: pointer;
+  font: 9px/1 Tahoma, Arial, sans-serif;
+}
+.n99-tool:active { border-style: inset; }
+.n99-tool b { color: #273f89; font-size: 13px; }
+
+.n99-location {
+  height: 27px;
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px;
+  color: #333;
+  background: #c4c4c4;
+  border: 1px solid #888;
+  font: 9px/1 Tahoma, Arial, sans-serif;
+}
+
+.n99-location b { font-weight: 400; }
+.n99-address {
+  min-width: 0;
+  height: 20px;
+  padding: 3px 5px;
+  overflow: hidden;
+  color: #101010;
+  background: #fff;
+  border: 2px inset #eee;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 10px/1.2 "Courier New", monospace;
+}
+
+.n99-sfx {
+  min-width: 64px;
+  height: 27px;
+  color: #1a1a1a;
+  background: #c4c4c4;
+  border: 2px outset #efefef;
+  cursor: pointer;
+  font: bold 8px/1 Tahoma, Arial, sans-serif;
+}
+.n99-sfx[aria-pressed="true"] { color: #0b5915; background: #cce5c8; }
+
+/* ---------- Connected-service strip ---------- */
+
+.n99-sessionbar {
+  min-height: 27px;
+  display: grid;
+  grid-template-columns: auto auto minmax(120px,1fr) auto;
+  align-items: center;
+  color: #d8daf1;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.018) 0 1px, transparent 1px 4px),
+    #12152f;
+  border-top: 1px solid #4d527d;
+  border-bottom: 1px solid #050716;
+  font: 8px/1 Arial, sans-serif;
+}
+
+.n99-session-chip {
+  min-height: 26px;
+  padding: 0 9px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-right: 1px solid #363a61;
+  white-space: nowrap;
+}
+.n99-session-chip b { color: #fff; }
+.n99-session-chip .lamp {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #54da5e;
+  border: 1px solid #1d7425;
+  box-shadow: 0 0 5px rgba(84,218,94,.55);
+}
+
+.n99-marquee {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 1px solid #363a61;
+}
+.n99-marquee-track {
+  display: inline-block;
+  padding-left: 100%;
+  color: #bfc2dc;
+  animation: n99-scroll 23s linear infinite;
+}
+.n99-marquee-track b { color: var(--n99-yellow); }
+@keyframes n99-scroll { to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) { .n99-marquee-track { animation: none; padding-left: 8px; } }
+
+/* ---------- Banner farm: the emotional memory trigger ---------- */
+
+.n99-ad-deck {
+  min-height: 82px;
+  padding: 9px 11px;
+  display: grid;
+  grid-template-columns: minmax(468px,1fr) auto;
+  gap: 12px;
+  align-items: center;
+  background:
+    repeating-linear-gradient(135deg, rgba(28,30,62,.028) 0 1px, transparent 1px 4px),
+    linear-gradient(#c9cbd4,#b0b2be);
+  border-bottom: 2px groove #e6e7eb;
+}
+
+.n99-banner {
+  width: min(100%, 468px);
+  height: 60px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 98px 1fr 80px;
+  align-items: center;
+  color: #fff;
+  background:
+    radial-gradient(circle at 76% 28%, rgba(255,216,41,.32), transparent 18%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,.045) 0 1px, transparent 1px 6px),
+    linear-gradient(110deg,#111433,#47317b 58%,#242958);
+  border: 2px outset #7a6aa3;
+  box-shadow: 2px 2px 0 rgba(36,37,55,.35);
+  cursor: pointer;
+}
+.n99-banner::after {
+  content: "FREE";
+  position: absolute;
+  right: -18px;
+  top: 8px;
+  width: 72px;
+  padding: 2px 0;
+  color: #2a1800;
+  background: var(--n99-yellow);
+  transform: rotate(33deg);
+  text-align: center;
+  font: 900 8px Arial Black, Impact, sans-serif;
+}
+.n99-banner-mark {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: radial-gradient(circle,#7455ad 0 28%,#26326f 29% 52%,transparent 53%);
+  font: 900 28px Arial Black, Impact, sans-serif;
+  text-shadow: 2px 2px 0 #101128;
+}
+.n99-banner-copy { min-width:0; padding: 0 8px; }
+.n99-banner-copy small { display:block; color:#d7d5eb; font:7px/1 Arial,sans-serif; letter-spacing:.08em; }
+.n99-banner-copy strong { display:block; margin:3px 0 2px; color:#fff; font:900 16px/.9 Arial Black,Impact,sans-serif; letter-spacing:-.6px; }
+.n99-banner-copy span { color:#ffd75a; font:bold 8px/1 Verdana,sans-serif; }
+.n99-banner-go {
+  margin-right: 14px;
+  padding: 6px 5px;
+  color: #291708;
+  background: var(--n99-orange);
+  border: 2px outset #ffc477;
+  text-align: center;
+  font: 900 8px/1 Arial,sans-serif;
+}
+
+.n99-badges {
+  display: grid;
+  grid-template-columns: repeat(2, 88px);
+  gap: 5px;
+}
+.n99-badge {
+  width: 88px;
+  height: 31px;
+  padding: 2px 3px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #191b36;
+  border: 1px solid #fff;
+  box-shadow: 1px 1px 0 #4b4d62;
+  text-align: center;
+  font: bold 7px/1.05 Arial, sans-serif;
+  letter-spacing: .02em;
+}
+.n99-badge:nth-child(2) { color:#102510; background:linear-gradient(#8efa92,#46ac4e); border-color:#d8ffd8; }
+.n99-badge:nth-child(3) { color:#211604; background:linear-gradient(#ffd84e,#e58d1d); border-color:#fff0a8; }
+.n99-badge:nth-child(4) { background:linear-gradient(#554184,#24274e); }
+.n99-badge b { font-size: 9px; }
+
+/* ---------- Period navigation clutter, intentionally useful ---------- */
+
+.n99-linkbar {
+  min-height: 25px;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: #dadbe1;
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid #8a8c98;
+  font: 8px/1 Verdana, Arial, sans-serif;
+}
+.n99-linkbar a,
+.n99-linkbar button {
+  padding: 2px 10px;
+  color: #263072;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid #9b9ca8;
+  cursor: pointer;
+  font: bold 8px/1 Verdana, Arial, sans-serif;
+  text-decoration: underline;
+}
+.n99-linkbar > :last-child { border-right: 0; }
+.n99-linkbar a:hover,
+.n99-linkbar button:hover { color:#7c214a; }
+
+/* ---------- Make the portal feel less like one gray design system ---------- */
+
+.hero-panel { border-top: 3px solid var(--n99-orange) !important; }
+.featured-panel { border-top: 3px solid #4fd25b !important; }
+.archive-v2 { border-top: 3px solid #6651a0 !important; }
+.workbench-v2 { border-top: 3px solid #e18a26 !important; }
+.principles-v2 { border-top: 3px solid #477eaa !important; }
+
+.featured-game { position: relative; }
+.featured-game:nth-child(1)::after,
+.featured-game:nth-child(2)::after {
+  position: absolute;
+  z-index: 8;
+  top: -4px;
+  right: -4px;
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  color: #241400;
+  background: var(--n99-yellow);
+  border: 1px solid #9a7410;
+  border-radius: 50%;
+  transform: rotate(10deg);
+  box-shadow: 1px 1px 0 #fff;
+  font: 900 7px/1 Arial Black, Impact, sans-serif;
+}
+.featured-game:nth-child(1)::after { content:"HOT!"; }
+.featured-game:nth-child(2)::after { content:"NEW!"; }
+
+.hero-network::before {
+  content: "★ STAFF PICK ★";
+  position: absolute;
+  z-index: 8;
+  right: 11px;
+  top: 34px;
+  padding: 3px 5px;
+  color: #281800;
+  background: var(--n99-yellow);
+  border: 1px solid #a57600;
+  transform: rotate(3deg);
+  font: 900 7px/1 Arial Black, Impact, sans-serif;
+}
+.hero-network { position: relative; }
+
+.n99-card-flag {
+  position: absolute;
+  z-index: 7;
+  right: 5px;
+  top: 5px;
+  padding: 2px 4px;
+  color: #2b1800;
+  background: var(--n99-yellow);
+  border: 1px solid #a57b12;
+  font: 900 6px/1 Arial Black, Impact, sans-serif;
+}
+.n99-card-flag.ready { color:#113112; background:#a8e7ad; border-color:#4f9857; }
+
+/* ---------- Fake browser status bar ---------- */
+
+.n99-statusbar {
+  min-height: 23px;
+  padding: 2px 4px;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto auto;
+  gap: 3px;
+  color: #303030;
+  background: #c0c0c0;
+  border-top: 2px groove #ededed;
+  font: 9px/1 Tahoma, Arial, sans-serif;
+}
+.n99-status-cell {
+  min-height: 17px;
+  padding: 3px 5px;
+  overflow: hidden;
+  background: #c4c4c4;
+  border: 2px inset #ececec;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.n99-status-cell b { color:#143b82; }
+
+/* ---------- Tiny fun details ---------- */
+
+.classic-nav a.active::before {
+  content: "▶";
+  margin-right: 4px;
+  color: var(--n99-yellow);
+  font-size: 7px;
+}
+
+.panel-titlebar > span:first-child::first-letter { color:#fff; }
+
+@media (max-width: 820px) {
+  .n99-toolbar { flex-wrap: wrap; }
+  .n99-location { order: 3; flex-basis: 100%; }
+  .n99-sessionbar { grid-template-columns: auto 1fr auto; }
+  .n99-session-chip:nth-child(2) { display:none; }
+  .n99-ad-deck { grid-template-columns: 1fr; }
+  .n99-badges { grid-template-columns: repeat(4,88px); justify-content:center; }
+}
+
+@media (max-width: 650px) {
+  .n99-menubar { display:none; }
+  .n99-titlebar { height:24px; }
+  .n99-toolbar { min-height:32px; padding:3px; }
+  .n99-tool { min-width:42px; height:26px; font-size:0; grid-template-columns:1fr; }
+  .n99-tool b { font-size:13px; }
+  .n99-location { height:26px; }
+  .n99-sessionbar { grid-template-columns: 1fr auto; }
+  .n99-session-chip:nth-child(1),
+  .n99-session-chip:nth-child(2) { display:none; }
+  .n99-marquee { min-height:26px; display:flex; align-items:center; }
+  .n99-sfx { margin-right:3px; }
+  .n99-ad-deck { min-height:0; padding:6px; }
+  .n99-banner { width:100%; height:64px; grid-template-columns:70px 1fr 61px; }
+  .n99-banner-mark { font-size:22px; }
+  .n99-banner-copy strong { font-size:13px; }
+  .n99-banner-go { margin-right:8px; font-size:7px; }
+  .n99-badges { width:100%; overflow-x:auto; justify-content:flex-start; grid-template-columns:repeat(4,88px); }
+  .n99-linkbar { justify-content:flex-start; overflow-x:auto; white-space:nowrap; }
+  .n99-statusbar { grid-template-columns:1fr auto; }
+  .n99-status-cell:nth-child(2) { display:none; }
+}
