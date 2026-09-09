@@ -11,6 +11,7 @@ on:
       - "classic-portal-v2.css"
       - "classic-portal-v3.css"
       - "nostalgia-99.css"
+      - "nostalgia-lobby.css"
       - "restoration.css"
       - "app.js"
       - "portal-v3.js"
