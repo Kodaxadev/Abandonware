@@ -21,23 +21,35 @@ async function preparePage(viewport) {
 }
 
 async function verifyPage(page, consoleErrors, name, viewport) {
-  const facts = await page.evaluate(() => ({
-    viewportWidth: window.innerWidth,
-    viewportHeight: window.innerHeight,
-    classicSite: Boolean(document.querySelector(".classic-site")),
-    cards: document.querySelectorAll("#game-grid [data-game-id]").length,
-    stylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("classic-mplayer.css")),
-    horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
-  }));
+  const facts = await page.evaluate(() => {
+    const launcher = document.getElementById("launcher-modal");
+    const details = document.getElementById("details-modal");
+    return {
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      classicSite: Boolean(document.querySelector(".classic-site")),
+      cards: document.querySelectorAll("#game-grid [data-game-id]").length,
+      stylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("classic-mplayer.css")),
+      polishStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("classic-polish.css")),
+      horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+      launcherOpen: Boolean(launcher?.open),
+      launcherDisplay: launcher ? getComputedStyle(launcher).display : "missing",
+      detailsOpen: Boolean(details?.open),
+      detailsDisplay: details ? getComputedStyle(details).display : "missing"
+    };
+  });
 
   if (facts.viewportWidth !== viewport.width || facts.viewportHeight !== viewport.height) {
     throw new Error(`${name} viewport mismatch: expected ${viewport.width}x${viewport.height}, got ${facts.viewportWidth}x${facts.viewportHeight}`);
   }
-  if (!facts.classicSite || !facts.stylesheetLoaded || facts.cards < 1) {
+  if (!facts.classicSite || !facts.stylesheetLoaded || !facts.polishStylesheetLoaded || facts.cards < 1) {
     throw new Error(`${name} classic UI did not initialize: ${JSON.stringify(facts)}`);
   }
   if (facts.horizontalOverflow) {
     throw new Error(`${name} has horizontal viewport overflow`);
+  }
+  if (facts.launcherOpen || facts.launcherDisplay !== "none" || facts.detailsOpen || facts.detailsDisplay !== "none") {
+    throw new Error(`${name} leaked a closed dialog into the page: ${JSON.stringify(facts)}`);
   }
   if (consoleErrors.some(message => message.includes("Failed to load resource"))) {
     throw new Error(`${name} resource error: ${consoleErrors.join(" | ")}`);
