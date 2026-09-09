@@ -11,6 +11,7 @@ on:
       - "restoration.css"
       - "covers-extra.css"
       - "classic-mplayer.css"
+      - "classic-polish.css"
       - "data/**"
       - "games/**"
       - "runtime/**"
@@ -47,7 +48,9 @@ jobs:
         run: |
           set -euo pipefail
           test -s classic-mplayer.css
+          test -s classic-polish.css
           grep -q 'classic-mplayer.css' index.html
+          grep -q 'classic-polish.css' index.html
           grep -q 'id="game-grid"' index.html
           grep -q 'id="launcher-modal"' index.html
           grep -q 'id="details-modal"' index.html
