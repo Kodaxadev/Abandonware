@@ -19,6 +19,8 @@ async function preparePage(viewport) {
   await page.waitForSelector("#game-grid [data-game-id]");
   await page.waitForSelector(".n99-browser");
   await page.waitForSelector(".n99-banner");
+  await page.waitForSelector(".n99-lobby");
+  await page.waitForSelector(".n99-room [data-n99-join]");
   return { page, consoleErrors };
 }
 
@@ -34,10 +36,14 @@ async function verifyPage(page, consoleErrors, name, viewport) {
       stylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("classic-mplayer.css")),
       polishStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("classic-polish.css")),
       nostalgiaStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("nostalgia-99.css")),
+      lobbyStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("nostalgia-lobby.css")),
       nostalgiaBrowser: Boolean(document.querySelector(".n99-browser")),
       nostalgiaBanner: Boolean(document.querySelector(".n99-banner")),
       nostalgiaSession: Boolean(document.querySelector(".n99-sessionbar")),
       nostalgiaStatus: Boolean(document.querySelector(".n99-statusbar")),
+      nostalgiaLobby: Boolean(document.querySelector(".n99-lobby")),
+      lobbyRooms: document.querySelectorAll(".n99-room").length,
+      lobbyJoinButtons: document.querySelectorAll(".n99-room [data-n99-join]").length,
       horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
       launcherOpen: Boolean(launcher?.open),
       launcherDisplay: launcher ? getComputedStyle(launcher).display : "missing",
@@ -54,10 +60,14 @@ async function verifyPage(page, consoleErrors, name, viewport) {
     !facts.stylesheetLoaded ||
     !facts.polishStylesheetLoaded ||
     !facts.nostalgiaStylesheetLoaded ||
+    !facts.lobbyStylesheetLoaded ||
     !facts.nostalgiaBrowser ||
     !facts.nostalgiaBanner ||
     !facts.nostalgiaSession ||
     !facts.nostalgiaStatus ||
+    !facts.nostalgiaLobby ||
+    facts.lobbyRooms < 4 ||
+    facts.lobbyJoinButtons !== facts.lobbyRooms ||
     facts.cards < 1
   ) {
     throw new Error(`${name} classic UI did not initialize: ${JSON.stringify(facts)}`);
@@ -86,6 +96,12 @@ async function captureDialogs() {
   const viewport = { width: 1280, height: 900 };
   const { page, consoleErrors } = await preparePage(viewport);
   await verifyPage(page, consoleErrors, "classic-dialogs-1280", viewport);
+
+  // The lobby JOIN button must route into the same real restoration record as the archive card.
+  await page.locator('.n99-room [data-n99-join]').first().click();
+  await page.waitForFunction(() => document.getElementById("details-modal")?.open === true);
+  await page.locator("[data-close-details]").click();
+  await page.waitForFunction(() => document.getElementById("details-modal")?.open !== true);
 
   await page.locator('[data-game-id="xargon"]').click();
   await page.waitForFunction(() => document.getElementById("details-modal")?.open === true);
