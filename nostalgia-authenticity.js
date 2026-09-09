@@ -37,6 +37,18 @@
     });
   });
 
+  const workbench = document.querySelector('.workbench-v2 .workbench-copy');
+  if (workbench) {
+    const chip = workbench.querySelector('.section-chip');
+    const title = workbench.querySelector('h2');
+    const copy = workbench.querySelector(':scope > p');
+    if (chip) chip.textContent = 'SETUP WIZARD';
+    if (title) title.innerHTML = 'MY GAMES //<br>LOCAL DOS SETUP';
+    if (copy) {
+      copy.textContent = 'Choose a .JSDOS or ZIP archive, select the original boot target, and start the local browser runtime. Your game data never leaves this machine.';
+    }
+  }
+
   let localVisits = 1;
   try {
     const current = Number.parseInt(localStorage.getItem('abw-n99-local-visits') || '0', 10);
