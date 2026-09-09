@@ -13,6 +13,7 @@ on:
       - "app.js"
       - "portal-v3.js"
       - "nostalgia-99.js"
+      - "nostalgia-authenticity.js"
       - "styles.css"
       - "restoration.css"
       - "covers-extra.css"
@@ -22,6 +23,7 @@ on:
       - "classic-portal-v3.css"
       - "nostalgia-99.css"
       - "nostalgia-lobby.css"
+      - "nostalgia-authenticity.css"
       - "data/**"
       - "games/**"
       - "runtime/**"
@@ -50,6 +52,7 @@ jobs:
         run: |
           node --check portal-v3.js
           node --check nostalgia-99.js
+          node --check nostalgia-authenticity.js
 
       - name: Install Playwright Chromium
         run: |
