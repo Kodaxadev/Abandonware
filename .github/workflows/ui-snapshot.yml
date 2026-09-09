@@ -8,6 +8,7 @@ on:
       - "index.html"
       - "classic-mplayer.css"
       - "classic-polish.css"
+      - "classic-portal-v2.css"
       - "restoration.css"
       - "app.js"
       - "data/**"
