@@ -17,6 +17,8 @@ async function preparePage(viewport) {
   await page.goto(baseUrl, { waitUntil: "networkidle", timeout: 30000 });
   await page.waitForSelector(".classic-site");
   await page.waitForSelector("#game-grid [data-game-id]");
+  await page.waitForSelector(".n99-browser");
+  await page.waitForSelector(".n99-banner");
   return { page, consoleErrors };
 }
 
@@ -31,6 +33,11 @@ async function verifyPage(page, consoleErrors, name, viewport) {
       cards: document.querySelectorAll("#game-grid [data-game-id]").length,
       stylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("classic-mplayer.css")),
       polishStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("classic-polish.css")),
+      nostalgiaStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("nostalgia-99.css")),
+      nostalgiaBrowser: Boolean(document.querySelector(".n99-browser")),
+      nostalgiaBanner: Boolean(document.querySelector(".n99-banner")),
+      nostalgiaSession: Boolean(document.querySelector(".n99-sessionbar")),
+      nostalgiaStatus: Boolean(document.querySelector(".n99-statusbar")),
       horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
       launcherOpen: Boolean(launcher?.open),
       launcherDisplay: launcher ? getComputedStyle(launcher).display : "missing",
@@ -42,7 +49,17 @@ async function verifyPage(page, consoleErrors, name, viewport) {
   if (facts.viewportWidth !== viewport.width || facts.viewportHeight !== viewport.height) {
     throw new Error(`${name} viewport mismatch: expected ${viewport.width}x${viewport.height}, got ${facts.viewportWidth}x${facts.viewportHeight}`);
   }
-  if (!facts.classicSite || !facts.stylesheetLoaded || !facts.polishStylesheetLoaded || facts.cards < 1) {
+  if (
+    !facts.classicSite ||
+    !facts.stylesheetLoaded ||
+    !facts.polishStylesheetLoaded ||
+    !facts.nostalgiaStylesheetLoaded ||
+    !facts.nostalgiaBrowser ||
+    !facts.nostalgiaBanner ||
+    !facts.nostalgiaSession ||
+    !facts.nostalgiaStatus ||
+    facts.cards < 1
+  ) {
     throw new Error(`${name} classic UI did not initialize: ${JSON.stringify(facts)}`);
   }
   if (facts.horizontalOverflow) {
@@ -78,7 +95,7 @@ async function captureDialogs() {
   await page.locator("[data-close-details]").click();
   await page.waitForFunction(() => document.getElementById("details-modal")?.open !== true);
 
-  await page.locator("[data-open-launcher]").first().click();
+  await page.locator(".n99-banner").click();
   await page.waitForFunction(() => document.getElementById("launcher-modal")?.open === true);
 
   const launcherSteps = await page.evaluate(() => {
