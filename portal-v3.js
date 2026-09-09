@@ -98,4 +98,23 @@
     const observer = new MutationObserver(() => decorateCards());
     observer.observe(grid, { childList: true });
   }
+
+  function loadNostalgiaLayer() {
+    if (document.querySelector('link[data-n99-style]')) return;
+
+    const nostalgiaStyle = document.createElement('link');
+    nostalgiaStyle.rel = 'stylesheet';
+    nostalgiaStyle.href = 'nostalgia-99.css';
+    nostalgiaStyle.dataset.n99Style = 'true';
+    nostalgiaStyle.addEventListener('load', () => {
+      if (document.querySelector('script[data-n99-script]')) return;
+      const nostalgiaScript = document.createElement('script');
+      nostalgiaScript.src = 'nostalgia-99.js';
+      nostalgiaScript.dataset.n99Script = 'true';
+      document.body.appendChild(nostalgiaScript);
+    }, { once: true });
+    document.head.appendChild(nostalgiaStyle);
+  }
+
+  loadNostalgiaLayer();
 })();
