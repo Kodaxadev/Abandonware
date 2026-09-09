@@ -10,7 +10,14 @@ const browser = await chromium.launch({ headless: true });
 const targets = [
   { id: "xargon", file: "xargon", runtime: "jsdos", settle: 6500, keys: ["Enter", "Escape", "Space"] },
   { id: "beneath-a-steel-sky", file: "beneath-a-steel-sky", runtime: "scummvm", settle: 4500, keys: ["Escape", "Escape"] },
+  { id: "flight-of-the-amazon-queen", file: "flight-of-the-amazon-queen", runtime: "scummvm", settle: 4500, keys: ["Escape", "Enter", "Escape"] },
+  { id: "lure-of-the-temptress", file: "lure-of-the-temptress", runtime: "scummvm", settle: 4500, keys: ["Escape", "Enter", "Escape"] },
+  { id: "mystery-house", file: "mystery-house", runtime: "scummvm", settle: 4500, keys: ["Enter", "Space"] },
+  { id: "drascula", file: "drascula", runtime: "scummvm", settle: 4500, keys: ["Escape", "Enter", "Escape"] },
   { id: "dreamweb", file: "dreamweb", runtime: "scummvm", settle: 4500, keys: ["Escape", "Escape", "Enter"] },
+  { id: "sfinx", file: "sfinx", runtime: "scummvm", settle: 4500, keys: ["Escape", "Enter", "Escape"] },
+  { id: "soltys", file: "soltys", runtime: "scummvm", settle: 4500, keys: ["Escape", "Enter", "Escape"] },
+  { id: "nippon-safes", file: "nippon-safes", runtime: "scummvm", settle: 4500, keys: ["Escape", "Enter", "Escape"] },
   { id: "robins-rescue", file: "robins-rescue", runtime: "scummvm", settle: 4500, keys: ["Escape", "Enter"] }
 ];
 
