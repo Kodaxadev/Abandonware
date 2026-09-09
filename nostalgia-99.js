@@ -7,6 +7,7 @@
   const games = Array.isArray(window.ABANDONWARE_GAMES) ? window.ABANDONWARE_GAMES : [];
 
   if (!site || !utility || !ticker || !main || !footer) return;
+  if (document.querySelector('.n99-browser')) return;
 
   const hosted = games.filter(game => game.hostable && game.hostedUrl);
   const runtimeCount = new Set(hosted.map(game => game.runtimeType || 'jsdos')).size;
@@ -33,10 +34,15 @@
   `;
   site.insertBefore(browser, utility);
 
-  let guestId = localStorage.getItem('abw-n99-guest');
-  if (!guestId) {
-    guestId = `GUEST_${String(Math.floor(1000 + Math.random() * 9000))}`;
-    try { localStorage.setItem('abw-n99-guest', guestId); } catch {}
+  let guestId = 'GUEST_1999';
+  try {
+    guestId = localStorage.getItem('abw-n99-guest') || '';
+    if (!guestId) {
+      guestId = `GUEST_${String(Math.floor(1000 + Math.random() * 9000))}`;
+      localStorage.setItem('abw-n99-guest', guestId);
+    }
+  } catch {
+    guestId = 'GUEST_1999';
   }
 
   const sessionBar = document.createElement('div');
@@ -55,7 +61,7 @@
   adDeck.className = 'n99-ad-deck';
   adDeck.setAttribute('aria-label', 'Classic web promotion deck');
   adDeck.innerHTML = `
-    <button class="n99-banner" type="button" data-open-launcher aria-label="Open local game workbench">
+    <button class="n99-banner" type="button" data-n99-open-launcher aria-label="Open local game workbench">
       <span class="n99-banner-mark">A</span>
       <span class="n99-banner-copy"><small>ABANDONWARE GIZMO 4.0</small><strong>YOUR OLD GAME.<br>ONE CLICK AWAY.</strong><span>RUN A DOS COPY LOCALLY IN YOUR BROWSER</span></span>
       <span class="n99-banner-go">OPEN<br>NOW!</span>
@@ -75,7 +81,7 @@
   linkbar.innerHTML = `
     <a href="#featured">HOT GAMES</a>
     <a href="#archive">GAME DIRECTORY</a>
-    <button type="button" data-open-launcher>MY DOS GAMES</button>
+    <button type="button" data-n99-open-launcher>MY DOS GAMES</button>
     <a href="#principles">HELP DESK</a>
     <a href="https://github.com/Kodaxadev/Abandonware" target="_blank" rel="noreferrer">SOURCE CODE</a>
   `;
@@ -94,12 +100,19 @@
     document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  function openLauncher() {
+    const existingTrigger = document.querySelector('.classic-join[data-open-launcher], .classic-button[data-open-launcher]');
+    existingTrigger?.click();
+  }
+
   browser.querySelector('[data-n99-home]')?.addEventListener('click', () => scrollToTarget('#top'));
   browser.querySelector('[data-n99-games]')?.addEventListener('click', () => scrollToTarget('#archive'));
   browser.querySelector('[data-n99-search]')?.addEventListener('click', () => {
     scrollToTarget('#archive');
     setTimeout(() => document.getElementById('archive-search')?.focus(), 300);
   });
+  adDeck.querySelector('[data-n99-open-launcher]')?.addEventListener('click', openLauncher);
+  linkbar.querySelector('[data-n99-open-launcher]')?.addEventListener('click', openLauncher);
 
   let soundEnabled = false;
   let audioContext = null;
