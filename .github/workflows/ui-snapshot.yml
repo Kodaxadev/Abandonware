@@ -12,6 +12,7 @@ on:
       - "classic-portal-v3.css"
       - "restoration.css"
       - "app.js"
+      - "portal-v3.js"
       - "data/**"
       - "tests/ui-snapshot.mjs"
       - ".github/workflows/ui-snapshot.yml"
@@ -30,6 +31,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Check portal script syntax
+        run: node --check portal-v3.js
 
       - name: Install Playwright Chromium
         run: |
