@@ -1,0 +1,242 @@
+/*
+ * ABANDONWARE.COM — authenticity pass
+ * Turns the remaining modern landing-page composition into a denser,
+ * 1024-era PC gaming portal without compromising current functionality.
+ */
+
+@media (min-width: 901px) {
+  .classic-site {
+    width: min(1040px, calc(100% - 28px)) !important;
+  }
+}
+
+body {
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 1px, transparent 1px 4px),
+    radial-gradient(circle at 50% -170px, #41477e 0, #242850 350px, #101126 780px),
+    #101126 !important;
+}
+
+/* The portal masthead should feel like a service header, not a modern hero brand. */
+.classic-header {
+  min-height: 82px !important;
+}
+
+.classic-brand .brand-wordmark strong {
+  letter-spacing: -2px !important;
+}
+
+/* Denser 1999-style welcome module. */
+.hero-panel .welcome-body {
+  min-height: 270px !important;
+  padding: 15px 16px 14px !important;
+  grid-template-columns: minmax(0, 1fr) 300px !important;
+  gap: 17px !important;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.58), rgba(255,255,255,.10) 58%, transparent 78%),
+    repeating-linear-gradient(0deg, rgba(48,50,82,.025) 0 1px, transparent 1px 4px),
+    linear-gradient(#d8dae2, #bdc0cb) !important;
+}
+
+.hero-panel .welcome-kicker {
+  color: #30386d !important;
+  font: bold 8px/1.2 Tahoma, "MS Sans Serif", Arial, sans-serif !important;
+  letter-spacing: .03em !important;
+}
+
+.hero-panel .welcome-copy h1 {
+  max-width: 500px !important;
+  margin: 7px 0 8px !important;
+  color: #202650 !important;
+  font: 900 37px/.9 "Arial Black", Impact, Arial, sans-serif !important;
+  letter-spacing: -2.4px !important;
+  text-shadow: 1px 1px 0 #fff !important;
+}
+
+.hero-panel .welcome-copy > p {
+  max-width: 510px !important;
+  margin: 0 !important;
+  color: #444655 !important;
+  font: 9px/1.45 Verdana, Tahoma, Arial, sans-serif !important;
+}
+
+.n99-home-bulletin {
+  margin: 10px 0 0;
+  border: 1px solid #989aa6;
+  background: #d2d3da;
+  box-shadow: inset 1px 1px 0 #f4f4f6;
+}
+
+.n99-home-bulletin-head {
+  min-height: 20px;
+  padding: 4px 6px 3px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  background: linear-gradient(90deg, #49467a, #6a5a91);
+  border-bottom: 1px solid #343252;
+  font: bold 7px/1 Tahoma, Arial, sans-serif;
+}
+.n99-home-bulletin-head span {
+  color: #e8d55b;
+  font-weight: 400;
+}
+
+.n99-home-bulletin-list {
+  padding: 4px 6px 5px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 10px;
+}
+
+.n99-home-bulletin-list button,
+.n99-home-bulletin-list a {
+  min-height: 20px;
+  padding: 3px 1px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #262a66;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dotted #a1a2ac;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+  font: 7px/1.2 Verdana, Tahoma, Arial, sans-serif;
+}
+.n99-home-bulletin-list button::before,
+.n99-home-bulletin-list a::before {
+  content: "■";
+  color: #f28a1d;
+  font-size: 5px;
+  text-decoration: none;
+}
+.n99-home-bulletin-list button:hover,
+.n99-home-bulletin-list a:hover { color: #5b2788; }
+
+.hero-panel .classic-actions {
+  margin-top: 10px !important;
+}
+.hero-panel .classic-button {
+  min-height: 29px !important;
+  padding-inline: 10px !important;
+  font-size: 7px !important;
+}
+.hero-panel .hero-proof {
+  margin-top: 8px !important;
+  gap: 3px !important;
+}
+.hero-panel .hero-proof span {
+  padding: 3px 5px !important;
+  font-size: 6px !important;
+}
+
+.hero-network {
+  box-shadow: 4px 4px 0 rgba(44,45,63,.22) !important;
+}
+.hero-network-art {
+  min-height: 178px !important;
+}
+.hero-game-copy strong {
+  font-size: 24px !important;
+}
+.hero-network-foot {
+  min-height: 31px !important;
+}
+
+/* Give featured channels a bit more 'portal module' and less product-card polish. */
+.featured-grid {
+  padding: 5px !important;
+  gap: 5px !important;
+  background: #aaaeba !important;
+}
+.featured-game {
+  min-height: 122px !important;
+  border-width: 2px !important;
+  box-shadow: 1px 1px 0 rgba(50,52,68,.22) !important;
+}
+.featured-art { min-height: 118px !important; }
+.featured-copy { padding: 8px 7px !important; }
+.featured-copy strong { font-size: 13px !important; }
+.featured-copy p { font-size: 7px !important; line-height: 1.35 !important; }
+
+/* Period portals had aggressively compact utility rails. */
+.portal-grid.portal-top {
+  grid-template-columns: minmax(0, 1fr) 228px !important;
+  gap: 7px !important;
+}
+.portal-top .portal-primary,
+.portal-top .portal-sidebar { gap: 7px !important; }
+.portal-top .side-list a,
+.portal-top .side-list button {
+  min-height: 43px !important;
+  padding: 5px 4px !important;
+}
+.portal-top .side-list b { font-size: 8px !important; }
+.portal-top .side-list small { font-size: 6px !important; }
+.portal-top .network-stats div { min-height: 23px !important; }
+.portal-top .network-stats dt,
+.portal-top .network-stats dd { font-size: 6px !important; }
+.portal-top .bulletin article { padding: 4px 3px 6px !important; }
+.portal-top .bulletin b { font-size: 7px !important; }
+.portal-top .bulletin p { font-size: 6px !important; }
+
+/* A little deliberate link-blue breaks the over-coordinated modern palette. */
+.n99-linkbar a,
+.directory-links a,
+.record-links a {
+  text-decoration: underline;
+}
+
+/* Locally truthful visitor counter: this is per browser profile, not a fake global hit count. */
+.n99-local-counter {
+  min-height: 22px;
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #c9cbda;
+  background: #171a37;
+  border: 1px inset #656985;
+  font: 6px/1 Tahoma, Arial, sans-serif;
+}
+.n99-local-counter b {
+  padding: 2px 4px;
+  color: #8cff8e;
+  background: #050807;
+  border: 1px inset #52545c;
+  letter-spacing: .12em;
+  font: bold 7px/1 "Courier New", monospace;
+}
+
+@media (max-width: 900px) {
+  .hero-panel .welcome-body {
+    grid-template-columns: minmax(0,1fr) 275px !important;
+  }
+  .portal-grid.portal-top {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 650px) {
+  .hero-panel .welcome-body {
+    padding: 11px 9px !important;
+    grid-template-columns: 1fr !important;
+  }
+  .hero-panel .welcome-copy h1 {
+    font-size: 29px !important;
+    letter-spacing: -1.7px !important;
+  }
+  .n99-home-bulletin-list {
+    grid-template-columns: 1fr;
+  }
+  .n99-home-bulletin-list button,
+  .n99-home-bulletin-list a {
+    min-height: 23px;
+    font-size: 6px;
+  }
+  .hero-network-art { min-height: 150px !important; }
+  .n99-local-counter { display: none; }
+}
