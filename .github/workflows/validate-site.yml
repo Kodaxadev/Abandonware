@@ -7,11 +7,16 @@ on:
     paths:
       - "index.html"
       - "app.js"
+      - "portal-v3.js"
+      - "nostalgia-99.js"
       - "styles.css"
       - "restoration.css"
       - "covers-extra.css"
       - "classic-mplayer.css"
       - "classic-polish.css"
+      - "classic-portal-v2.css"
+      - "classic-portal-v3.css"
+      - "nostalgia-99.css"
       - "data/**"
       - "games/**"
       - "runtime/**"
@@ -41,6 +46,8 @@ jobs:
         run: |
           set -euo pipefail
           node --check app.js
+          node --check portal-v3.js
+          node --check nostalgia-99.js
           node --check data/games.js
           node --check runtime/jsdos/bridge.js
 
@@ -49,8 +56,13 @@ jobs:
           set -euo pipefail
           test -s classic-mplayer.css
           test -s classic-polish.css
+          test -s classic-portal-v2.css
+          test -s classic-portal-v3.css
+          test -s nostalgia-99.css
+          test -s nostalgia-99.js
           grep -q 'classic-mplayer.css' index.html
           grep -q 'classic-polish.css' index.html
+          grep -q 'portal-v3.js' index.html
           grep -q 'id="game-grid"' index.html
           grep -q 'id="launcher-modal"' index.html
           grep -q 'id="details-modal"' index.html
