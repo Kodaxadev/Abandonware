@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="covers-extra.css" />
   <link rel="stylesheet" href="classic-mplayer.css" />
   <link rel="stylesheet" href="classic-polish.css" />
+  <link rel="stylesheet" href="classic-portal-v2.css" />
   <link rel="icon" href="assets/abandonware-mark.svg" type="image/svg+xml" />
 </head>
 <body>
@@ -37,7 +38,7 @@
 
     <nav class="classic-nav" aria-label="Primary navigation">
       <a class="active" href="#archive">GAMES</a>
-      <a href="#archive">PLAY NOW</a>
+      <a href="#featured">PLAY NOW</a>
       <a href="#workbench">MY GAMES</a>
       <a href="#principles">PRESERVATION</a>
       <a href="#principles">HELP</a>
@@ -56,9 +57,9 @@
     </div>
 
     <main class="classic-main">
-      <section class="portal-grid" aria-label="Abandonware portal">
+      <section class="portal-grid portal-top" aria-label="Abandonware portal">
         <div class="portal-primary">
-          <div class="classic-panel welcome-panel">
+          <section class="classic-panel welcome-panel hero-panel">
             <div class="panel-titlebar"><span>WELCOME TO ABANDONWARE.COM</span><span class="titlebar-controls">_ □ ×</span></div>
             <div class="welcome-body">
               <div class="welcome-copy">
@@ -66,49 +67,57 @@
                 <h1>YOUR OLD PC<br />IS BACK ONLINE.</h1>
                 <p>Play preservation-cleared classics instantly, or bring your own DOS files and launch them locally in the browser.</p>
                 <div class="classic-actions">
-                  <a class="classic-button primary" href="#archive">BROWSE GAMES</a>
+                  <a class="classic-button primary" href="#featured">PLAY A CLASSIC</a>
                   <button class="classic-button" data-open-launcher>RUN YOUR COPY</button>
                 </div>
+                <div class="hero-proof">
+                  <span><b>12</b> hosted titles</span>
+                  <span><b>2</b> local runtimes</span>
+                  <span><b>0</b> game-data uploads</span>
+                </div>
               </div>
-              <div class="gizmo-card" aria-label="Archive node status">
-                <div class="gizmo-head"><b>ABW GIZMO</b><span>v1.0</span></div>
-                <div class="gizmo-channel live"><span class="latency-light green"></span><div><b>PLAYABLE ARCHIVE</b><small>audited browser-ready games</small></div><em>OPEN</em></div>
-                <div class="gizmo-channel"><span class="latency-light yellow"></span><div><b>LOCAL WORKBENCH</b><small>your files stay in your browser</small></div><em>READY</em></div>
-                <div class="gizmo-channel"><span class="latency-light red"></span><div><b>RIGHTS REVIEW</b><small>unverified titles stay offline</small></div><em>GATED</em></div>
-                <div class="gizmo-foot">STATUS &gt; preservation node connected</div>
-              </div>
-            </div>
-          </div>
 
-          <section class="classic-panel games-panel" id="archive">
-            <div class="panel-titlebar"><span>GAME CHANNELS</span><span>SELECT A GAME TO VIEW DETAILS</span></div>
-            <div class="archive-toolbar">
-              <div class="filter-group" role="group" aria-label="Filter archive">
-                <button class="filter active" data-filter="all">ALL GAMES</button>
-                <button class="filter" data-filter="playable">PLAY NOW</button>
-                <button class="filter" data-filter="local-dos">MY DOS</button>
-                <button class="filter" data-filter="dos">DOS</button>
-                <button class="filter" data-filter="scummvm">SCUMMVM</button>
-                <button class="filter" data-filter="win9x">WIN9X</button>
+              <div class="hero-network" aria-label="Featured playable game">
+                <div class="hero-network-bar"><span>FEATURED CHANNEL // 03</span><em>ONLINE</em></div>
+                <div class="hero-network-art cover-steel-sky">
+                  <span class="feature-live">PLAYABLE</span>
+                  <div class="hero-game-copy">
+                    <small>1994 // DOS // SCUMMVM</small>
+                    <strong>BENEATH A<br />STEEL SKY</strong>
+                  </div>
+                </div>
+                <div class="hero-network-foot">
+                  <span>REVOLUTION SOFTWARE</span>
+                  <a href="#archive">OPEN CHANNEL ›</a>
+                </div>
               </div>
-              <label class="search-box">
-                <span>FIND GAME:</span>
-                <input id="archive-search" type="search" placeholder="type a title..." autocomplete="off" />
-              </label>
             </div>
-            <div class="directory-header" aria-hidden="true">
-              <span>GAME / CHANNEL</span><span>PLATFORM</span><span>STATUS</span><span>ACTION</span>
+          </section>
+
+          <section class="classic-panel featured-panel" id="featured">
+            <div class="panel-titlebar"><span>FEATURED CHANNELS // PLAY IN BROWSER</span><span>NO INSTALL REQUIRED</span></div>
+            <div class="featured-grid">
+              <a class="featured-game" href="#archive">
+                <div class="featured-art cover-xargon"><span>PLAYABLE</span></div>
+                <div class="featured-copy"><small>CH 01 // DOS // 1993</small><strong>XARGON</strong><p>Epic MegaGames platform action, rebuilt from an audited freeware package.</p><em>OPEN CHANNEL ›</em></div>
+              </a>
+              <a class="featured-game" href="#archive">
+                <div class="featured-art cover-dreamweb"><span>PLAYABLE</span></div>
+                <div class="featured-copy"><small>CH 08 // DOS // 1994</small><strong>DREAMWEB</strong><p>Dark cyberpunk adventure running through the pinned ScummVM browser runtime.</p><em>OPEN CHANNEL ›</em></div>
+              </a>
+              <a class="featured-game" href="#archive">
+                <div class="featured-art cover-robins-rescue"><span>PLAYABLE</span></div>
+                <div class="featured-copy"><small>CH 12 // SLUDGE // 2015</small><strong>ROBIN'S RESCUE</strong><p>Open-source adventure preserved with source, licenses and attribution intact.</p><em>OPEN CHANNEL ›</em></div>
+              </a>
             </div>
-            <div class="game-grid" id="game-grid" aria-live="polite"></div>
-            <div class="empty-state" id="empty-state" hidden>No game channels match that filter.</div>
           </section>
         </div>
 
         <aside class="portal-sidebar">
-          <section class="classic-panel side-panel">
+          <section class="classic-panel side-panel quick-panel">
             <div class="panel-titlebar"><span>QUICK PLAY</span></div>
             <div class="side-list">
-              <a href="#archive"><span class="mini-led green"></span><b>PLAYABLE GAMES</b><small>Launch verified titles</small></a>
+              <a href="#featured"><span class="mini-led green"></span><b>PLAYABLE GAMES</b><small>Launch verified titles</small></a>
               <button data-open-launcher><span class="mini-led yellow"></span><b>LOCAL DOS</b><small>Use your own archive</small></button>
               <a href="#principles"><span class="mini-led blue"></span><b>RIGHTS LEDGER</b><small>How hosting is approved</small></a>
             </div>
@@ -133,64 +142,80 @@
             </div>
           </section>
 
-          <section class="classic-panel ad-panel" aria-label="Preservation message">
-            <div class="fake-ad-label">ADVERTISEMENT</div>
-            <div class="fake-ad"><strong>STILL GOT THE DISKS?</strong><span>Run your own DOS copy locally.</span><button data-open-launcher>OPEN WORKBENCH</button></div>
-          </section>
-
-          <section class="classic-panel side-panel desktop-rail" aria-label="Compatibility watch">
-            <div class="panel-titlebar"><span>COMPATIBILITY WATCH</span></div>
-            <p class="rail-intro">Famous commercial titles stay off the hosted archive unless redistribution rights are clear. Local compatibility can still move forward.</p>
-            <ul class="compat-watch">
-              <li><b>DOOM</b><small>DOS / local copy</small><em>LOCAL</em></li>
-              <li><b>Commander Keen 4</b><small>DOS / local copy</small><em>LOCAL</em></li>
-              <li><b>Jazz Jackrabbit</b><small>DOS / local copy</small><em>LOCAL</em></li>
-              <li><b>SimCity 2000</b><small>DOS / local copy</small><em>LOCAL</em></li>
-              <li><b>Monkey Island</b><small>ScummVM profile</small><em class="planned">PLANNED</em></li>
-              <li><b>Diablo</b><small>Win9x profile</small><em class="planned">PLANNED</em></li>
-            </ul>
-          </section>
-
-          <section class="classic-panel side-panel desktop-rail" aria-label="Site directory">
-            <div class="panel-titlebar"><span>SITE DIRECTORY</span></div>
-            <nav class="directory-links" aria-label="Abandonware directory">
-              <a href="#archive">GAME CHANNELS</a>
-              <a href="#archive">PLAYABLE NOW</a>
-              <a href="#workbench">MY GAMES</a>
-              <a href="#principles">PRESERVATION POLICY</a>
-              <a href="https://github.com/Kodaxadev/Abandonware" target="_blank" rel="noreferrer">SOURCE / DEVELOPERS</a>
-            </nav>
-          </section>
-
-          <section class="classic-panel side-panel desktop-rail" aria-label="Browser system check">
-            <div class="panel-titlebar"><span>SYSTEM CHECK</span></div>
-            <div class="system-check">
-              <div><i></i><b>WEBASSEMBLY</b><span>READY</span></div>
-              <div><i></i><b>DOS RUNTIME</b><span>READY</span></div>
-              <div><i></i><b>SCUMMVM</b><span>READY</span></div>
-              <div><i class="off"></i><b>FILE UPLOADS</b><span class="local">LOCAL ONLY</span></div>
-            </div>
-          </section>
-
-          <section class="classic-panel side-panel desktop-rail" aria-label="Local play promotion">
+          <section class="classic-panel side-panel local-promo-panel">
             <div class="panel-titlebar"><span>NO ACCOUNT REQUIRED</span></div>
             <div class="rail-house-ad">
               <small>ABANDONWARE LOCAL MODE</small>
-              <strong>YOUR DISKS. YOUR BROWSER.</strong>
-              <p>Keep commercial game data on your machine and use the restoration workbench as the old PC.</p>
-              <a href="#workbench">OPEN MY GAMES</a>
+              <strong>YOUR DISKS.<br />YOUR BROWSER.</strong>
+              <p>Commercial game data stays on your machine.</p>
+              <button data-open-launcher>OPEN MY GAMES</button>
             </div>
           </section>
         </aside>
       </section>
 
-      <section class="classic-panel workbench-section" id="workbench">
+      <section class="classic-panel games-panel archive-v2" id="archive">
+        <div class="panel-titlebar"><span>GAME CHANNEL DIRECTORY</span><span>SELECT A CHANNEL FOR RESTORATION DETAILS</span></div>
+        <div class="archive-toolbar">
+          <div class="filter-group" role="group" aria-label="Filter archive">
+            <button class="filter active" data-filter="all">ALL GAMES</button>
+            <button class="filter" data-filter="playable">PLAY NOW</button>
+            <button class="filter" data-filter="local-dos">MY DOS</button>
+            <button class="filter" data-filter="dos">DOS</button>
+            <button class="filter" data-filter="scummvm">SCUMMVM</button>
+            <button class="filter" data-filter="win9x">WIN9X</button>
+          </div>
+          <label class="search-box">
+            <span>FIND GAME:</span>
+            <input id="archive-search" type="search" placeholder="type a title..." autocomplete="off" />
+          </label>
+        </div>
+        <div class="game-grid" id="game-grid" aria-live="polite"></div>
+        <div class="empty-state" id="empty-state" hidden>No game channels match that filter.</div>
+      </section>
+
+      <section class="portal-services" aria-label="Archive services">
+        <section class="classic-panel service-panel compatibility-panel">
+          <div class="panel-titlebar"><span>COMPATIBILITY WATCH</span></div>
+          <p class="service-intro">Commercial titles can still be local compatibility targets without pretending they are free to redistribute.</p>
+          <div class="service-list">
+            <div><b>DOOM</b><span>DOS</span><em>LOCAL READY</em></div>
+            <div><b>COMMANDER KEEN 4</b><span>DOS</span><em>LOCAL READY</em></div>
+            <div><b>MONKEY ISLAND</b><span>SCUMMVM</span><em class="planned">PROFILE PLANNED</em></div>
+            <div><b>DIABLO</b><span>WIN9X</span><em class="planned">ENGINE PLANNED</em></div>
+          </div>
+        </section>
+
+        <section class="classic-panel service-panel system-panel">
+          <div class="panel-titlebar"><span>LOCAL SYSTEM CHECK</span></div>
+          <div class="system-check system-check-v2">
+            <div><i></i><b>WEBASSEMBLY</b><span>READY</span></div>
+            <div><i></i><b>DOS RUNTIME</b><span>READY</span></div>
+            <div><i></i><b>SCUMMVM</b><span>READY</span></div>
+            <div><i class="off"></i><b>FILE TRANSFER</b><span class="local">LOCAL ONLY</span></div>
+          </div>
+          <div class="system-note"><b>PRIVACY MODE:</b> selected game archives are processed inside this browser.</div>
+        </section>
+
+        <section class="classic-panel service-panel directory-panel">
+          <div class="panel-titlebar"><span>NETWORK DIRECTORY</span></div>
+          <nav class="directory-links" aria-label="Abandonware directory">
+            <a href="#featured">FEATURED / PLAY NOW</a>
+            <a href="#archive">ALL GAME CHANNELS</a>
+            <a href="#workbench">MY GAMES / LOCAL MODE</a>
+            <a href="#principles">PRESERVATION POLICY</a>
+            <a href="https://github.com/Kodaxadev/Abandonware" target="_blank" rel="noreferrer">SOURCE / DEVELOPERS</a>
+          </nav>
+        </section>
+      </section>
+
+      <section class="classic-panel workbench-section workbench-v2" id="workbench">
         <div class="panel-titlebar"><span>MY GAMES // LOCAL RESTORATION WORKBENCH</span><span>FILES NEVER LEAVE YOUR BROWSER</span></div>
         <div class="workbench-card">
           <div class="workbench-copy">
             <div class="section-chip">LOCAL MODE</div>
             <h2>Bring the game.<br />We’ll bring the old PC.</h2>
-            <p>Drop a prepared <code>.jsdos</code> bundle or a ZIP containing a DOS game. Abandonware scans it in your browser, finds likely launch targets and builds a temporary DOSBox configuration locally.</p>
+            <p>Drop a prepared <code>.jsdos</code> bundle or a ZIP containing a DOS game. Abandonware scans it locally, finds likely launch targets and builds a temporary DOSBox configuration in your browser.</p>
             <div class="flow">
               <div><span>1</span><b>CHOOSE FILE</b><small>.JSDOS or .ZIP</small></div>
               <div><span>2</span><b>SELECT EXE</b><small>boot target</small></div>
@@ -198,20 +223,27 @@
             </div>
             <button class="classic-button primary" data-open-launcher>OPEN MY GAMES</button>
           </div>
-          <div class="diskette" aria-hidden="true">
-            <span class="disk-notch"></span>
-            <span class="disk-label"><b>ABANDONWARE</b><i>LOCAL GAME DISK</i></span>
-            <span class="disk-window"></span>
+
+          <div class="workbench-console" aria-hidden="true">
+            <div class="console-title"><span>ABW LOCAL SETUP</span><span>_ □ ×</span></div>
+            <div class="console-screen">
+              <p><b>C:\ABW&gt;</b> local-mode --ready</p>
+              <p><span>[OK]</span> js-dos runtime loaded</p>
+              <p><span>[OK]</span> zip scanner available</p>
+              <p><span>[OK]</span> upload transport disabled</p>
+              <p class="console-prompt">SELECT GAME ARCHIVE_</p>
+            </div>
+            <div class="console-drives"><span>A:</span><span>C:</span><strong>LOCAL ONLY</strong></div>
           </div>
         </div>
       </section>
 
-      <section class="classic-panel principles-section" id="principles">
-        <div class="panel-titlebar"><span>HELP CENTER // PRESERVATION POLICY</span></div>
+      <section class="classic-panel principles-section principles-v2" id="principles">
+        <div class="panel-titlebar"><span>HELP CENTER // PRESERVATION POLICY</span><span>HOW THE ARCHIVE STAYS DEFENSIBLE</span></div>
         <div class="principles-grid">
-          <article><span>01</span><h3>OLD DOESN’T MEAN FREE</h3><p>Hosted games need an explicit redistribution basis. “Abandonware” is a preservation label here, not a legal shortcut.</p></article>
-          <article><span>02</span><h3>HASH THE REAL ARTIFACT</h3><p>Every hosted release is tied to a pinned package and provenance record so the browser runs the exact artifact we reviewed.</p></article>
-          <article><span>03</span><h3>YOUR COPY STAYS YOURS</h3><p>For commercial or uncertain titles, use local mode. Your selected files are processed client-side and are not uploaded to Kodaxa.</p></article>
+          <article><span>01</span><h3>OLD DOESN’T MEAN FREE</h3><p>Hosted games need an explicit redistribution basis. “Abandonware” is a preservation label here, not a legal shortcut.</p><small>RIGHTS FIRST</small></article>
+          <article><span>02</span><h3>HASH THE REAL ARTIFACT</h3><p>Every hosted release is tied to a pinned package and provenance record so the browser runs the exact artifact we reviewed.</p><small>PIN THE BUILD</small></article>
+          <article><span>03</span><h3>YOUR COPY STAYS YOURS</h3><p>For commercial or uncertain titles, use local mode. Your selected files are processed client-side and are not uploaded to Kodaxa.</p><small>LOCAL BY DESIGN</small></article>
         </div>
       </section>
     </main>
