@@ -21,6 +21,7 @@ async function preparePage(viewport) {
   await page.waitForSelector(".n99-banner");
   await page.waitForSelector(".n99-lobby");
   await page.waitForSelector(".n99-room [data-n99-join]");
+  await page.waitForSelector(".n99-home-bulletin");
   return { page, consoleErrors };
 }
 
@@ -37,11 +38,14 @@ async function verifyPage(page, consoleErrors, name, viewport) {
       polishStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("classic-polish.css")),
       nostalgiaStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("nostalgia-99.css")),
       lobbyStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("nostalgia-lobby.css")),
+      authenticityStylesheetLoaded: [...document.styleSheets].some(sheet => String(sheet.href || "").includes("nostalgia-authenticity.css")),
       nostalgiaBrowser: Boolean(document.querySelector(".n99-browser")),
       nostalgiaBanner: Boolean(document.querySelector(".n99-banner")),
       nostalgiaSession: Boolean(document.querySelector(".n99-sessionbar")),
       nostalgiaStatus: Boolean(document.querySelector(".n99-statusbar")),
       nostalgiaLobby: Boolean(document.querySelector(".n99-lobby")),
+      nostalgiaHomeBulletin: Boolean(document.querySelector(".n99-home-bulletin")),
+      localVisitCounter: Boolean(document.querySelector(".n99-local-counter")),
       lobbyRooms: document.querySelectorAll(".n99-room").length,
       lobbyJoinButtons: document.querySelectorAll(".n99-room [data-n99-join]").length,
       horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
@@ -61,11 +65,14 @@ async function verifyPage(page, consoleErrors, name, viewport) {
     !facts.polishStylesheetLoaded ||
     !facts.nostalgiaStylesheetLoaded ||
     !facts.lobbyStylesheetLoaded ||
+    !facts.authenticityStylesheetLoaded ||
     !facts.nostalgiaBrowser ||
     !facts.nostalgiaBanner ||
     !facts.nostalgiaSession ||
     !facts.nostalgiaStatus ||
     !facts.nostalgiaLobby ||
+    !facts.nostalgiaHomeBulletin ||
+    !facts.localVisitCounter ||
     facts.lobbyRooms < 4 ||
     facts.lobbyJoinButtons !== facts.lobbyRooms ||
     facts.cards < 1
