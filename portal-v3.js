@@ -3,6 +3,35 @@
   const byId = new Map(games.map(game => [game.id, game]));
   const grid = document.getElementById("game-grid");
 
+  const style = document.createElement("style");
+  style.textContent = `
+    .archive-v2 .channel-summary {
+      grid-column: 1;
+      grid-row: 4;
+      min-width: 0;
+      margin: 8px 0 6px;
+      color: #555867;
+      font: 8px/1.4 Verdana, Tahoma, Arial, sans-serif;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+    .archive-v2 .game-card:hover .channel-summary,
+    .archive-v2 .game-card:focus .channel-summary { color: #424557; }
+    .featured-game,
+    .hero-network-foot a { cursor: pointer; }
+    @media (max-width: 650px) {
+      .archive-v2 .channel-summary {
+        margin: 5px 0 4px;
+        font-size: 7px;
+        line-height: 1.3;
+        -webkit-line-clamp: 1;
+      }
+    }
+  `;
+  document.head.append(style);
+
   function shortSummary(value, maxLength = 150) {
     const text = String(value || "").replace(/\s+/g, " ").trim();
     if (!text) return "Open the restoration record for compatibility, provenance and launch details.";
